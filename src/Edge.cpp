@@ -24,7 +24,7 @@ Edge::~Edge() {
 }
 
 bool Edge::isChild(Node* n) {
-	std::vector<Node*>::iterator itr = std::find(nodes.begin(), nodes.end(), n1);
+	std::vector<Node*>::iterator itr = std::find(nodes.begin(), nodes.end(), n);
 
 	if (itr != nodes.end()) {
 		int idx = std::distance(nodes.begin(), itr);

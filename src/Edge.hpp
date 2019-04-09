@@ -8,10 +8,11 @@
 #ifndef Edge_hpp
 #define Edge_hpp
 
-#include <stdio.h>
 #include <vector>
 #include <algorithm>
 #include "Node.hpp"
+
+class Node;
 
 class Edge {
 	public:
@@ -28,6 +29,6 @@ class Edge {
     	~Edge();
     	bool isChild(Node* n);
     	Node* getConnectedNode(Node *n);
-}
+};
 
 #endif /* Edge_hpp */

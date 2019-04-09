@@ -10,19 +10,19 @@
 void Node::addEdge(Edge* edge) {
 	edges.push_back(edge);
 
-	Node* other = edge.getConnectedNode(this);
-	if (edge.isChild(this)) {
+	Node* other = edge->getConnectedNode(this);
+	if (edge->isChild(this)) {
 		incomingNodes.push_back(other);
 	} else {
 		outgoingNodes.push_back(other);
 	}
 }
 
-std::vector Node::getOutgoingNodes() {
+std::vector<Node*> Node::getOutgoingNodes() {
 	return outgoingNodes;
 }
 
-std::vector Node::getIncomingNodes() {
+std::vector<Node*> Node::getIncomingNodes() {
 	return incomingNodes;
 }
 
