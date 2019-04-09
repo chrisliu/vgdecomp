@@ -1,8 +1,7 @@
-# Makefile
+# Makefile to compile objects and test file
 
-main: src
-
-src: build-src
+# Source object
+main: build-src
 
 build-src: Edge.o Node.o
 
@@ -15,6 +14,7 @@ Node.o: src/Node.cpp src/Node.hpp
 clean:
 	rm src/*.o
 
+# Test file
 test: test/main.cpp main
 	g++ -c test/main.cpp -o test/main.o
 	g++ test/main.o src/*.o -o main
