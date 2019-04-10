@@ -16,8 +16,8 @@ class Node;
 
 class Edge {
 	public:
-		static const int DIRECTED_FROM; // n1->n2
-		static const int DIRECTED_TO;   // n2->n1
+		static const int DIRECTED_FROM; // n2->n1
+		static const int DIRECTED_TO;   // n1->n2
 		static const int UNDIRECTED;    // n1<->n2
 
     private:
