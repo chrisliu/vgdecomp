@@ -15,9 +15,9 @@ class Edge;
 class Node {
 	private:
 		int id;
-		std::vector<Edge*> edges;
-		std::vector<Node*> outgoingNodes;
-		std::vector<Node*> incomingNodes;
+		std::vector<Edge*> edges;               // Edges connected to the node
+		std::vector<Node*> outgoingNodes;       // Nodes exiting the node
+		std::vector<Node*> incomingNodes;       // Nodes going into the node
 	public:
 		Node(int id);
 		void addEdge(Edge* edge);

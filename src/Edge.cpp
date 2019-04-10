@@ -23,6 +23,10 @@ Edge::~Edge() {
 	nodes.shrink_to_fit();
 }
 
+/** Returns whether or not the given node is a child of the edge
+	ie. if the edge is n1->n2, then n1 is a child
+	Note: In the case of an undirected edge both nodes are children
+*/
 bool Edge::isChild(Node* n) {
 	std::vector<Node*>::iterator itr = std::find(nodes.begin(), nodes.end(), n);
 
@@ -36,6 +40,8 @@ bool Edge::isChild(Node* n) {
 	return false;
 }
 
+/** Returns the other node connected by the same edge
+*/
 Node* Edge::getConnectedNode(Node *n) {
 	if (isChild(n)) {
 		return nodes.at(1 - edgeType);

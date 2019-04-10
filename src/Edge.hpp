@@ -16,17 +16,17 @@ class Node;
 
 class Edge {
 	public:
-		static const int DIRECTED_FROM;
-		static const int DIRECTED_TO;
-		static const int UNDIRECTED;
+		static const int DIRECTED_FROM; // n1->n2
+		static const int DIRECTED_TO;   // n2->n1
+		static const int UNDIRECTED;    // n1<->n2
 
     private:
-    	int edgeType;
-    	std::vector<Node*> nodes;
+    	std::vector<Node*> nodes;	    // Nodes at each end of the edge
 
     public:
     	Edge(Node* n1, Node* n2, int edgeType);
     	~Edge();
+    	int edgeType;
     	bool isChild(Node* n);
     	Node* getConnectedNode(Node *n);
 };
