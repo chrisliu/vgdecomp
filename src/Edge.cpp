@@ -37,7 +37,7 @@ bool Edge::isChild(Node* n) {
 }
 
 Node* Edge::getConnectedNode(Node *n) {
-	if (!isChild(n)) {
+	if (isChild(n)) {
 		return nodes.at(1 - edgeType);
 	}
 

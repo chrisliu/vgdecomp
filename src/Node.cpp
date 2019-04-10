@@ -7,6 +7,10 @@
 
 #include "Node.hpp"
 
+Node::Node(int id) {
+	this->id = id;
+}
+
 void Node::addEdge(Edge* edge) {
 	edges.push_back(edge);
 
