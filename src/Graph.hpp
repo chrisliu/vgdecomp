@@ -13,7 +13,7 @@
 #include "Node.hpp"
 
 class Graph {
-	private:
+	protected:
 		std::vector<Node*> vertices;
 		std::vector<Edge*> edges;
 		int getIndex(int id);
