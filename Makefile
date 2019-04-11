@@ -20,4 +20,4 @@ test: test/main.cpp main
 	g++ test/main.o src/*.o -o main
 
 clean-test: clean
-	rm main
+	rm main test/main.o
