@@ -1,19 +1,5 @@
 #include "Tree.hpp"
 
-class Graph {
-	protected:
-		std::vector<Node*> vertices;
-		std::vector<Edge*> edges;
-		int getIndex(int id);
-		Node* getNode(int id);
-		void addEdge(int id1, int id2, int edgeType);
-	public:
-		void addVertex(int id);
-		void addUndirectedEdge(int id1, int id2);
-		void addDirectedEdge(int id1, int id2);
-		std::vector<Node*> getConnectedVertices(int id);
-}
-
 bool Tree::addChild(int childId, int parentId) {
 	if (vertices.size() == 0) {
 		addVertex(childId);
@@ -34,7 +20,7 @@ std::vector<Node*> getAncestors(int id) {
 	Node* node = getNode(id);
 
 	if (node == nullptr) {
-		return NULL;
+		return {};
 	}
 
 	std::vector<Node*> ancestors;
@@ -53,7 +39,7 @@ std::vector<Node*> getSiblings(int id) {
 	Node* node = getNode(id);
 
 	if (node == nullptr) {
-		return NULL;
+		return {};
 	}
 
 	std::vector<Node*> parent = node.getIncomingNodes()

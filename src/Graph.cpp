@@ -6,20 +6,11 @@
 //
 
 #include "Graph.hpp"
-class Graph {
-	private:
-		std::vector<Node*> vertices;
-		std::vector<Edge*> edges;
-	public:
-		void addVertex(int id);
-		void connectVertices(int id1, int id2);
-		std::vector<Node*> getConnectedVertices(int id);
-}
 
 int Graph::getIndex(int id) {
 	Node comp = Node(id);
 
-	std::vector<Node*>::iterator itr = std::find(verts.begin(), vertices.end(), comp);
+	std::vector<Node*>::iterator itr = std::find(vertices.begin(), vertices.end(), &comp);
 
 	if (itr != vertices.end()) {					 // If it's in the vector
 		return std::distance(vertices.begin(), itr);
@@ -60,10 +51,11 @@ void Graph::addDirectedEdge(int id1, int id2) {
 	addEdge(id1, id2, Edge::DIRECTED_TO);
 }
 
-std::vector<Node*> getConnectedVertices(int id) {
-	Node* node getNode(id);
+std::vector<Node*> Graph::getConnectedVertices(int id) {
+	Node* node = getNode(id);
+
 	if (node == nullptr) {
-		return NULL;
+		return std::vector<Node*>();
 	}
 
 	std::vector<Node*> outgoingVertices = node->getOutgoingNodes();

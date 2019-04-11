@@ -16,6 +16,6 @@ class Tree : public Graph {
 		bool addChild(int childId, int parentId);
 		std::vector<Node*> getAncestors(int id);
 		std::vector<Node*> getSiblings(int id);
-}
+};
 
 #endif /* Tree_hpp */
