@@ -18,7 +18,7 @@ Tree.o: src/Tree.cpp src/Tree.hpp
 	g++ -c src/Graph.cpp -o src/Graph.o
 
 clean:
-	rm src/*.o
+	rm -f src/*.o
 
 # Test file
 test: test/main.cpp main
@@ -26,4 +26,4 @@ test: test/main.cpp main
 	g++ test/main.o src/*.o -o main
 
 clean-test: clean
-	rm main test/main.o
+	rm -f main test/main.o
