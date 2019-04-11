@@ -12,6 +12,13 @@
 #include "Edge.hpp"
 #include "Node.hpp"
 
+#define DEBUG
+
+#ifdef DEBUG
+#include <iostream>
+#include <assert.h>
+#endif
+
 class Graph {
 	protected:
 		std::vector<Node*> vertices;
@@ -23,7 +30,7 @@ class Graph {
 	public:
 		void addVertex(int id);
 		void addUndirectedEdge(int id1, int id2);
-		void addDirectedEdge(int id1, int id2);
+		void addDirectedEdge(int parentId, int childId);
 		std::vector<Node*> getConnectedVertices(int id);
 };
 

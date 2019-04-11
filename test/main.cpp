@@ -3,10 +3,9 @@
 
 #include "../src/Edge.hpp"
 #include "../src/Node.hpp"
+#include "../src/Graph.hpp"
 
 int main() {
-	std::cout << "Tests" << std::endl;
-
 	// Check node basic functions
 	std::cout << "Testing node objects" << std::endl;
 	Node n1 = Node(1);
@@ -37,6 +36,16 @@ int main() {
 	std::cout << n1.getIncomingNodes().size() << "==0" << std::endl;
 	std::cout << n2.getOutgoingNodes().size() << "==0" << std::endl;
 	std::cout << n2.getIncomingNodes().size() << "==1" << std::endl;
+
+	// Checking graph functions
+	std::cout << "Testing graph functions" << std::endl;
+	Graph g = Graph();
+
+	g.addVertex(1);
+	g.addVertex(2);
+	g.addDirectedEdge(1, 2);
+
+	std::cout << g.getConnectedVertices(1).size() << "==1" << std::endl;
 
 
 

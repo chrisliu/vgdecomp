@@ -47,8 +47,8 @@ void Graph::addUndirectedEdge(int id1, int id2) {
 	addEdge(id1, id2, Edge::UNDIRECTED);
 }
 
-void Graph::addDirectedEdge(int id1, int id2) {
-	addEdge(id1, id2, Edge::DIRECTED_TO);
+void Graph::addDirectedEdge(int parentId, int childId) {
+	addEdge(parentId, childId, Edge::DIRECTED_TO);
 }
 
 std::vector<Node*> Graph::getConnectedVertices(int id) {
@@ -60,6 +60,11 @@ std::vector<Node*> Graph::getConnectedVertices(int id) {
 
 	std::vector<Node*> outgoingVertices = node->getOutgoingNodes();
 	std::vector<Node*> incomingVertices = node->getIncomingNodes();
+
+#ifdef DEBUG
+	std::cout << "Outgoing vertices size: " << outgoingVertices.size();
+	std::cout << "Incoming vertices size: " << incomingVertices.size() << std::endl;
+#endif
 
 	std::vector<Node*> connected;
 	connected.reserve(outgoingVertices.size() + incomingVertices.size());
