@@ -1,5 +1,5 @@
-# CGL2019-Data-Structures
-Data structures used in preparation for vg modifications
+# CGL Data Structures
+Data structures used in preparation for VG modifications
 
 ### Old Code with Graph and Tree classes and old Node and Edge objects
 *Commit ID: 871738b*
