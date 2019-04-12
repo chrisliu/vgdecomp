@@ -7,8 +7,11 @@ Data structures used in preparation for VG modifications
 3. graph: Graph development
 
 All information is outlined in Spec Sheet.pdf
+
 *node-edge will be merged with master first. then graph will be rebased to reflect the merge*
+
 **node-edge will ONLY edit the Node, Edge, and NodeTraversal classes**
+
 **graph will ONLY edit the Graph classes** 
 
 ### Old Code with Graph and Tree classes
