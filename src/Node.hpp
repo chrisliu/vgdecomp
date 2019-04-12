@@ -1,29 +1,24 @@
-//
-//  Node.hpp
-//  
-//
-//  Created by Chris Liu on 4/9/19.
-//
-
 #ifndef Node_hpp
 #define Node_hpp
 
+#include <vector>
 #include "Edge.hpp"
+using namespace std;
 
 class Edge;
 
 class Node {
-	private:
-		int id;
-		std::vector<Edge*> edges;               // Edges connected to the node
-		std::vector<Node*> outgoingNodes;       // Nodes exiting the node
-		std::vector<Node*> incomingNodes;       // Nodes going into the node
+	// Variables
 	public:
-		Node(int id);
-		void addEdge(Edge* edge);
-		std::vector<Node*> getOutgoingNodes();
-		std::vector<Node*> getIncomingNodes();
-		bool operator==(const Node& other);
-};
+		int64_t id;						    // Node ID
+	private:
+		vector<Edge*> connectedEdges;       // Edges connected to the node
+
+	// Functions
+	public:
+		Node(int64_t id);                   // Constructor: must give Node ID
+		void addEdge(Edge* edge);			// Adds an edge to be connected to the node
+		bool operator==(const Node& other); // Is equal if both Node IDs are equal
+}
 
 #endif /* Node_hpp */
