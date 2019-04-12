@@ -17,7 +17,7 @@ class Edge {
 
 	// Functions
 	public:
-		Edge(int64_t id1, int64_t id2, bool isBackwards = false); // Constructor: id1 is the upstream node, id2 is the downstream node, ISN'T backwards by default
+		Edge(int64_t id1, int64_t id2, bool isDirected, bool isBackwards = false); // Constructor: id1 is the upstream node, id2 is the downstream node, isDirected states the type of edge, ISN'T backwards by default
 		bool reverse();						// Reverses the current direction of the edges and returns whether it's backwards
 		int64_t getUpstreamId();			// Gets the upstream node (depends on isBackwards if it's a directed edge)
 											// If it's undirected, then it returns the first element in the node vector
