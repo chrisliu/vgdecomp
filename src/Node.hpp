@@ -5,8 +5,6 @@
 #include "Edge.hpp"
 using namespace std;
 
-class Edge;
-
 class Node {
 	// Variables
 	public:
