@@ -6,5 +6,26 @@ inline Node Graph::newNode(int64_t id){
 }
 
 inline void Graph::addEdge(int64_t upstream_id, int64_t downstream_id, bool isDirected){
+    Edge* edge = new Edge(upstream_id, downstream_id, isDirected, false);
+    edges.push_back(edge);
+}
 
+void Graph::addVertex(int64_t id){
+    Node node = newNode(id);
+    NodeTraversal* nodeT = new NodeTraversal(&node, false);
+    vertices.push_back(nodeT);
+}
+void Graph::addDirectedEdge(int64_t upstream_id, int64_t downstream_id){
+    addEdge(upstream_id, downstream_id, true);
+}
+void Graph::addUndirectedEdge(int64_t upstream_id, int64_t downstream_id){
+    addEdge(upstream_id, downstream_id, false);
+}
+vector<Node*> Graph::connectedNodes(int64_t parentId){
+    vector<Node*> toReturn;
+    NodeTraversal* nodeT;
+    for(int i=0; i<vertices.size(); i++ ){
+        nodeT = vertices[i];
+        if(*nodeT)
+    }
 }

@@ -1,3 +1,5 @@
+#ifndef Graph_hpp
+#define Node_hpp
 #include <vector>
 #include "NodeTraversal.hpp"
 #include "Node.hpp"
@@ -21,3 +23,5 @@ class Graph{
 
 
 };
+
+#endif /* Graph_hpp */
