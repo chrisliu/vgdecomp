@@ -23,9 +23,13 @@ void Graph::addUndirectedEdge(int64_t upstream_id, int64_t downstream_id){
 }
 vector<Node*> Graph::connectedNodes(int64_t parentId){
     vector<Node*> toReturn;
-    NodeTraversal* nodeT;
+    NodeTraversal* nt;
     for(int i=0; i<vertices.size(); i++ ){
-        nodeT = vertices[i];
-        if(*nodeT)
+        nt = vertices[i];
+
+        if((nt->getNode())->id==parentId){
+            toReturn.push_back(nt->getNode());
+        }
     }
+    return toReturn;
 }

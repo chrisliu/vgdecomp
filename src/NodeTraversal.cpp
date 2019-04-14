@@ -8,3 +8,7 @@ NodeTraversal::NodeTraversal(Node* node, bool isBackwards = false)
 vector<Edge*> NodeTraversal::getTraversedEdges(vector<Edge*> edges) {
     return vector<Edge*>();
 }
+
+Node* NodeTraversal::getNode(){
+    return node;
+}

@@ -17,6 +17,7 @@ class NodeTraversal {
 	public:
 		NodeTraversal(Node* node, bool isBackwards = false);  // Constructor: must give node being wrapped, ISN'T backwards by default
         vector<Edge*> getTraversedEdges(vector<Edge*> edges); // Returns all edges that would be traversed FROM this node
+		Node* getNode();									  // Returns the node connected to this.
 };
 
 #endif /* NodeTraversal_hpp */
