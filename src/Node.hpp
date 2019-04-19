@@ -11,7 +11,6 @@ class Node {
 		int64_t id;						    // Node ID
 
 	// Functions
-	public:
 		Node(int64_t id);                   // Constructor: must give Node ID
 		bool operator==(const Node& other); // Is equal if both Node IDs are equal
 };
