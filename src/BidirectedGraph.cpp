@@ -8,10 +8,20 @@ void BidirectedGraph::add_edge(uint64_t id1, uint64_t id2, bool from_left, bool 
 }
 
 void BidirectedGraph::populate_reachable_nodes(){
-    unordered_map<uint64_t, vector<BidirectedEdge> >::iterator iter = edges.begin();
+    unordered_map<uint64_t, vector<BidirectedEdge> >::iterator mapiter = edges.begin();
     set<uint64_t> temp;
-    while(iter!=edges.end()){
-
+    while(mapiter!=edges.end()){
+        vector<BidirectedEdge>::iterator veciter = mapiter->second.begin();
+        while(veciter!=mapiter->second.end()){
+            if(veciter->id1==mapiter->first){
+                reachable_nodes_helper(veciter->id1, temp, !(veciter->to_right));
+            }
+            else{
+                reachable_nodes_helper(veciter->id2, temp, veciter->from_left);
+            }
+            veciter++;
+        }
+        mapiter++;
     }
     
 }
