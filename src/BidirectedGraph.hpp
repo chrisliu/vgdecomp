@@ -15,5 +15,6 @@ class BidirectedGraph {
         void add_edge(uint64_t id1, uint64_t id2, bool from_left, bool to_right);
         bool is_acyclic();
         void populate_reachable_nodes();
+        void print_reachable_nodes();
 };
 #endif
