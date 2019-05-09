@@ -26,10 +26,12 @@ BidirectedGraph* BidirectedGraphBuilder::build_graph(std::string filename) { // 
 
     BidirectedGraph* graph = new BidirectedGraph();
 
+    /*
     Json::Value nodes = graph_json["graph"]["nodes"];
     for (int i = 0; i < nodes.size(); i++) {
-        graph->insertVertex(nodes[i]["id"].asInt64());
+        graph->add_vertex(nodes[i]["id"].asInt64());
     }
+    //*/
 
     Json::Value edges = graph_json["graph"]["edges"];
     for (int i = 0; i < edges.size(); i++) {
@@ -38,7 +40,7 @@ BidirectedGraph* BidirectedGraphBuilder::build_graph(std::string filename) { // 
         bool from_left = edges[i]["from_left"].asBool();
         bool to_right  = edges[i]["to_left"].asBool();
 
-        graph->insertEdge(id1, id2, from_left, to_right);
+        graph->add_edge(id1, id2, from_left, to_right);
     }
 
     return graph;

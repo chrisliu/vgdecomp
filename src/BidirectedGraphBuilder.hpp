@@ -18,11 +18,11 @@
 #else
 class BidirectedGraph {
     public:
-        void insertEdge(nid_t id1, nid_t id2, bool from_left, bool to_right) {
+        void add_edge(nid_t id1, nid_t id2, bool from_left, bool to_right) {
             std::cout << "Inserted Edge " << id1 << ((from_left) ? ".left" : ".right") << " <-> " <<
                          id2 << ((to_right) ? ".right" : ".left") << std::endl;
         }
-        void insertVertex(nid_t id) {
+        void add_vertex(nid_t id) {
             std::cout << "Inserted Vertex " << id << std::endl;
         }    
 };
