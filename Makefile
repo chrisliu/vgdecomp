@@ -30,7 +30,7 @@ clean: clean-source clean-tests
 clean-source:
 	-rm -f src/*.o
 
-clean-tests: clean clean-builder
+clean-tests: clean-builder
 
 clean-builder:
 	-rm test/GraphBuilderTest.o test/GraphBuilderTest
