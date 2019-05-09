@@ -6,8 +6,9 @@ void BidirectedGraph::add_edge(uint64_t id1, uint64_t id2, bool from_left, bool 
     BidirectedEdge tempedge(id1, id2);
     tempedge.from_left = from_left;
     tempedge.to_right = to_right;
-    edges.insert({id1, tempedge});
-    edges.insert({id2, tempedge});
+    edges[id1].push_back(tempedge);
+    edges[id2].push_back(tempedge);
+
 }
 
 void BidirectedGraph::populate_reachable_nodes(){
