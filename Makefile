@@ -1,25 +1,39 @@
 # Makefile to compile objects and test file
 
+FLAGS = -std=c++11
+
 # Source object
-main: build-src
+main: deps build-src GraphBuilderTest
 
-build-src: Edge.o Node.o
+deps: JsonCpp
 
-Edge.o: src/Edge.cpp src/Edge.hpp
-	g++ -c src/Edge.cpp -o src/Edge.o
+JsonCpp: src/jsoncpp.cpp src/json/json-forwards.h src/json/json.h
+	g++ $(FLAGS) -c src/jsoncpp.cpp -o src/jsoncpp.o
 
-Node.o: src/Node.cpp src/Node.hpp
-	g++ -c src/Node.cpp -o src/Node.o
+build-src: BidirectedEdge.o BidirectedNode.o BidirectedGraphBuilder.o
 
-# Graph and Tree make commands (currently unsupported until Node and Edge have been updated)
-# Graph.o: src/Graph.cpp src/Graph.hpp
-# 	g++ -c src/Graph.cpp -o src/Graph.o
+BidirectedEdge.o: src/BidirectedEdge.cpp src/BidirectedEdge.hpp
+	g++ $(FLAGS) -c src/BidirectedEdge.cpp -o src/BidirectedEdge.o
 
-# Tree.o: src/Tree.cpp src/Tree.hpp
-# 	g++ -c src/Graph.cpp -o src/Graph.o
+BidirectedNode.o: src/BidirectedNode.cpp src/BidirectedNode.hpp
+	g++ $(FLAGS) -c src/BidirectedNode.cpp -o src/BidirectedNode.o
 
-clean:
-	rm -f src/*.o
+BidirectedGraphBuilder.o: src/BidirectedGraphBuilder.cpp src/BidirectedGraphBuilder.hpp
+	g++ $(FLAGS) -c src/BidirectedGraphBuilder.cpp -o src/BidirectedGraphBuilder.o
+
+GraphBuilderTest: test/GraphBuilderTest.cpp
+	g++ $(FLAGS) -c test/GraphBuilderTest.cpp -o test/GraphBuilderTest.o
+	g++ test/GraphBuilderTest.o src/*.o -o test/GraphBuilderTest
+
+clean: clean-source clean-tests
+
+clean-source:
+	-rm -f src/*.o
+
+clean-tests: clean clean-builder
+
+clean-builder:
+	-rm test/GraphBuilderTest.o test/GraphBuilderTest
 
 # Test file make commands (currently unsupported until Node and Edge have been updated)
 # test: test/main.cpp main
