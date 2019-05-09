@@ -61,5 +61,5 @@ vector<uint64_t> BidirectedGraph::get_reachable_nodes(uint64_t id){
 }
 
 void print_reachable_nodes(){
-    unordered_map<uint64_t, vector<uint64_t> >::iterator reachable = 
+    //unordered_map<uint64_t, vector<uint64_t> >::iterator reachable = 
 }
