@@ -12,8 +12,8 @@ For help with parameters use
 python3 test/GraphGenerator.py --help
 ```
 Default values:  
-Split Factor    = 0.25  # Percentage of nodes that will try to split  
-Max Ultrabubble = 15    # Maximum length of ultrabubbles  
-Acyclic         = True  # True if graph is acyclic  
-Bundle          = False # False if bundles aren't present in graph  
-Improper        = False # False if nodes aren't allowed to be traversed illegally  
+-Split Factor    = 0.25  # Percentage of nodes that will try to split  
+-Max Ultrabubble = 15    # Maximum length of ultrabubbles  
+-Acyclic         = True  # True if graph is acyclic  
+-Bundle          = False # False if bundles aren't present in graph  
+-Improper        = False # False if nodes aren't allowed to be traversed illegally  
