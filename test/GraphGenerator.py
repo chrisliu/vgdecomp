@@ -13,6 +13,16 @@ Arguments
         5. Improper node traversal (boolean)
 """
 
+"""
+TEMP: Edges format
+{
+    “id1”: 0,
+    “id2”: 1,
+    “from_left”: false,
+    “to_right”: false,
+}
+"""
+
 def parse_boolean(bool_input):
     if bool_input.lower() in ('true', 't', 'y', '1'):
         return True
@@ -35,13 +45,15 @@ class GraphGenerator():
                             help = 'the chance of a node splitting [0, 1]')
         parser.add_argument('--max', '--max-ultrabubble', type = int, nargs = '?', default = GraphGenerator.MAX_ULTRABUBBLE,
                             help = 'maximum length of a single ultrabubble')
+        parser.add_argument('--acyclic', type = parse_boolean, nargs = '?', default = GraphGenerator.ACYCLIC,
+                            help = 'acyclic/cyclic graph')
+        parser.add_argument('--bundle', type = parse_boolean, nargs = '?', default = GraphGenerator.BUNDLE,
+                            help = 'true if bundles are included')
+        parser.add_argument('--improper', type = parse_boolean, nargs = '?', default = GraphGenerator.IMPROPER,
+                            help = 'improper node traversal allowed')
         parser.parse_args(namespace=self)
 
-        self.graph = {'test'     : 'hello world',
-                      'nodes'    : self.nodes,
-                      'split'    : self.split,
-                      'max'      : self.max,
-                      'filename' : self.filename}
+        self.__create_empty_graph()
 
         return
     
@@ -50,6 +62,9 @@ class GraphGenerator():
         print("Number of nodes:", self.nodes)
         print("Split factor:", self.split)
         print("Max superbubble:", self.max)
+        print("Acylic?", self.acyclic)
+        print("Bundles exist?", self.bundle)
+        print("Improper?", self.improper)
         print("Export filename:", self.filename)
 
     def export(self, readable = True):
@@ -61,6 +76,12 @@ class GraphGenerator():
         with open(self.filename, 'w') as export_file:
             export_file.write(exported)
             export_file.close()
+
+    def __create_empty_graph(self):
+        self.graph                   = dict()
+        self.graph['graph']          = dict()
+        self.graph['graph']['nodes'] = [{'id': i} for i in range(1, self.nodes + 1)]
+        self.graph['graph']['edges'] = list()
 
 if __name__ == '__main__':
     gGenerator = GraphGenerator()
