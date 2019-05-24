@@ -21,8 +21,11 @@ int main(int argc, char const *argv[])
     printf("populated reachable nodes map in graph2.\n");
     graph3.populate_reachable_nodes();
     printf("populated reachable nodes map in graph3.\n");
+    printf("printing reachable nodes graph1\n");
     graph1.print_reachable_nodes();
+    printf("printing reachable nodes graph2\n");
     graph2.print_reachable_nodes();
+    printf("printing reachable nodes graph3\n");
     graph3.print_reachable_nodes();
 
 
