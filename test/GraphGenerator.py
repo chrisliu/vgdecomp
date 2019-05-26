@@ -2,6 +2,8 @@ import json
 from argparse import ArgumentParser, ArgumentTypeError
 
 """
+
+\\
 Arguments
     Required:
         1. Nodes (int)
@@ -31,14 +33,14 @@ def parse_boolean(bool_input):
     raise ArgumentTypeError('Boolean value expected')
 
 class GraphGenerator():
-    SPLIT_FACTOR    = 0.25  # Percentage of nodes will try to split
-    MAX_ULTRABUBBLE = 15    # Maximum size of ultrabubbles
+    SPLIT_FACTOR    = 0.25  # Percentage of nodes that will try to split
+    MAX_ULTRABUBBLE = 15    # Maximum length of ultrabubbles
     ACYCLIC         = True  # Acyclic/Cyclic graph
     BUNDLE          = False # Bundles exist/don't exist in graph
     IMPROPER        = False # Enters and exits from the same side
 
     def __init__(self):
-        parser = ArgumentParser(description = 'Creates a easily decomposable graph with the given settings')
+        parser = ArgumentParser(description = 'Creates a easily decomposable graph made of nested sites')
         parser.add_argument('nodes', type = int, help = 'number of nodes in the graph')
         parser.add_argument('filename', type = str, help = 'graph export file name')
         parser.add_argument('--split', '--split-factor', type = float, nargs = '?', default = GraphGenerator.SPLIT_FACTOR,
@@ -82,6 +84,59 @@ class GraphGenerator():
         self.graph['graph']          = dict()
         self.graph['graph']['nodes'] = [{'id': i} for i in range(1, self.nodes + 1)]
         self.graph['graph']['edges'] = list()
+
+class GraphStructure():
+    def __init__(self, start_id, end_id):
+        self.start_id = start_id
+        self.end_id   = end_id
+
+    def set_start_id(self, start_id):
+        self.start_id = start_id
+
+    def set_end_id(self, end_id):
+        self.end_id = end_id
+
+    def get_start_id(self):
+        return self.start_id
+
+    def get_end_id(self):
+        return self.end_id
+
+    @abstractmethod
+    def export(self):
+        """
+        Returns nodes, edges in this structure
+        """
+        pass
+
+class Node(GraphStructure):
+    def __init__(self, id):
+        super().__init__(id, id)
+    
+    def export(self):
+        return [{'id': self.start_id}], []
+
+class Chain(GraphStructure):
+    def __init__(self, ):
+        super().__init__(-1, -1)
+    
+    def export(self):
+        """
+        Returns nodes, edges
+        nodes: the nodes contained in this chain
+        edges: the edges within this chain (not attached to anything else)
+        """
+
+        if self.start_id == -1:
+            return [], []
+
+        nodes = list()
+        edges = list()
+
+        
+
+        return nodes, edges
+
 
 if __name__ == '__main__':
     gGenerator = GraphGenerator()

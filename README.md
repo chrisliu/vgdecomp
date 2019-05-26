@@ -1,6 +1,10 @@
 # CGL Data Structures
 Data structures used in preparation for VG modifications
 
+## Branches
+master: code with Node* implementation of bidirected graphs
+handlegraph: implementation with handlegraph interface
+
 ## Graph Generator Script Usage
 Tested with Python 3.6 (should be backward compatible with Python 2.7 if print function is imported from future)  
 From root directory, run generator with  
