@@ -3,6 +3,8 @@
 
 #include "handlegraph/types.hpp"
 
+using namespace handlegraph;
+
 class BidirectedNode {
     public:
         nid_t id;

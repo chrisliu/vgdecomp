@@ -13,6 +13,8 @@
 #include "json/json/json.h"
 #include "handlegraph/types.hpp"
 
+using namespace handlegraph;
+
 #ifndef DEBUG_GRAPHBUILDER
 #include "BidirectedGraph.hpp"
 #else
