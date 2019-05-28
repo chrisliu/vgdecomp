@@ -8,14 +8,13 @@ vector<nid_t> BidirectedGraph::get_reachable_nodes(nid_t id){
 }
 
 void BidirectedGraph::add_edge(nid_t id1, nid_t id2, bool from_left, bool to_right){
-    BidirectedEdge tempedge(id1, id2);
-    tempedge.from_left = from_left;
-    tempedge.to_right = to_right;
-  
+    BidirectedEdge from_id1(id1, id2, from_left, to_right);
+    BidirectedEdge from_id2(id2, id1, to_right, from_left);
+
     edges.emplace(make_pair(id1, vector<BidirectedEdge>()));
     edges.emplace(make_pair(id2, vector<BidirectedEdge>()));
-    edges[id1].push_back(tempedge);
-    edges[id2].push_back(tempedge);
+    edges[id1].push_back(from_id1);
+    edges[id2].push_back(from_id2);
 }
 
 bool BidirectedGraph::is_acyclic(){
@@ -23,7 +22,7 @@ bool BidirectedGraph::is_acyclic(){
 }
 
 void BidirectedGraph::populate_reachable_nodes(){
-    unordered_map<nid_t, vector<BidirectedEdge> >::iterator mapiter = edges.begin();
+    edge_map::iterator mapiter = edges.begin();
     while(mapiter!=edges.end()){
         vector<BidirectedEdge>::iterator veciter = mapiter->second.begin();
         while(veciter!=mapiter->second.end()){
@@ -153,10 +152,21 @@ nid_t BidirectedGraph::max_node_id() const {
 }
 
 bool BidirectedGraph::follow_edges_impl(const handle_t& handle, bool go_left, const std::function<bool(const handle_t&)>& iteratee) const {
-
+    nid_t node_id = get_id(handle);
+    for (const BidirectedEdge& node_edge : edges.at(node_id)) {
+        if (node_edge.from_left == go_left && !iteratee(get_handle(node_edge.id2, go_left))) {
+            return false;
+        }
+    }
+    return true;
 }
         
 
 bool BidirectedGraph::for_each_handle_impl(const std::function<bool(const handle_t&)>& iteratee, bool parallel = false) const {
-
+    for (const auto& node_edges : edges) {
+        if (!iteratee(get_handle(node_edges.first, false))) {
+            return false;
+        }
+    }
+    return true;
 }
