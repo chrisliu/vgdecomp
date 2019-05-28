@@ -1,6 +1,5 @@
-#include "handlegraph/handle_graph.hpp"
-#include "handlegraph/path_handle_graph.hpp"
-#include "handlegraph/util.hpp"
+#include "handle_graph.hpp"
+#include "util.hpp"
 
 #include <vector>
 
@@ -78,67 +77,6 @@ char HandleGraph::get_base(const handle_t& handle, size_t index) const {
 
 std::string HandleGraph::get_subsequence(const handle_t& handle, size_t index, size_t size) const {
     return get_sequence(handle).substr(index, size);
-}
-
-std::vector<step_handle_t> PathHandleGraph::steps_of_handle(const handle_t& handle,
-                                                            bool match_orientation) const {
-    std::vector<step_handle_t> found;
-    
-    for_each_step_on_handle(handle, [&](const step_handle_t& step) {
-        // For each handle step
-        if (!match_orientation || get_is_reverse(handle) == get_is_reverse(get_handle_of_step(step))) {
-            // If its orientation is acceptable, keep it
-            found.push_back(step);
-        }
-    });
-    
-    return found;
-}
-    
-bool PathHandleGraph::is_empty(const path_handle_t& path_handle) const {
-    // By default, we can answer emptiness queries with the length query.
-    // But some implementations may have an expensive length query and a cheaper emptiness one
-    return get_step_count(path_handle) == 0;
-}
-    
-PathForEachSocket PathHandleGraph::scan_path(const path_handle_t& path) const {
-    return PathForEachSocket(this, path);
-}
-    
-PathForEachSocket::PathForEachSocket(const PathHandleGraph* graph, const path_handle_t& path) : graph(graph), path(path) {
-    
-}
-    
-PathForEachSocket::iterator PathForEachSocket::begin() const {
-    return iterator(graph->path_begin(path), graph->get_is_circular(path) && !graph->is_empty(path), graph);
-}
-    
-PathForEachSocket::iterator PathForEachSocket::end() const {
-    // we will end on the beginning step in circular paths
-    return iterator(graph->get_is_circular(path) ? graph->path_begin(path) : graph->path_end(path), false, graph);
-}
-    
-PathForEachSocket::iterator::iterator(const step_handle_t& step, bool force_unequal,
-                                      const PathHandleGraph* graph) : step(step), force_unequal(force_unequal), graph(graph) {
-    
-}
-    
-PathForEachSocket::iterator& PathForEachSocket::iterator::operator++() {
-    step = graph->get_next_step(step);
-    force_unequal = false;
-    return *this;
-}
-
-handle_t PathForEachSocket::iterator::operator*() const {
-    return graph->get_handle_of_step(step);
-}
-
-bool PathForEachSocket::iterator::operator==(const PathForEachSocket::iterator& other) const {
-    return !force_unequal && !other.force_unequal && graph == other.graph && step == other.step;
-}
-
-bool PathForEachSocket::iterator::operator!=(const PathForEachSocket::iterator& other) const {
-    return !(*this == other);
 }
 
 /// Define equality on handles
