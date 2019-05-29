@@ -15,16 +15,18 @@
 using namespace std;
 using namespace handlegraph;
 
-typedef unordered_map<nid_t, vector<nid_t>> node_map; 
+typedef unordered_map<nid_t, vector<nid_t>>          node_map; 
 typedef unordered_map<nid_t, vector<BidirectedEdge>> edge_map;
+typedef pair<nid_t, vector<BidirectedEdge>>          edge_map_pair;
 
 class BidirectedGraph : public HandleGraph {
     private:
-        const number_bool_packing encoder;
         node_map reachable_nodes;
         edge_map edges;
         void reachable_nodes_helper(nid_t id, set<nid_t>& set, bool into_left);
     public:
+        BidirectedGraph();
+
         vector<nid_t> get_reachable_nodes(nid_t id);
         void add_edge(nid_t id1, nid_t id2, bool from_left, bool to_right);
         bool is_acyclic();
@@ -62,7 +64,7 @@ class BidirectedGraph : public HandleGraph {
         
         /// Return the largest ID in the graph, or some larger number if the
         /// largest ID is unavailable. Return value is unspecified if the graph is empty.
-        nid_t max_node_id() const;    
+        nid_t max_node_id() const;
         
     protected:
         

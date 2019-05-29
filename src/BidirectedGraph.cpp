@@ -2,6 +2,9 @@
 
 unordered_map<nid_t, set<nid_t> > sets;
 
+BidirectedGraph::BidirectedGraph() {
+
+}
 
 vector<nid_t> BidirectedGraph::get_reachable_nodes(nid_t id){
     return reachable_nodes.at(id);
@@ -92,22 +95,22 @@ bool BidirectedGraph::has_node(nid_t nodeid) const {
 
 /// Look up the handle for the node with the given ID in the given orientation
 handle_t BidirectedGraph::get_handle(const nid_t& node_id, bool is_reverse) const {
-    return encoder.pack(node_id, is_reverse);
+    return number_bool_packing::pack(node_id, is_reverse);
 }
 
 /// Get the ID from a handle
 nid_t BidirectedGraph::get_id(const handle_t& handle) const {
-    return encoder.unpack_number(handle);
+    return number_bool_packing::unpack_number(handle);
 }
 
 /// Get the orientation of a handle
 bool BidirectedGraph::get_is_reverse(const handle_t& handle) const {
-    return encoder.unpack_bit(handle);
+    return number_bool_packing::unpack_bit(handle);
 }
 
 /// Invert the orientation of a handle (potentially without getting its ID)
 handle_t BidirectedGraph::flip(const handle_t& handle) const {
-    return encoder.toggle_bit(handle);
+    return number_bool_packing::toggle_bit(handle);
 }
 
 /// Get the length of a node
@@ -129,12 +132,11 @@ size_t BidirectedGraph::get_node_count() const {
 /// Return the smallest ID in the graph, or some smaller number if the
 /// smallest ID is unavailable. Return value is unspecified if the graph is empty.
 nid_t BidirectedGraph::min_node_id() const {
-    edge_map::const_iterator res = min_element(edges.begin(), edges.end());
     // Should work with default comparator, otherwise use
-    // edge_map::const_iterator res = min_element(edges.begin(), edges.end(),
-    //                                     [](const nid_t& id1, const nid_t& id2) {
-    //                                         return id1 < id2;
-    //                                     })
+    edge_map::const_iterator res = min_element(edges.begin(), edges.end(),
+                                        [](const edge_map_pair& node1, const edge_map_pair& node2) {
+                                            return node1.first < node2.first;
+                                        });
     if (res != edges.end()) {
         return res->first;
     }
@@ -144,7 +146,10 @@ nid_t BidirectedGraph::min_node_id() const {
 /// Return the largest ID in the graph, or some larger number if the
 /// largest ID is unavailable. Return value is unspecified if the graph is empty.
 nid_t BidirectedGraph::max_node_id() const {
-    edge_map::const_iterator res = max_element(edges.begin(), edges.end());
+    edge_map::const_iterator res = max_element(edges.begin(), edges.end(),
+                                        [](const edge_map_pair& node1, const edge_map_pair& node2) {
+                                            return node1.first < node2.first;
+                                        });
     if (res != edges.end()) {
         return res->first;
     }
@@ -162,7 +167,7 @@ bool BidirectedGraph::follow_edges_impl(const handle_t& handle, bool go_left, co
 }
         
 
-bool BidirectedGraph::for_each_handle_impl(const std::function<bool(const handle_t&)>& iteratee, bool parallel = false) const {
+bool BidirectedGraph::for_each_handle_impl(const std::function<bool(const handle_t&)>& iteratee, bool parallel) const {
     for (const auto& node_edges : edges) {
         if (!iteratee(get_handle(node_edges.first, false))) {
             return false;
