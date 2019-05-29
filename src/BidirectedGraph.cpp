@@ -34,16 +34,16 @@ void BidirectedGraph::populate_reachable_nodes(){
 
 // lowercase g means entering from left
 // uppercase G means entering from right
-void BidirectedGraph::mod_BFS(uint64_t id){
+void BidirectedGraph::mod_BFS(nid_t id){
     if(reachable_nodes.find(id)==reachable_nodes.end()){
-        reachable_nodes.emplace(id, vector<uint64_t>());
+        reachable_nodes.emplace(id, vector<nid_t>());
     }
-    unordered_map<uint64_t, char > colormap = unordered_map<uint64_t, char >();
-    queue<uint64_t> queue = ::queue<uint64_t>();
+    unordered_map<nid_t, char > colormap = unordered_map<nid_t, char >();
+    queue<nid_t> queue = ::queue<nid_t>();
     queue.push(id);
     colormap.emplace(make_pair(id, 'g'));
     while(queue.size()!=0){
-        uint64_t currnode = queue.front();
+        nid_t currnode = queue.front();
         queue.pop();
         char color = colormap.at(currnode);
         vector<BidirectedEdge>::iterator veciter = edges.at(id).begin();
@@ -76,12 +76,12 @@ void BidirectedGraph::mod_BFS(uint64_t id){
         }
         colormap.at(currnode) = 'b';
     }
-    queue = ::queue<uint64_t>();
-    colormap = unordered_map<uint64_t, char>();
+    queue = ::queue<nid_t>();
+    colormap = unordered_map<nid_t, char>();
     queue.push(id);
     colormap.emplace(make_pair(id, 'G'));
     while(queue.size()!=0){
-        uint64_t currnode = queue.front();
+        nid_t currnode = queue.front();
         queue.pop();
         char color = colormap.at(currnode);
         vector<BidirectedEdge>::iterator veciter = edges.at(id).begin();

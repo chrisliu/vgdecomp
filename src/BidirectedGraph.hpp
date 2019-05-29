@@ -23,7 +23,7 @@ class BidirectedGraph : public HandleGraph {
     private:
         node_map reachable_nodes;
         edge_map edges;
-        void mod_BFS(uint64_t);
+        void mod_BFS(nid_t id);
     public:
         BidirectedGraph();
 
