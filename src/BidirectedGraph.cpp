@@ -1,6 +1,5 @@
 #include "BidirectedGraph.hpp"
-
-unordered_map<nid_t, set<nid_t> > sets;
+#include <queue>
 
 BidirectedGraph::BidirectedGraph() {
 
@@ -27,53 +26,95 @@ bool BidirectedGraph::is_acyclic(){
 void BidirectedGraph::populate_reachable_nodes(){
     edge_map::iterator mapiter = edges.begin();
     while(mapiter!=edges.end()){
-        vector<BidirectedEdge>::iterator veciter = mapiter->second.begin();
-        while(veciter!=mapiter->second.end()){
-
-            if(veciter->id1==mapiter->first){
-                sets.emplace(make_pair(mapiter->first, set<nid_t>()));
-                sets[mapiter->first].insert(veciter->id2);
-
-                reachable_nodes_helper(veciter->id2, sets.at(mapiter->first), !veciter->to_right);
-            }
-            else if(veciter->id2==mapiter->first){
-                sets.emplace(make_pair(mapiter->first, set<nid_t>()));
-                sets[mapiter->first].insert(veciter->id1);
-                reachable_nodes_helper(veciter->id1, sets.at(mapiter->first), veciter->from_left);
-            }
-            veciter++;
-        }
-        mapiter++;
-    }
-    unordered_map<nid_t, set<nid_t> >:: iterator setmapiter = sets.begin();
-    while(setmapiter!=sets.end()){
-        set<nid_t>:: iterator setiter = sets.at(setmapiter->first).begin();
-        reachable_nodes.emplace(setmapiter->first, vector<nid_t>());
-        while(setiter!=sets.at(setmapiter->first).end()){
-            reachable_nodes[setmapiter->first].push_back(*setiter);
-            setiter++;
-        }
-        setmapiter++;
+        mod_BFS(mapiter->first);
+        ++mapiter;
     }
 }
 
-void BidirectedGraph::reachable_nodes_helper(nid_t id, set<nid_t>& set, bool into_left){
-        
+
+// lowercase g means entering from left
+// uppercase G means entering from right
+void BidirectedGraph::mod_BFS(uint64_t id){
+    if(reachable_nodes.find(id)==reachable_nodes.end()){
+        reachable_nodes.emplace(id, vector<uint64_t>());
+    }
+    unordered_map<uint64_t, char > colormap = unordered_map<uint64_t, char >();
+    queue<uint64_t> queue = ::queue<uint64_t>();
+    queue.push(id);
+    colormap.emplace(make_pair(id, 'g'));
+    while(queue.size()!=0){
+        uint64_t currnode = queue.front();
+        queue.pop();
+        char color = colormap.at(currnode);
         vector<BidirectedEdge>::iterator veciter = edges.at(id).begin();
         while(veciter!=edges.at(id).end()){
-            if(veciter->id1==id && veciter->from_left!=into_left){
-                set.insert(veciter->id2);
-                reachable_nodes_helper(veciter->id2, set, !veciter->to_right);
+            if(color=='g'){
+                if(veciter->id1==currnode && !veciter->from_left && colormap.find(veciter->id2)==colormap.end()){
+                    reachable_nodes.at(id).push_back(veciter->id2);
+                    queue.push(veciter->id2);
+                    colormap.emplace(veciter->id2, veciter->to_right ? 'G' : 'g');
+                }
+                else if(veciter->id2==currnode && veciter->to_right && colormap.find(veciter->id1)==colormap.end()){
+                    reachable_nodes.at(id).push_back(veciter->id1);
+                    queue.push(veciter->id1);
+                    colormap.emplace(veciter->id1, veciter->from_left ? 'g' : 'G');
+                }
             }
-            else if(veciter->id2==id && veciter->to_right==into_left){
-                set.insert(veciter->id1);
-                reachable_nodes_helper(veciter->id1, set, veciter->from_left);
+            else if(color=='G'){
+                if(veciter->id1==currnode && veciter->from_left && colormap.find(veciter->id2)==colormap.end()){
+                    reachable_nodes.at(id).push_back(veciter->id2);
+                    queue.push(veciter->id2);
+                    colormap.emplace(veciter->id2, veciter->to_right ? 'G' : 'g');
+                }
+                else if(veciter->id2==currnode && !veciter->to_right && colormap.find(veciter->id1)==colormap.end()){
+                    reachable_nodes.at(id).push_back(veciter->id1);
+                    queue.push(veciter->id1);
+                    colormap.emplace(veciter->id1, veciter->from_left ? 'g' : 'G');
+                }
             }
-            veciter++;
+            ++veciter;
         }
-
+        colormap.at(currnode) = 'b';
+    }
+    queue = ::queue<uint64_t>();
+    colormap = unordered_map<uint64_t, char>();
+    queue.push(id);
+    colormap.emplace(make_pair(id, 'G'));
+    while(queue.size()!=0){
+        uint64_t currnode = queue.front();
+        queue.pop();
+        char color = colormap.at(currnode);
+        vector<BidirectedEdge>::iterator veciter = edges.at(id).begin();
+        while(veciter!=edges.at(id).end()){
+            if(color=='g'){
+                if(veciter->id1==currnode && !veciter->from_left && colormap.find(veciter->id2)==colormap.end()){
+                    reachable_nodes.at(id).push_back(veciter->id2);
+                    queue.push(veciter->id2);
+                    colormap.emplace(veciter->id2, veciter->to_right ? 'G' : 'g');
+                }
+                else if(veciter->id2==currnode && veciter->to_right && colormap.find(veciter->id1)==colormap.end()){
+                    reachable_nodes.at(id).push_back(veciter->id1);
+                    queue.push(veciter->id1);
+                    colormap.emplace(veciter->id1, veciter->from_left ? 'g' : 'G');
+                }
+            }
+            else if(color=='G'){
+                if(veciter->id1==currnode && veciter->from_left && colormap.find(veciter->id2)==colormap.end()){
+                    reachable_nodes.at(id).push_back(veciter->id2);
+                    queue.push(veciter->id2);
+                    colormap.emplace(veciter->id2, veciter->to_right ? 'G' : 'g');
+                }
+                else if(veciter->id2==currnode && !veciter->to_right && colormap.find(veciter->id1)==colormap.end()){
+                    reachable_nodes.at(id).push_back(veciter->id1);
+                    queue.push(veciter->id1);
+                    colormap.emplace(veciter->id1, veciter->from_left ? 'g' : 'G');
+                }
+            }
+            ++veciter;
+        }
+        colormap.at(currnode) = 'b';
+    }
 }
-
 
 void BidirectedGraph::print_reachable_nodes(){
     unordered_map<nid_t, vector<nid_t> >::iterator reachable = reachable_nodes.begin();
