@@ -65,7 +65,6 @@ class BidirectedGraph : public HandleGraph {
         /// Return the largest ID in the graph, or some larger number if the
         /// largest ID is unavailable. Return value is unspecified if the graph is empty.
         nid_t max_node_id() const;
-        
     protected:
         
         /// Loop over all the handles to next/previous (right/left) nodes. Passes
@@ -81,4 +80,4 @@ class BidirectedGraph : public HandleGraph {
         /// stopped early.
         bool for_each_handle_impl(const std::function<bool(const handle_t&)>& iteratee, bool parallel = false) const;
 };
-#endif
+#endif /* BidirectedGraph_hpp */
