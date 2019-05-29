@@ -32,7 +32,7 @@ GraphBuilderTest: test/GraphBuilderTest.cpp
 	g++ test/GraphBuilderTest.o src/*.o -o test/GraphBuilderTest
 
 HandleGraphTest: test/HandleGraphTest.cpp
-	g++ $(FLAGS) -c test/HandleGraphTest.cpp -o test/HandleGraphTest.o
+	g++ $(FLAGS) -g -c test/HandleGraphTest.cpp -o test/HandleGraphTest.o
 	g++ test/HandleGraphTest.o src/*.o -o test/HandleGraphTest
 
 clean: clean-source clean-tests
