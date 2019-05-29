@@ -1,6 +1,6 @@
 #include "BidirectedGraphBuilder.hpp"
 
-BidirectedGraph* BidirectedGraphBuilder::build_graph(std::string filename) { // No error checks
+BidirectedGraph BidirectedGraphBuilder::build_graph(std::string filename) { // No error checks
     std::ifstream graph_file(filename, std::ifstream::binary);
 
     Json::CharReaderBuilder reader;
@@ -13,7 +13,7 @@ BidirectedGraph* BidirectedGraphBuilder::build_graph(std::string filename) { // 
 #ifdef DEBUG_GRAPHBUILDER
         std::cout << "(Parse Fail)" << errs << std::endl;
 #endif
-        return nullptr;
+        return BidirectedGraph();
     }
 
     if (graph_json["graph"].empty() || 
@@ -21,10 +21,10 @@ BidirectedGraph* BidirectedGraphBuilder::build_graph(std::string filename) { // 
 #ifdef DEBUG_GRAPHBUILDER
         std::cout << "Improper input format" << std::endl;
 #endif
-        return nullptr;
+        return BidirectedGraph();
     }
 
-    BidirectedGraph* graph = new BidirectedGraph();
+    BidirectedGraph graph;
 
     /*
     Json::Value nodes = graph_json["graph"]["nodes"];
@@ -40,13 +40,13 @@ BidirectedGraph* BidirectedGraphBuilder::build_graph(std::string filename) { // 
         bool from_left = edges[i]["from_left"].asBool();
         bool to_right  = edges[i]["to_left"].asBool();
 
-        graph->add_edge(id1, id2, from_left, to_right);
+        graph.add_edge(id1, id2, from_left, to_right);
     }
 
     return graph;
 }
 
-bool BidirectedGraphBuilder::save_graph(std::string filename, BidirectedGraph graph) {
+bool BidirectedGraphBuilder::save_graph(std::string filename, BidirectedGraph& graph) {
     /** To be completed when BidirectedGraph is fully complete
      *  Needs access to a list of vertices and edges in graph
      *  See link below to remove duplicate edges
