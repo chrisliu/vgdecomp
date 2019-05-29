@@ -1,7 +1,9 @@
 #ifndef BidirectedNode_hpp
 #define BidirectedNode_hpp
 
-#include "Definitions.hpp"
+#include "handlegraph/types.hpp"
+
+using namespace handlegraph;
 
 class BidirectedNode {
     public:

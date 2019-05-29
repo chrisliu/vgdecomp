@@ -1,7 +1,9 @@
 #ifndef BidirectedEdge_hpp
 #define BidirectedEdge_hpp
 
-#include "Definitions.hpp"
+#include "handlegraph/types.hpp"
+
+using namespace handlegraph;
 
 class BidirectedEdge {
     public:
