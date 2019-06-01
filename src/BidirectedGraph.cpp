@@ -11,7 +11,7 @@ vector<nid_t> BidirectedGraph::get_reachable_nodes(nid_t id){
 
 void BidirectedGraph::add_edge(nid_t id1, nid_t id2, bool from_left, bool to_right){
     BidirectedEdge from_id1(id1, id2, from_left, to_right);
-    BidirectedEdge from_id2(id2, id1, to_right, from_left);
+    BidirectedEdge from_id2(id2, id1, !to_right, !from_left);
 
     edges.emplace(make_pair(id1, vector<BidirectedEdge>()));
     edges.emplace(make_pair(id2, vector<BidirectedEdge>()));
@@ -200,7 +200,7 @@ nid_t BidirectedGraph::max_node_id() const {
 bool BidirectedGraph::follow_edges_impl(const handle_t& handle, bool go_left, const std::function<bool(const handle_t&)>& iteratee) const {
     nid_t node_id = get_id(handle);
     for (const BidirectedEdge& node_edge : edges.at(node_id)) {
-        if (node_edge.from_left == go_left && !iteratee(get_handle(node_edge.id2, go_left))) {
+        if (node_edge.from_left == go_left && !iteratee(get_handle(node_edge.id2, get_is_reverse(handle)))) {
             return false;
         }
     }
