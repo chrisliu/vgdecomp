@@ -8,7 +8,23 @@ BidirectedGraph::BidirectedGraph() {
 vector<nid_t> BidirectedGraph::get_reachable_nodes(nid_t id){
     return reachable_nodes.at(id);
 }
+/*
+i just put this here idk if its even remotely correct
+BidirectedGraph::bundles(){
+    unordered_set<handle_t> set();
+    follow_edges_impl(handle, go_left, [set]{if(!get_is_reverse(this)) {set.insert(this)}});
+    unordered_set::iterator setiter = set.begin();
+    unordered_set<handle_t> set2();
+    while(setiter!=set.end()){
+        follow_edges_impl(*set, !go_left, [set2]{if(!get_is_reverse(this) {set.insert(this)})});
+    }
+    if(set==set2){
+        then bundle;
+        // we need to figure out some way to represent bundles.
+    }
+}
 
+*/
 void BidirectedGraph::add_edge(nid_t id1, nid_t id2, bool from_left, bool to_right){
     BidirectedEdge from_id1(id1, id2, from_left, to_right);
     BidirectedEdge from_id2(id2, id1, !to_right, !from_left);
