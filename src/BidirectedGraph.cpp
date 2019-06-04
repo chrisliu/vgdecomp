@@ -214,9 +214,11 @@ nid_t BidirectedGraph::max_node_id() const {
 }
 
 bool BidirectedGraph::follow_edges_impl(const handle_t& handle, bool go_left, const std::function<bool(const handle_t&)>& iteratee) const {
-    nid_t node_id = get_id(handle);
+    nid_t node_id    = get_id(handle);
+    bool  is_reverse = get_is_reverse(handle);
+    bool  on_left    = (go_left && !is_reverse) || (!go_left && is_reverse);
     for (const BidirectedEdge& node_edge : edges.at(node_id)) {
-        if (node_edge.from_left == go_left && !iteratee(get_handle(node_edge.id2, get_is_reverse(handle)))) {
+        if (node_edge.from_left == on_left && !iteratee(get_handle(node_id, is_reverse))) {
             return false;
         }
     }
