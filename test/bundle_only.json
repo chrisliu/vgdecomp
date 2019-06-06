@@ -1,0 +1,101 @@
+{
+    "graph": {
+        "edges": [
+            {
+                "id1": 1,
+                "id2": 4,
+                "from_left": false,
+                "to_right": false
+            },
+            {
+                "id1": 1,
+                "id2": 5,
+                "from_left": false,
+                "to_right": false
+            },
+            {
+                "id1": 1,
+                "id2": 6,
+                "from_left": false,
+                "to_right": false
+            },
+            {
+                "id1": 1,
+                "id2": 7,
+                "from_left": false,
+                "to_right": false
+            },
+            {
+                "id1": 2,
+                "id2": 4,
+                "from_left": false,
+                "to_right": false
+            },
+            {
+                "id1": 2,
+                "id2": 5,
+                "from_left": false,
+                "to_right": false
+            },
+            {
+                "id1": 2,
+                "id2": 6,
+                "from_left": false,
+                "to_right": false
+            },
+            {
+                "id1": 2,
+                "id2": 7,
+                "from_left": false,
+                "to_right": false
+            },
+            {
+                "id1": 3,
+                "id2": 4,
+                "from_left": false,
+                "to_right": false
+            },
+            {
+                "id1": 3,
+                "id2": 5,
+                "from_left": false,
+                "to_right": false
+            },
+            {
+                "id1": 3,
+                "id2": 6,
+                "from_left": false,
+                "to_right": false
+            },
+            {
+                "id1": 3,
+                "id2": 7,
+                "from_left": false,
+                "to_right": false
+            }
+        ],
+        "nodes": [
+            {
+                "id": 1
+            },
+            {
+                "id": 4
+            },
+            {
+                "id": 5
+            },
+            {
+                "id": 6
+            },
+            {
+                "id": 7
+            },
+            {
+                "id": 2
+            },
+            {
+                "id": 3
+            }
+        ]
+    }
+}
