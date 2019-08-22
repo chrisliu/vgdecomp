@@ -5,8 +5,8 @@ BidirectedGraph::BidirectedGraph() {
 
 }
 
-vector<nid_t> BidirectedGraph::get_reachable_nodes(nid_t id){
-    return reachable_nodes.at(id);
+vector<const handle_t> BidirectedGraph::get_reachable_nodes(handle_t id){
+    return reachable_nodes[get_id(id)];
 }
 /*
 i just put this here idk if its even remotely correct
@@ -38,23 +38,44 @@ void BidirectedGraph::add_edge(nid_t id1, nid_t id2, bool from_left, bool to_rig
 bool BidirectedGraph::is_acyclic(){
     return true;
 }
-
+//idk if this works
 void BidirectedGraph::populate_reachable_nodes(){
-    edge_map::iterator mapiter = edges.begin();
-    while(mapiter!=edges.end()){
-        mod_BFS(mapiter->first);
-        ++mapiter;
-    }
+    unordered_map<nid_t, char > colormap = unordered_map<nid_t, char >();
+    for_each_handle_impl([&colormap, this](const handle_t& handle){
+        vector<const handle_t> component = vector<const handle_t>();
+        queue<handle_t> queue = ::queue<handle_t>();
+        queue.push(handle);
+        colormap.emplace(make_pair(get_id(handle), 'g'));
+        while(queue.size()!=0){
+            handle_t currnode = queue.front();
+            queue.pop();
+            follow_edges_impl(currnode, true, [&colormap, this, &component](const handle_t& handle){
+                if(colormap.find(get_id(handle))!=colormap.end()){
+                    return true;
+                }
+                component.push_back((const handle_t)handle);
+                colormap[get_id(handle)] = 'g';
+                return true;
+            });
+        }
+        colormap[get_id(handle)] = 'b';
+        vector<const handle_t>::iterator iter= component.begin();
+        while(iter!=component.end()){
+            reachable_nodes.emplace(make_pair(get_id(*iter), component));
+        }
+        return true;
+    });
 }
 
 
 // lowercase g means entering from left
 // uppercase G means entering from right
-void BidirectedGraph::mod_BFS(nid_t id){
+//void BidirectedGraph::mod_BFS(nid_t id){
+    /*
     if(reachable_nodes.find(id)==reachable_nodes.end()){
-        reachable_nodes.emplace(id, vector<nid_t>());
+        reachable_nodes.emplace(id, vector<handle_t>());
     }
-    unordered_map<nid_t, char > colormap = unordered_map<nid_t, char >();
+    
     queue<nid_t> queue = ::queue<nid_t>();
     queue.push(id);
     colormap.emplace(make_pair(id, 'g'));
@@ -66,24 +87,24 @@ void BidirectedGraph::mod_BFS(nid_t id){
         while(veciter!=edges.at(id).end()){
             if(color=='g'){
                 if(veciter->id1==currnode && !veciter->from_left && colormap.find(veciter->id2)==colormap.end()){
-                    reachable_nodes.at(id).push_back(veciter->id2);
+                    reachable_nodes.at(id).push_back(get_handle(veciter->id2, false));
                     queue.push(veciter->id2);
                     colormap.emplace(veciter->id2, veciter->to_right ? 'G' : 'g');
                 }
                 else if(veciter->id2==currnode && veciter->to_right && colormap.find(veciter->id1)==colormap.end()){
-                    reachable_nodes.at(id).push_back(veciter->id1);
+                    reachable_nodes.at(id).push_back(get_handle(veciter->id1, false));
                     queue.push(veciter->id1);
                     colormap.emplace(veciter->id1, veciter->from_left ? 'g' : 'G');
                 }
             }
             else if(color=='G'){
                 if(veciter->id1==currnode && veciter->from_left && colormap.find(veciter->id2)==colormap.end()){
-                    reachable_nodes.at(id).push_back(veciter->id2);
+                    reachable_nodes.at(id).push_back(get_handle(veciter->id2, false));
                     queue.push(veciter->id2);
                     colormap.emplace(veciter->id2, veciter->to_right ? 'G' : 'g');
                 }
                 else if(veciter->id2==currnode && !veciter->to_right && colormap.find(veciter->id1)==colormap.end()){
-                    reachable_nodes.at(id).push_back(veciter->id1);
+                    reachable_nodes.at(id).push_back(get_handle(veciter->id1, false));
                     queue.push(veciter->id1);
                     colormap.emplace(veciter->id1, veciter->from_left ? 'g' : 'G');
                 }
@@ -104,24 +125,24 @@ void BidirectedGraph::mod_BFS(nid_t id){
         while(veciter!=edges.at(id).end()){
             if(color=='g'){
                 if(veciter->id1==currnode && !veciter->from_left && colormap.find(veciter->id2)==colormap.end()){
-                    reachable_nodes.at(id).push_back(veciter->id2);
+                    reachable_nodes.at(id).push_back(get_handle(veciter->id2, false));
                     queue.push(veciter->id2);
                     colormap.emplace(veciter->id2, veciter->to_right ? 'G' : 'g');
                 }
                 else if(veciter->id2==currnode && veciter->to_right && colormap.find(veciter->id1)==colormap.end()){
-                    reachable_nodes.at(id).push_back(veciter->id1);
+                    reachable_nodes.at(id).push_back(get_handle(veciter->id1, false));
                     queue.push(veciter->id1);
                     colormap.emplace(veciter->id1, veciter->from_left ? 'g' : 'G');
                 }
             }
             else if(color=='G'){
                 if(veciter->id1==currnode && veciter->from_left && colormap.find(veciter->id2)==colormap.end()){
-                    reachable_nodes.at(id).push_back(veciter->id2);
+                    reachable_nodes.at(id).push_back(get_handle(veciter->id2, false));
                     queue.push(veciter->id2);
                     colormap.emplace(veciter->id2, veciter->to_right ? 'G' : 'g');
                 }
                 else if(veciter->id2==currnode && !veciter->to_right && colormap.find(veciter->id1)==colormap.end()){
-                    reachable_nodes.at(id).push_back(veciter->id1);
+                    reachable_nodes.at(id).push_back(get_handle(veciter->id1, false));
                     queue.push(veciter->id1);
                     colormap.emplace(veciter->id1, veciter->from_left ? 'g' : 'G');
                 }
@@ -130,15 +151,16 @@ void BidirectedGraph::mod_BFS(nid_t id){
         }
         colormap.at(currnode) = 'b';
     }
-}
+    */
+//}
 
 void BidirectedGraph::print_reachable_nodes(){
-    unordered_map<nid_t, vector<nid_t> >::iterator reachable = reachable_nodes.begin();
+    unordered_map<nid_t, vector<const handle_t> >::iterator reachable = reachable_nodes.begin();
     while(reachable!=reachable_nodes.end()){
-        vector<nid_t>::iterator nodeiter = reachable->second.begin();
+        vector<const handle_t>::iterator nodeiter = reachable->second.begin();
         printf("Printing path connected nodes from %llu:\n", reachable->first);
         while(nodeiter!=reachable->second.end()){
-            printf("%llu\n", *nodeiter);
+            printf("%llu\n", get_id(*nodeiter));
             nodeiter++;
         }
         reachable++;

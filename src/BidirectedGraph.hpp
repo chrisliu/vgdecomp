@@ -15,7 +15,7 @@
 using namespace std;
 using namespace handlegraph;
 
-typedef unordered_map<nid_t, vector<nid_t>>          node_map; 
+typedef unordered_map<nid_t, vector<const handle_t>>          node_map; 
 typedef unordered_map<nid_t, vector<BidirectedEdge>> edge_map;
 typedef pair<nid_t, vector<BidirectedEdge>>          edge_map_pair;
 
@@ -23,11 +23,10 @@ class BidirectedGraph : public HandleGraph {
     private:
         node_map reachable_nodes;
         edge_map edges;
-        void mod_BFS(nid_t id);
     public:
         BidirectedGraph();
 
-        vector<nid_t> get_reachable_nodes(nid_t id);
+        vector<const handle_t> get_reachable_nodes(handle_t node);
         void add_edge(nid_t id1, nid_t id2, bool from_left, bool to_right);
         bool is_acyclic();
         void populate_reachable_nodes();
