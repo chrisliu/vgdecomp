@@ -40,20 +40,21 @@ bool BidirectedGraph::is_acyclic(){
 }
 //idk if this works
 void BidirectedGraph::populate_reachable_nodes(){
-    unordered_map<nid_t, char > colormap = unordered_map<nid_t, char >();
-    for_each_handle_impl([&colormap, this](const handle_t& handle){
+    
+    unordered_map<const nid_t, char > colormap = unordered_map<const nid_t, char >();
+    for_each_handle_impl([&] (const handle_t& handle) {
         vector<const handle_t> component = vector<const handle_t>();
         queue<handle_t> queue = ::queue<handle_t>();
         queue.push(handle);
-        colormap.emplace(make_pair(get_id(handle), 'g'));
+        colormap.emplace(get_id(handle), 'g');
         while(queue.size()!=0){
             handle_t currnode = queue.front();
             queue.pop();
-            follow_edges_impl(currnode, true, [&colormap, this, &component](const handle_t& handle){
+            follow_edges_impl(currnode, true, [&](const handle_t& handle){
                 if(colormap.find(get_id(handle))!=colormap.end()){
                     return true;
                 }
-                component.push_back((const handle_t)handle);
+                component.push_back((const handle_t&)handle);
                 colormap[get_id(handle)] = 'g';
                 return true;
             });
@@ -64,7 +65,7 @@ void BidirectedGraph::populate_reachable_nodes(){
             reachable_nodes.emplace(make_pair(get_id(*iter), component));
         }
         return true;
-    });
+    }, false);
 }
 
 
