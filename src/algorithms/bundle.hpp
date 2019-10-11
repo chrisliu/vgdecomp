@@ -60,11 +60,11 @@ class Bundle {
         ///               false if it's on the right
         void add_init_node(const handle_t& node, bool is_left = true);
 
+        int get_bundleside_size(bool is_left);
+
         /// Access the Bundleside variables for each side
         /// Left side bundle access
-        BundleSide get_left_side();
-        /// Right side bundle access
-        BundleSide get_right_side();
+        BundleSide get_bundleside(bool is_left);
 };
 
 class BundleSide {
@@ -123,6 +123,8 @@ class BundleSide {
         /// I couldn't figure out if it's possible in C++
         template <typename Iteratee>
         bool traverse_bundle(const Iteratee& iteratee);
+
+        int size();
 };
 
 #endif /* VG_BUNDLE_HPP_INCLUDED */

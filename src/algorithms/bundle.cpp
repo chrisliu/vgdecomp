@@ -15,11 +15,14 @@ void Bundle::add_init_node(const handle_t& node, bool is_left) {
     add_node(node, is_left);
 }
 
-BundleSide Bundle::get_left_side() {
-    return internal_bundle.first;
+int Bundle::get_bundleside_size(bool is_left) {
+    return get_bundleside(is_left).size();
 }
 
-BundleSide Bundle::get_right_side() {
+BundleSide Bundle::get_bundleside(bool is_left) {
+    if (is_left) {
+        return internal_bundle.first;
+    }
     return internal_bundle.second;
 }
 
@@ -62,4 +65,11 @@ bool BundleSide::traverse_bundle(const Iteratee& iteratee) {
         }
     }
     return true;
+}
+
+int BundleSide::size() {
+    if (is_bundle_freed) {
+        return bundle_vector.size();
+    }
+    return bundle_set.size();
 }
