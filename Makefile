@@ -1,57 +1,40 @@
-# Makefile to compile objects and test file
+# A modified version of Wesley Mackey's Makefile
 
-FLAGS = -std=c++11
+WARNING     = -Wall -Wextra -Wpedantic -Wshadow -Wold-style-cast
+COMPILECPP = g++ -std=c++17 -g -O0 ${WARNING}
+MAKEDEPCPP = g++ -std=c++17 -MM
+VALGRIND   = valgrind --leak-check=full --show-reachable=yes
 
-# Source object
-main: deps build-src HandleGraphTest
+MKFILE     = Makefile
+DEPFILE    = Makefile.dep
+MAIN_PRG   = test/BundleTest.cpp # Main program
+BG_SRCS    = src/BidirectedEdge.cpp src/BidirectedNode.cpp src/BidirectedGraph.cpp # Bidirected graph sources
+ALGO_SRCS  = src/algorithms/find_bundles.cpp src/algorithms/bundle.cpp # Algorithm sources
+HG_SRCS    = src/handlegraph/handle.cpp # Handlegraph sources
+SOURCES    = ${MAIN_PRG} ${BG_SRCS} ${ALGO_SRCS} ${HG_SRCS}
+OBJECTS    = ${SOURCES:.cpp=.o}
+EXECBIN    = AlgoTest # Executable binary
 
-deps: JsonCpp HandleGraph
+all : ${EXECBIN}
 
-JsonCpp: src/json/jsoncpp.cpp src/json/json/json-forwards.h src/json/json/json.h
-	g++ $(FLAGS) -c src/json/jsoncpp.cpp -o src/jsoncpp.o
+${EXECBIN} : ${OBJECTS}
+	${COMPILECPP} -o${EXECBIN} ${OBJECTS}
 
-HandleGraph: src/handlegraph/handle_graph.hpp src/handlegraph/handle.cpp src/handlegraph/iteratee.hpp src/handlegraph/types.hpp src/handlegraph/util.hpp
-	g++ $(FLAGS) -c src/handlegraph/handle.cpp -o src/handle.o
+%.o : %.cpp
+	${COMPILECPP} -c $< -o $@
 
-build-src: BidirectedEdge.o BidirectedNode.o BidirectedGraphBuilder.o BidirectedGraph.o
+# Removes all intermediate object files but keeps the executable binary
+clean :
+	- rm ${OBJECTS}
 
-BidirectedEdge.o: src/BidirectedEdge.cpp src/BidirectedEdge.hpp
-	g++ $(FLAGS) -c src/BidirectedEdge.cpp -o src/BidirectedEdge.o
+# Removes all generated files including the executable binary
+spotless : clean
+	- rm ${EXECBIN} ${DEPFILE}
 
-BidirectedNode.o: src/BidirectedNode.cpp src/BidirectedNode.hpp
-	g++ $(FLAGS) -c src/BidirectedNode.cpp -o src/BidirectedNode.o
+${DEPFILE} :
+	${MAKEDEPCPP} ${SOURCES} >${DEPFILE}
 
-BidirectedGraph.o: src/BidirectedGraph.cpp src/BidirectedGraph.hpp
-	g++ $(FLAGS) -c src/BidirectedGraph.cpp -o src/BidirectedGraph.o
-
-BidirectedGraphBuilder.o: src/BidirectedGraphBuilder.cpp src/BidirectedGraphBuilder.hpp
-	g++ $(FLAGS) -c src/BidirectedGraphBuilder.cpp -o src/BidirectedGraphBuilder.o
-
-GraphBuilderTest: test/GraphBuilderTest.cpp
-	g++ $(FLAGS) -c test/GraphBuilderTest.cpp -o test/GraphBuilderTest.o
-	g++ test/GraphBuilderTest.o src/*.o -o test/GraphBuilderTest
-
-HandleGraphTest: test/HandleGraphTest.cpp
-	g++ $(FLAGS) -g -c test/HandleGraphTest.cpp -o test/HandleGraphTest.o
-	g++ test/HandleGraphTest.o src/*.o -o test/HandleGraphTest
-
-clean: clean-source clean-tests
-
-clean-source:
-	-rm -f src/*.o
-
-clean-tests: clean-builder clean-handlegraph
-
-clean-builder:
-	-rm test/GraphBuilderTest.o test/GraphBuilderTest
-
-clean-handlegraph:
-	-rm test/HandleGraphTest.o test/HandleGraphTest
-
-# Test file make commands (currently unsupported until Node and Edge have been updated)
-# test: test/main.cpp main
-# 	g++ -c test/main.cpp -o test/main.o
-# 	g++ test/main.o src/*.o -o main
-
-# clean-test: clean
-# 	rm -f main test/main.o
+# Only builds the dependencies (not the executable binary)
+dep :
+	- rm ${DEPFILE}
+	${MAKE} --no-print-directory ${DEPFILE}
