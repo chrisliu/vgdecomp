@@ -38,3 +38,6 @@ ${DEPFILE} :
 dep :
 	- rm ${DEPFILE}
 	${MAKE} --no-print-directory ${DEPFILE}
+
+run: all
+	./${EXECBIN}
