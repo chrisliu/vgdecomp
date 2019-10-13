@@ -241,7 +241,6 @@ bool BidirectedGraph::follow_edges_impl(const handle_t& handle, bool go_left, co
     bool  is_reverse = get_is_reverse(handle);
     bool  on_left    = (go_left && !is_reverse) || (!go_left && is_reverse);
     for (const BidirectedEdge& node_edge : edges.at(node_id)) {
-        cout << node_edge.id1 << " " << node_edge.id2 << " " << node_edge.from_left << endl;
         if (node_edge.from_left == on_left && !iteratee(get_handle(node_edge.id2, is_reverse))) {
             return false;
         }
