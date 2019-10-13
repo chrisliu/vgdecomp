@@ -241,7 +241,8 @@ bool BidirectedGraph::follow_edges_impl(const handle_t& handle, bool go_left, co
     bool  is_reverse = get_is_reverse(handle);
     bool  on_left    = (go_left && !is_reverse) || (!go_left && is_reverse);
     for (const BidirectedEdge& node_edge : edges.at(node_id)) {
-        if (node_edge.from_left == on_left && !iteratee(get_handle(node_edge.id2, is_reverse))) {
+        bool flow = (node_edge.from_left ^ node_edge.to_right) ^ is_reverse; // The node return should follow the "flow" of the walk
+        if (node_edge.from_left == on_left && !iteratee(get_handle(node_edge.id2, flow))) {
             return false;
         }
     }
