@@ -5,9 +5,9 @@ BidirectedGraph::BidirectedGraph() {
 
 }
 
-vector<const handle_t> BidirectedGraph::get_reachable_nodes(handle_t id){
-    return reachable_nodes[get_id(id)];
-}
+// vector<const handle_t> BidirectedGraph::get_reachable_nodes(handle_t id){
+//     return reachable_nodes[get_id(id)];
+// }
 /*
 i just put this here idk if its even remotely correct
 BidirectedGraph::bundles(){
@@ -35,38 +35,38 @@ void BidirectedGraph::add_edge(nid_t id1, nid_t id2, bool from_left, bool to_rig
     edges[id2].push_back(from_id2);
 }
 
-bool BidirectedGraph::is_acyclic(){
-    return true;
-}
-//idk if this works
-void BidirectedGraph::populate_reachable_nodes(){
+// bool BidirectedGraph::is_acyclic(){
+//     return true;
+// }
+// //idk if this works
+// void BidirectedGraph::populate_reachable_nodes(){
     
-    unordered_map<const nid_t, char > colormap;
-    for_each_handle_impl([&] (const handle_t& handle) {
-        vector<const handle_t> component;
-        queue<handle_t> queue;
-        queue.push(handle);
-        colormap[get_id(handle)] = 'g';
-        while(queue.size()!=0){
-            handle_t currnode = queue.front();
-            queue.pop();
-            follow_edges_impl(currnode, true, [&](const handle_t& handle){
-                if(colormap.find(get_id(handle))!=colormap.end()){
-                    return true;
-                }
-                ((vector<const handle_t>) component).push_back(handle);
-                colormap[get_id(handle)] = 'g';
-                return true;
-            });
-        }
-        colormap[get_id(handle)] = 'b';
-        vector<const handle_t>::iterator iter= component.begin();
-        while(iter!=component.end()){
-            reachable_nodes.emplace(make_pair(get_id(*iter), component));
-        }
-        return true;
-    }, false);
-}
+//     unordered_map<const nid_t, char > colormap;
+//     for_each_handle_impl([&] (const handle_t& handle) {
+//         vector<const handle_t> component;
+//         queue<handle_t> queue;
+//         queue.push(handle);
+//         colormap[get_id(handle)] = 'g';
+//         while(queue.size()!=0){
+//             handle_t currnode = queue.front();
+//             queue.pop();
+//             follow_edges_impl(currnode, true, [&](const handle_t& handle){
+//                 if(colormap.find(get_id(handle))!=colormap.end()){
+//                     return true;
+//                 }
+//                 ((vector<const handle_t>) component).push_back(handle);
+//                 colormap[get_id(handle)] = 'g';
+//                 return true;
+//             });
+//         }
+//         colormap[get_id(handle)] = 'b';
+//         vector<const handle_t>::iterator iter= component.begin();
+//         while(iter!=component.end()){
+//             reachable_nodes.emplace(make_pair(get_id(*iter), component));
+//         }
+//         return true;
+//     }, false);
+// }
 
 
 // lowercase g means entering from left
@@ -155,18 +155,18 @@ void BidirectedGraph::populate_reachable_nodes(){
     */
 //}
 
-void BidirectedGraph::print_reachable_nodes(){
-    unordered_map<nid_t, vector<const handle_t> >::iterator reachable = reachable_nodes.begin();
-    while(reachable!=reachable_nodes.end()){
-        vector<const handle_t>::iterator nodeiter = reachable->second.begin();
-        printf("Printing path connected nodes from %llu:\n", reachable->first);
-        while(nodeiter!=reachable->second.end()){
-            printf("%llu\n", get_id(*nodeiter));
-            nodeiter++;
-        }
-        reachable++;
-    }
-}
+// void BidirectedGraph::print_reachable_nodes(){
+//     unordered_map<nid_t, vector<const handle_t> >::iterator reachable = reachable_nodes.begin();
+//     while(reachable!=reachable_nodes.end()){
+//         vector<const handle_t>::iterator nodeiter = reachable->second.begin();
+//         printf("Printing path connected nodes from %llu:\n", reachable->first);
+//         while(nodeiter!=reachable->second.end()){
+//             printf("%llu\n", get_id(*nodeiter));
+//             nodeiter++;
+//         }
+//         reachable++;
+//     }
+// }
 
 /// Method to check if a node exists by ID
 bool BidirectedGraph::has_node(nid_t nodeid) const {
@@ -241,7 +241,8 @@ bool BidirectedGraph::follow_edges_impl(const handle_t& handle, bool go_left, co
     bool  is_reverse = get_is_reverse(handle);
     bool  on_left    = (go_left && !is_reverse) || (!go_left && is_reverse);
     for (const BidirectedEdge& node_edge : edges.at(node_id)) {
-        if (node_edge.from_left == on_left && !iteratee(get_handle(node_id, is_reverse))) {
+        cout << node_edge.id1 << " " << node_edge.id2 << " " << node_edge.from_left << endl;
+        if (node_edge.from_left == on_left && !iteratee(get_handle(node_edge.id2, is_reverse))) {
             return false;
         }
     }
