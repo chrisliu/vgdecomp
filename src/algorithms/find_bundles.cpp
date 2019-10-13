@@ -1,25 +1,32 @@
 #include "find_bundles.hpp"
 
-// #define CACHE_TEST
 
 /// For each id a pair of bools are stored.
 /// The first bool is if the node has been traversed going left
 /// The second bool is if the node has been traversed going right
 typedef std::unordered_map<nid_t, std::pair<bool, bool>> traversed_t;
 
+// Define functions
+std::pair<bool, Bundle> is_in_bundle(const handle_t& handle, traversed_t& traversed_nodes,
+    const HandleGraph* g, bool go_left = false
+);
+inline bool cache_node(const handle_t& handle, traversed_t& traversed_nodes,
+    const HandleGraph* g, bool go_left = false
+);
+
 std::vector<Bundle> find_bundles(const HandleGraph* g) {
     std::vector<Bundle> bundles;
     traversed_t traversed_nodes;
 
     g->for_each_handle([&] (const handle_t& handle) {
-        if (cache_node(handle, traversed_nodes, g)) {
+        if (!cache_node(handle, traversed_nodes, g)) {
             auto ret = is_in_bundle(handle, traversed_nodes, g);
             if (ret.first) {
                 bundles.push_back(ret.second);
             }
         }
 
-        if (cache_node(handle, traversed_nodes, g, true)) {
+        if (!cache_node(handle, traversed_nodes, g, true)) {
             auto ret = is_in_bundle(handle, traversed_nodes, g, true);
             if (ret.first) {
                 bundles.push_back(ret.second);
@@ -54,7 +61,7 @@ std::vector<Bundle> find_bundles(const HandleGraph* g) {
 ///   true if there's one else if otherwise. The Bundle will either be the 
 ///   discovered bundle or a placeholder.
 std::pair<bool, Bundle> is_in_bundle(const handle_t& handle, traversed_t& traversed_nodes,
-    const HandleGraph* g, bool go_left = false
+    const HandleGraph* g, bool go_left 
 ) {
     Bundle bundle;
     // Get which side of the bundle the handle is on
@@ -63,12 +70,10 @@ std::pair<bool, Bundle> is_in_bundle(const handle_t& handle, traversed_t& traver
 
     // Phase 1
     // Insert edges from opposite side
-#ifdef CACHE_TEST
     cache_node(handle, traversed_nodes, g, go_left);
-#endif /* CACHE_TEST */
     g->follow_edges(handle, go_left, [&](const handle_t& opp_handle) {
         // Cache traversed handle here
-        bundle.add_init_node(handle, !is_handle_left);
+        bundle.add_init_node(opp_handle, !is_handle_left);
     });
 
     // If there isn't anything, terminate
@@ -80,9 +85,7 @@ std::pair<bool, Bundle> is_in_bundle(const handle_t& handle, traversed_t& traver
     bool is_first = true;
     bool is_opp_side_consistent = bundle.get_bundleside(!is_handle_left).traverse_bundle(
         [&](const handle_t& opp_handle) {
-#ifdef CACHE_TEST
             cache_node(opp_handle, traversed_nodes, g, !go_left);
-#endif /* CACHE_TEST */
             if (is_first) {
                 g->follow_edges(opp_handle, !go_left, 
                     [&](const handle_t& same_handle) {
@@ -114,12 +117,10 @@ std::pair<bool, Bundle> is_in_bundle(const handle_t& handle, traversed_t& traver
         [&](const handle_t& same_handle) {
             // Optimization? Don't traverse starting node again.
             if (same_handle != handle) {
-#ifdef CACHE_TEST
                 cache_node(same_handle, traversed_nodes, g, go_left);
-#endif /* CACHE_TEST */
                 bool handle_not_added = g->follow_edges(same_handle, go_left, 
                     [&](const handle_t& opp_handle) {
-                        return bundle.add_node(opp_handle, !is_handle_left);
+                        return !bundle.add_node(opp_handle, !is_handle_left);
                     }
                 );
 
@@ -139,7 +140,7 @@ std::pair<bool, Bundle> is_in_bundle(const handle_t& handle, traversed_t& traver
 }
 
 inline bool cache_node(const handle_t& handle, traversed_t& traversed_nodes,
-    const HandleGraph* g, bool go_left = false
+    const HandleGraph* g, bool go_left
 ) {
     nid_t id          = g->get_id(handle);
     bool is_reverse   = g->get_is_reverse(handle);
