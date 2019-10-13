@@ -13,60 +13,6 @@
 // undefinide type error for hnadle_t
 #include "../BidirectedGraph.hpp"
 
-// *Note*
-// Bundle will not check if a node that's added to one side
-// already exists on the other side.
-// This has not been implemented yet and will need to be to
-// double check self cycles. Self cycles could break the 
-// algorithm.
-class Bundle {
-    private:
-        typedef std::pair<BundleSide, BundleSide> bundle_t;
-        
-        bundle_t internal_bundle;
-        bool     is_invalid;
-
-    public:
-        /// Add a node handle to the bundle with the side
-        /// indicated by is_left. Returns whether or not
-        /// the insertion is a success. If it isn't a success
-        /// that mean this structure is not a bundle and all
-        /// future attempt to add a node will return the same
-        /// value.
-        /// Parameters:
-        ///   1. node: the handle for the node to be added
-        ///   2. is_left: the side of a bundle the node
-        ///               is going to be added to. 
-        ///               true if it's on the left
-        ///               false if it's on the right
-        /// Returns:
-        ///   1. true: if the node is successfully added to
-        ///            the side (not a duplicate)
-        ///   2. false: if a node is unsuccessfully added
-        ///             to the side (is a duplicate) or
-        ///             some previous add action resulted
-        ///             in this bundle to be invalid
-        bool add_node(const handle_t& node, bool is_left = true);
-
-        /// Add a node handle to the bundle with the side
-        /// indiacted by is_left. This operation will not
-        /// care about duplicate values and should only
-        /// be used to initialize a side a bundle.
-        /// Parameters:
-        ///   1. node: the handle for the node to be added
-        ///   2. is_left: the side of a bundle the node
-        ///               is going to be added to.
-        ///               true if it's on the left
-        ///               false if it's on the right
-        void add_init_node(const handle_t& node, bool is_left = true);
-
-        int get_bundleside_size(bool is_left);
-
-        /// Access the Bundleside variables for each side
-        /// Left side bundle access
-        BundleSide get_bundleside(bool is_left);
-};
-
 class BundleSide {
     private:
         std::unordered_set<handle_t> bundle_set;
@@ -121,10 +67,64 @@ class BundleSide {
         /// for either bundle_set or bundle_vector depending
         /// on whether or not it's been cached already. However,
         /// I couldn't figure out if it's possible in C++
-        template <typename Iteratee>
-        bool traverse_bundle(const Iteratee& iteratee);
+        bool traverse_bundle(const std::function<bool(const handle_t&)>& iteratee);
 
         int size();
 };
 
+// *Note*
+// Bundle will not check if a node that's added to one side
+// already exists on the other side.
+// This has not been implemented yet and will need to be to
+// double check self cycles. Self cycles could break the 
+// algorithm.
+class Bundle {
+    private:
+        typedef std::pair<BundleSide, BundleSide> bundle_t;
+        
+        bundle_t internal_bundle;
+        bool     is_invalid;
+
+    public:
+        /// Add a node handle to the bundle with the side
+        /// indicated by is_left. Returns whether or not
+        /// the insertion is a success. If it isn't a success
+        /// that mean this structure is not a bundle and all
+        /// future attempt to add a node will return the same
+        /// value.
+        /// Parameters:
+        ///   1. node: the handle for the node to be added
+        ///   2. is_left: the side of a bundle the node
+        ///               is going to be added to. 
+        ///               true if it's on the left
+        ///               false if it's on the right
+        /// Returns:
+        ///   1. true: if the node is successfully added to
+        ///            the side (not a duplicate)
+        ///   2. false: if a node is unsuccessfully added
+        ///             to the side (is a duplicate) or
+        ///             some previous add action resulted
+        ///             in this bundle to be invalid
+        bool add_node(const handle_t& node, bool is_left = true);
+
+        /// Add a node handle to the bundle with the side
+        /// indiacted by is_left. This operation will not
+        /// care about duplicate values and should only
+        /// be used to initialize a side a bundle.
+        /// Parameters:
+        ///   1. node: the handle for the node to be added
+        ///   2. is_left: the side of a bundle the node
+        ///               is going to be added to.
+        ///               true if it's on the left
+        ///               false if it's on the right
+        void add_init_node(const handle_t& node, bool is_left = true);
+
+        int get_bundleside_size(bool is_left);
+
+        /// Access the Bundleside variables for each side
+        /// Left side bundle access
+        BundleSide get_bundleside(bool is_left);
+
+        void freeze();
+};
 #endif /* VG_BUNDLE_HPP_INCLUDED */
