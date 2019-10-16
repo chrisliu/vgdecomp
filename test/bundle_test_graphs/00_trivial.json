@@ -1,0 +1,37 @@
+{
+    "comment": "This is a trivial bundle.",
+    "graph": {
+        "edges": [
+            {
+                "id1": 1,
+                "id2": 2,
+                "from_left": false,
+                "to_right": false
+            }
+        ],
+        "nodes": [
+            {
+                "id": 1
+            },
+            {
+                "id": 2
+            }
+        ]
+    },
+    "bundles": [
+        {
+            "left": [
+                {
+                    "id": 0,
+                    "is_reverse": false
+                }
+            ],
+            "right": [
+                {
+                    "id": 1,
+                    "is_reverse": false
+                }
+            ]
+        }
+    ]
+}

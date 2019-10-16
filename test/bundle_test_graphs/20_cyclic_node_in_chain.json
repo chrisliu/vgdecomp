@@ -1,0 +1,37 @@
+{
+    "comment": "This is a 3 node chain where the center node is cyclic to itself.",
+    "graph": {
+        "edges": [
+            {
+                "id1": 1,
+                "id2": 2,
+                "from_left": false,
+                "to_right": false
+            },
+            {
+                "id1": 2,
+                "id2": 3,
+                "from_left": false,
+                "to_right": false
+            },
+            {
+                "id1": 2,
+                "id2": 2,
+                "from_left": false,
+                "to_right": false
+            }
+        ],
+        "nodes": [
+            {
+                "id": 1
+            },
+            {
+                "id": 2
+            },
+            {
+                "id": 3
+            }
+        ]
+    },
+    "bundles": []
+}

@@ -1,0 +1,37 @@
+{
+    "comment": "This is a trivial bundle where the first node starts on the left.",
+    "graph": {
+        "edges": [
+            {
+                "id1": 1,
+                "id2": 2,
+                "from_left": true,
+                "to_right": false
+            }
+        ],
+        "nodes": [
+            {
+                "id": 1
+            },
+            {
+                "id": 2
+            }
+        ]
+    },
+    "bundles": [
+        {
+            "left": [
+                {
+                    "id": 1,
+                    "is_reverse": false
+                }
+            ],
+            "right": [
+                {
+                    "id": 2,
+                    "is_reverse": true
+                }
+            ]
+        }
+    ]
+}
