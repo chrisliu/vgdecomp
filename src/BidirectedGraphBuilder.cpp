@@ -26,13 +26,6 @@ BidirectedGraph BidirectedGraphBuilder::build_graph(std::string filename) { // N
 
     BidirectedGraph graph;
 
-    /*
-    Json::Value nodes = graph_json["graph"]["nodes"];
-    for (int i = 0; i < nodes.size(); i++) {
-        graph->add_vertex(nodes[i]["id"].asInt64());
-    }
-    //*/
-
     Json::Value edges = graph_json["graph"]["edges"];
     for (int i = 0; i < edges.size(); i++) {
         nid_t id1 = edges[i]["id1"].asInt64();
@@ -44,13 +37,4 @@ BidirectedGraph BidirectedGraphBuilder::build_graph(std::string filename) { // N
     }
 
     return graph;
-}
-
-bool BidirectedGraphBuilder::save_graph(std::string filename, BidirectedGraph& graph) {
-    /** To be completed when BidirectedGraph is fully complete
-     *  Needs access to a list of vertices and edges in graph
-     *  See link below to remove duplicate edges
-     *  https://stackoverflow.com/questions/1041620/whats-the-most-efficient-way-to-erase-duplicates-and-sort-a-vector
-     */
-    return true;
 }

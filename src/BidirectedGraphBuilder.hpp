@@ -16,10 +16,14 @@
 
 using namespace handlegraph;
 
-class BidirectedGraphBuilder {
-    public:
-        BidirectedGraph build_graph(std::string filename);
-        bool save_graph(std::string filename, BidirectedGraph& graph);
+struct BidirectedGraphBuilder {
+    /// Returning temporary object won't create a memory issue since modern
+    /// C++ compilers perform return value optimization (so BidirectedGraph will
+    /// only be created once). This could be verified by adding a debug print 
+    /// statement in the constructor of BidirectedGraph.
+    /// See more about return value optimization here:
+    /// https://en.wikipedia.org/wiki/Copy_elision#Return_value_optimization
+    static BidirectedGraph build_graph(std::string filename);
 };
 
 #endif /* BidirectedGraphBuilder_hpp */
