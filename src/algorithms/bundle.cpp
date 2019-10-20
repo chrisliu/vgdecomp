@@ -28,21 +28,16 @@ void BundleSide::cache() {
    is_bundle_freed = true;
 }
 
-bool BundleSide::traverse_bundle(const std::function<bool(const handle_t&)>& iteratee) {    
+void BundleSide::traverse_bundle(const std::function<void(const handle_t&)>& iteratee) {    
     if (is_bundle_freed) {
         for (const handle_t& node : bundle_vector) {
-            if (!iteratee(node)) {
-                return false;
-            }
+            iteratee(node);
         }
     } else {
         for (const handle_t& node : bundle_set) {
-            if (!iteratee(node)) {
-                return false;
-            }
+            iteratee(node);
         }
     }
-    return true;
 }
 
 int BundleSide::size() {
@@ -81,4 +76,20 @@ BundleSide Bundle::get_bundleside(bool is_left) {
 void Bundle::freeze() {
     internal_bundle.first.cache();
     internal_bundle.second.cache();
+}
+
+bool Bundle::is_trivial() {
+    return is_bundle_trivial; 
+}
+
+void Bundle::set_trivial(bool is_bundle_trivial) {
+    this->is_bundle_trivial = is_bundle_trivial;
+}
+
+bool Bundle::has_reversed_node() {
+    return has_reversed;
+}
+
+void Bundle::set_has_reversed_node(bool has_reversed) {
+    this->has_reversed = has_reversed;
 }

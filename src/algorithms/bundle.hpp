@@ -67,7 +67,7 @@ class BundleSide {
         /// for either bundle_set or bundle_vector depending
         /// on whether or not it's been cached already. However,
         /// I couldn't figure out if it's possible in C++
-        bool traverse_bundle(const std::function<bool(const handle_t&)>& iteratee);
+        void traverse_bundle(const std::function<void(const handle_t&)>& iteratee);
 
         int size();
 };
@@ -83,8 +83,9 @@ class Bundle {
         typedef std::pair<BundleSide, BundleSide> bundle_t;
         
         bundle_t internal_bundle;
-        bool     is_invalid;
-
+    
+        bool is_bundle_trivial;
+        bool has_reversed;     
     public:
         /// Add a node handle to the bundle with the side
         /// indicated by is_left. Returns whether or not
@@ -126,5 +127,12 @@ class Bundle {
         BundleSide get_bundleside(bool is_left);
 
         void freeze();
+
+        /// Accessor functions
+        bool is_trivial();
+        void set_trivial(bool is_bundle_trivial);
+
+        bool has_reversed_node();
+        void set_has_reversed_node(bool has_reversed);
 };
 #endif /* VG_BUNDLE_HPP_INCLUDED */
