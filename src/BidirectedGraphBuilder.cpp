@@ -31,7 +31,7 @@ BidirectedGraph BidirectedGraphBuilder::build_graph(std::string filename) { // N
         nid_t id1 = edges[i]["id1"].asInt64();
         nid_t id2 = edges[i]["id2"].asInt64();
         bool from_left = edges[i]["from_left"].asBool();
-        bool to_right  = edges[i]["to_left"].asBool();
+        bool to_right  = edges[i]["to_right"].asBool();
 
         graph.add_edge(id1, id2, from_left, to_right);
     }
