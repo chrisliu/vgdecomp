@@ -40,6 +40,10 @@ int main(int argc, char* argv[]) {
             cout << g.get_id(handle) << " ";
         });
         cout << endl;
+#ifdef DEBUG_BIDIRECTED_GRAPH
+        cout << "Edges:" << endl;
+        g.print_edges();
+#endif /* DEBUG_BIDIRECTED_GRAPH */
     }
 
     return exit_code;
