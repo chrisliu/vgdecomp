@@ -1,6 +1,8 @@
 #ifndef VG_ALGORITHMS_FIND_BUNDLE_HPP_INCLUDED
 #define VG_ALGORITHMS_FIND_BUNDLE_HPP_INCLUDED
 
+// #define DEBUG_FIND_BUNDLES
+
 #include "../BidirectedGraph.hpp"
 #include "bundle.hpp"
 

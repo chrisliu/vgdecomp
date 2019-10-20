@@ -1,5 +1,18 @@
 #include "find_bundles.hpp"
 
+#ifdef DEBUG_FIND_BUNDLES
+#include <iostream> 
+#include <sstream>
+#include <string>
+using namespace std;
+
+inline string handle_info_str(const HandleGraph* g, const handle_t& handle) {
+    stringstream ss;
+    ss << g->get_id(handle) << ((g->get_is_reverse(handle)) ? "r" : "");
+    return ss.str();
+} 
+
+#endif /* DEBUG_FIND_BUNDLES */
 
 /// For each id a pair of bools are stored.
 /// The first bool is if the node has been traversed going left
@@ -21,6 +34,9 @@ std::vector<Bundle> find_bundles(const HandleGraph* g) {
     g->for_each_handle([&] (const handle_t& handle) {
         if (!cache_node(handle, traversed_nodes, g)) {
             auto ret = is_in_bundle(handle, traversed_nodes, g);
+#ifdef DEBUG_FIND_BUNDLES
+            cout << g->get_id(handle) << " +: " << ((ret.first) ? "true" : "false") << endl;
+#endif /* DEBUG_FIND_BUNDLES */
             if (ret.first) {
                 bundles.push_back(ret.second);
             }
@@ -28,6 +44,9 @@ std::vector<Bundle> find_bundles(const HandleGraph* g) {
 
         if (!cache_node(handle, traversed_nodes, g, true)) {
             auto ret = is_in_bundle(handle, traversed_nodes, g, true);
+#ifdef DEBUG_FIND_BUNDLES
+            cout << g->get_id(handle) << " -: " << ((ret.first) ? "true" : "false") << endl;
+#endif /* DEBUG_FIND_BUNDLES */
             if (ret.first) {
                 bundles.push_back(ret.second);
             }
@@ -63,17 +82,23 @@ std::vector<Bundle> find_bundles(const HandleGraph* g) {
 std::pair<bool, Bundle> is_in_bundle(const handle_t& handle, traversed_t& traversed_nodes,
     const HandleGraph* g, bool go_left 
 ) {
+    /** OPTIMIZATION
+     * Don't early exit and if there's a failure cache all edges that would have been traversed
+     */
+
     Bundle bundle;
+    bool is_not_bundle = false;
+    bool has_reversed_node = false;
     // Get which side of the bundle the handle is on
     bool handle_dir     = g->get_is_reverse(handle);
     bool is_handle_left = (handle_dir && go_left) || (!handle_dir && !go_left); // Is handle on the left side
 
     // Phase 1
     // Insert edges from opposite side
-    cache_node(handle, traversed_nodes, g, go_left);
     g->follow_edges(handle, go_left, [&](const handle_t& opp_handle) {
         // Cache traversed handle here
         bundle.add_init_node(opp_handle, !is_handle_left);
+        has_reversed_node |= g->get_is_reverse(opp_handle) != handle_dir;
     });
 
     // If there isn't anything, terminate
@@ -82,61 +107,84 @@ std::pair<bool, Bundle> is_in_bundle(const handle_t& handle, traversed_t& traver
     }
 
     // Phase 2
-    bool is_first = true;
-    bool is_opp_side_consistent = bundle.get_bundleside(!is_handle_left).traverse_bundle(
+    int same_side_count = 0; // Used to verify if there's the same number of same nodes for each opposite node.
+    bundle.get_bundleside(!is_handle_left).traverse_bundle(
         [&](const handle_t& opp_handle) {
             cache_node(opp_handle, traversed_nodes, g, !go_left);
-            if (is_first) {
+            if (!same_side_count) { // same_side_count >= 1 if the first opposite node is traversed since there's at least the starting node.
                 g->follow_edges(opp_handle, !go_left, 
                     [&](const handle_t& same_handle) {
                         bundle.add_init_node(same_handle, is_handle_left);
+                        has_reversed_node |= g->get_is_reverse(same_handle) != handle_dir;
+#ifdef DEBUG_FIND_BUNDLES
+                        cout << "(same_init - " << handle_info_str(g, same_handle) << ") is_not_bundle: " << ((is_not_bundle) ? "true" : "false") << endl;
+                        cout << "(same_init - " << handle_info_str(g, same_handle) << ") has_reversed_node: " << ((has_reversed_node) ? "true" : "false") << endl;
+#endif /* DEBUG_FIND_BUNDLES */
                     }
                 );
+                same_side_count = bundle.get_bundleside_size(is_handle_left);
+#ifdef DEBUG_FIND_BUNDLES
+                    cout << "(opp_init - " << handle_info_str(g, opp_handle) << ") is_not_bundle: " << ((is_not_bundle) ? "true" : "false") << endl;
+#endif /* DEBUG_FIND_BUNDLES */
             } else {
-                bool handle_not_added = g->follow_edges(opp_handle, !go_left,
+                int node_count = 0;
+                g->follow_edges(opp_handle, !go_left,
                     [&](const handle_t& same_handle) {
-                        return bundle.add_node(same_handle, is_handle_left);
+                        is_not_bundle |= bundle.add_node(same_handle, is_handle_left);
+                        has_reversed_node |= g->get_is_reverse(opp_handle) != handle_dir;
+                        node_count++;
+#ifdef DEBUG_FIND_BUNDLES
+                        cout << "(same - " << handle_info_str(g, same_handle) << ") is_not_bundle: " << ((is_not_bundle) ? "true" : "false") << endl;
+#endif /* DEBUG_FIND_BUNDLES */
                     }
                 );
-                
-                // Early termination if a handle is added
-                if (!handle_not_added) {
-                    return false;
-                }
+                is_not_bundle |= node_count != same_side_count;
+#ifdef DEBUG_FIND_BUNDLES
+                    cout << "(opp - " << handle_info_str(g, opp_handle) << ") is_not_bundle: " << ((is_not_bundle) ? "true" : "false") << endl;
+#endif /* DEBUG_FIND_BUNDLES */
             }
-            return true;
         }
     );
-
-    if (!is_opp_side_consistent) {
-        return std::make_pair(false, bundle);
-    }
+    
+#ifdef DEBUG_FIND_BUNDLES
+    cout << "(Phase 2) is_not_bundle: " << ((is_not_bundle) ? "true" : "false") << endl;
+#endif /* DEBUG_FIND_BUNDLES */
 
     // Phase 3
-    bool is_same_side_consistent = bundle.get_bundleside(is_handle_left).traverse_bundle(
+    int opposite_side_count = bundle.get_bundleside_size(!is_handle_left); // Used to verify if there's the same number of opposite nodes for each same node.
+    bundle.get_bundleside(is_handle_left).traverse_bundle(
         [&](const handle_t& same_handle) {
-            // Optimization? Don't traverse starting node again.
             if (same_handle != handle) {
                 cache_node(same_handle, traversed_nodes, g, go_left);
-                bool handle_not_added = g->follow_edges(same_handle, go_left, 
+                int node_count = 0;
+                g->follow_edges(same_handle, go_left, 
                     [&](const handle_t& opp_handle) {
-                        return !bundle.add_node(opp_handle, !is_handle_left);
+                        is_not_bundle |= bundle.add_node(opp_handle, !is_handle_left);
+                        has_reversed_node |= g->get_is_reverse(opp_handle) != handle_dir;
+                        node_count++;
+#ifdef DEBUG_FIND_BUNDLES
+                        cout << "(opp - " << handle_info_str(g, opp_handle) << ") is_not_bundle: " << ((is_not_bundle) ? "true" : "false") << endl;
+#endif /* DEBUG_FIND_BUNDLES */
                     }
                 );
-
-                if (!handle_not_added) {
-                    return false;
-                }
+                is_not_bundle |= node_count != opposite_side_count;
+#ifdef DEBUG_FIND_BUNDLES
+                    cout << "(same - " << handle_info_str(g, same_handle) << ") is_not_bundle: " << ((is_not_bundle) ? "true" : "false") << endl;
+#endif /* DEBUG_FIND_BUNDLES */
             }
-            return true;
         }
     );
 
-    if (!is_same_side_consistent) {
-        return std::make_pair(false, bundle);
-    }
+#ifdef DEBUG_FIND_BUNDLES
+    cout << "(Phase 3) is_not_bundle: " << ((is_not_bundle) ? "true" : "false") << endl;
+#endif /* DEBUG_FIND_BUNDLES */
 
-    return std::make_pair(true, bundle);
+    // Describe bundle
+    bundle.set_trivial(bundle.get_bundleside_size(true) == 1 && \ 
+        bundle.get_bundleside_size(false) == 1);
+    bundle.set_has_reversed_node(has_reversed_node);
+
+    return std::make_pair(!is_not_bundle, bundle);
 }
 
 inline bool cache_node(const handle_t& handle, traversed_t& traversed_nodes,
