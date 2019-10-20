@@ -2,6 +2,8 @@
 #define BidirectedGraph_hpp
 #include "BidirectedEdge.hpp"
 
+// #define DEBUG_BIDIRECTED_GRAPH
+
 /* Handlegraph includes */
 #include "handlegraph/handle_graph.hpp"
 #include "handlegraph/types.hpp"
@@ -15,7 +17,7 @@
 using namespace std;
 using namespace handlegraph;
 
-typedef unordered_map<nid_t, vector<const handle_t>>          node_map; 
+typedef unordered_map<nid_t, vector<const handle_t>> node_map; 
 typedef unordered_map<nid_t, vector<BidirectedEdge>> edge_map;
 typedef pair<nid_t, vector<BidirectedEdge>>          edge_map_pair;
 
@@ -64,6 +66,10 @@ class BidirectedGraph : public HandleGraph {
         /// Return the largest ID in the graph, or some larger number if the
         /// largest ID is unavailable. Return value is unspecified if the graph is empty.
         nid_t max_node_id() const;
+
+#ifdef DEBUG_BIDIRECTED_GRAPH
+        void print_edges() const;
+#endif /* DEBUG_BIDIRECTED_GRAPH */
     protected:
         
         /// Loop over all the handles to next/previous (right/left) nodes. Passes

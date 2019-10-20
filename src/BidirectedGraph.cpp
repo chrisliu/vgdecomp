@@ -1,6 +1,11 @@
 #include "BidirectedGraph.hpp"
 #include <queue>
 
+#ifdef DEBUG_BIDIRECTED_GRAPH
+#include <iostream>
+using namespace std;
+#endif /* DEBUG_BIDIRECTED_GRAPH */
+
 BidirectedGraph::BidirectedGraph() {
 
 }
@@ -258,3 +263,18 @@ bool BidirectedGraph::for_each_handle_impl(const std::function<bool(const handle
     }
     return true;
 }
+
+#ifdef DEBUG_BIDIRECTED_GRAPH
+inline void pprint_edge(const BidirectedEdge& edge) {
+    cout << " - " << "Node " << edge.id1 << ((edge.from_left) ? '-' : '+') << " <-> " << "Node " << edge.id2 << ((edge.to_right) ? '+' : '-') << endl;
+}
+
+void BidirectedGraph::print_edges() const {
+    for (const auto& node_edges : edges) {
+        cout << "Node " << node_edges.first << endl;
+        for (const BidirectedEdge& edge : node_edges.second) {
+            pprint_edge(edge);
+        }
+    }
+}
+#endif /* DEBUG_BIDIRECTED_GRAPH */
