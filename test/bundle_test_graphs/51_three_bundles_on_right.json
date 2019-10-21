@@ -1,0 +1,180 @@
+{
+    "comment": "This has three bundles grouped together on the right with non bundles on the left.",
+    "graph": {
+        "edges": [
+            {
+                "id1": 1,
+                "id2": 2,
+                "from_left": false,
+                "to_right": false
+            },
+            {
+                "id1": 1,
+                "id2": 5,
+                "from_left": false,
+                "to_right": false
+            },
+            {
+                "id1": 2,
+                "id2": 3,
+                "from_left": false,
+                "to_right": false
+            },
+            {
+                "id1": 2,
+                "id2": 4,
+                "from_left": false,
+                "to_right": false
+            },
+            {
+                "id1": 2,
+                "id2": 5,
+                "from_left": false,
+                "to_right": false
+            },
+            {
+                "id1": 3,
+                "id2": 6,
+                "from_left": false,
+                "to_right": false
+            },
+            {
+                "id1": 3,
+                "id2": 7,
+                "from_left": false,
+                "to_right": false
+            },
+            {
+                "id1": 4,
+                "id2": 6,
+                "from_left": false,
+                "to_right": false
+            },
+            {
+                "id1": 4,
+                "id2": 7,
+                "from_left": false,
+                "to_right": false
+            },
+            {
+                "id1": 5,
+                "id2": 6,
+                "from_left": false,
+                "to_right": false
+            },
+            {
+                "id1": 5,
+                "id2": 7,
+                "from_left": false,
+                "to_right": false
+            },
+            {
+                "id1": 6,
+                "id2": 8,
+                "from_left": false,
+                "to_right": false
+            },
+            {
+                "id1": 7,
+                "id2": 9,
+                "from_left": false,
+                "to_right": false
+            },
+            {
+                "id1": 8,
+                "id2": 9,
+                "from_left": false,
+                "to_right": false
+            }
+        ],
+        "nodes": [
+            {
+                "id": 1
+            },
+            {
+                "id": 2
+            },
+            {
+                "id": 3
+            },
+            {
+                "id": 4
+            },
+            {
+                "id": 5
+            },
+            {
+                "id": 6
+            },
+            {
+                "id": 7
+            },
+            {
+                "id": 8
+            },
+            {
+                "id": 9
+            }
+        ]
+    },
+    "bundles": [
+        {
+            "left": [
+                {
+                    "id": 3,
+                    "is_reverse": false
+                },
+                {
+                    "id": 4,
+                    "is_reverse": false
+                },
+                {
+                    "id": 5,
+                    "is_reverse": false
+                }
+            ],
+            "right": [
+                {
+                    "id": 6,
+                    "is_reverse": false
+                },
+                {
+                    "id": 7,
+                    "is_reverse": false
+                }
+            ]
+        },
+        {
+            "left": [
+                {
+                    "id": 6,
+                    "is_reverse": false
+                }
+            ],
+            "right": [
+                {
+                    "id": 8,
+                    "is_reverse": false
+                }
+            ]
+        },
+        {
+            "left": [
+                {
+                    "id": 7,
+                    "is_reverse": false
+                },
+                {
+                    "id": 8,
+                    "is_reverse": false
+                }
+            ],
+            "right": [
+                {
+                    "id": 9,
+                    "is_reverse": false
+                }
+            ]
+        }
+    ]
+}
