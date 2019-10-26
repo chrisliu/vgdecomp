@@ -1,6 +1,5 @@
-#include "handle_graph.hpp"
 #include "util.hpp"
-
+#include "handle_graph.hpp"
 #include <vector>
 
 /** \file handle.cpp

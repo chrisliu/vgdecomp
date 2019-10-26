@@ -140,7 +140,7 @@ public:
     /// in parallel (parallel = true), stopping early is best-effort.
     template<typename Iteratee>
     bool for_each_edge(const Iteratee& iteratee, bool parallel = false) const;
-    
+
     ////////////////////////////////////////////////////////////////////////////
     // Backing protected virtual methods that need to be implemented
     ////////////////////////////////////////////////////////////////////////////
@@ -162,6 +162,30 @@ protected:
     
     
 };
+
+
+////////////////////////////////////////////////////////////////////////////
+// Define operators on handle types
+////////////////////////////////////////////////////////////////////////////
+
+/// Define equality on handles
+bool operator==(const handle_t& a, const handle_t& b);
+
+/// Define inequality on handles
+bool operator!=(const handle_t& a, const handle_t& b);
+
+/// Define equality on path handles
+bool operator==(const path_handle_t& a, const path_handle_t& b);
+
+/// Define inequality on path handles
+bool operator!=(const path_handle_t& a, const path_handle_t& b);
+
+/// Define equality on step handles
+bool operator==(const step_handle_t& a, const step_handle_t& b);
+
+/// Define inequality on step handles
+bool operator!=(const step_handle_t& a, const step_handle_t& b);
+
 
 /*
  * Defines an interface for serialization and deserialization for handle graph,
