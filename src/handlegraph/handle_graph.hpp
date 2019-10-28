@@ -164,27 +164,6 @@ protected:
 };
 
 
-////////////////////////////////////////////////////////////////////////////
-// Define operators on handle types
-////////////////////////////////////////////////////////////////////////////
-
-/// Define equality on handles
-bool operator==(const handle_t& a, const handle_t& b);
-
-/// Define inequality on handles
-bool operator!=(const handle_t& a, const handle_t& b);
-
-/// Define equality on path handles
-bool operator==(const path_handle_t& a, const path_handle_t& b);
-
-/// Define inequality on path handles
-bool operator!=(const path_handle_t& a, const path_handle_t& b);
-
-/// Define equality on step handles
-bool operator==(const step_handle_t& a, const step_handle_t& b);
-
-/// Define inequality on step handles
-bool operator!=(const step_handle_t& a, const step_handle_t& b);
 
 
 /*
