@@ -6,6 +6,6 @@
 #include <vector>
 
 std::unordered_map<const handle_t, vector<handle_t> > find_path_connected(const HandleGraph* g);
-void print_path_connected(unordered_map<handle_t, vector<handle_t> > map);
+void print_path_connected(const HandleGraph* g, unordered_map<const handle_t, vector<handle_t> > map);
 
 #endif

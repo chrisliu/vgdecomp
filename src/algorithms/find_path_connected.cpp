@@ -99,4 +99,20 @@ std::unordered_map<const handle_t, vector<handle_t> > find_path_connected(const 
     return vectors;
 
 }
-void print_path_connected(unordered_map<handle_t, vector<handle_t> > map);
+void print_path_connected(const HandleGraph *g, unordered_map<const handle_t, vector<handle_t> > map){
+    unordered_map<const handle_t, vector<handle_t> >::iterator iter = map.begin();
+    vector<handle_t>::iterator veciter;
+    handle_t node;
+    while(iter!=map.end()){
+        node = iter->first;
+
+        cout <<g->get_id(node) << ": ";
+
+        veciter = iter->second.begin();
+        while(veciter!=iter->second.end()){
+            cout << g->get_id(*veciter) << ", ";
+        }
+        cout << "\n";
+        
+    }
+}
