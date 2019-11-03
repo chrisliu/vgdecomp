@@ -81,7 +81,7 @@ def add_edge():
 
     def parse_input(node_str, is_first = True):
         """Returns a tuple of (node_id, is_reverse)."""
-        return int(node_str[0]), node_str[1] == ('+' if is_first else '-')
+        return int(node_str[0]), node_str[1] == ('-' if is_first else '+')
     
     def is_exit(input_str):
         return input_str in exit_codes
@@ -97,7 +97,7 @@ def add_edge():
             input_str = input(prompt)
             if is_exit(input_str):
                 return True
-            input_str = input_str.ljust(2, '-' if is_first else '+')
+            input_str = input_str.ljust(2, '+' if is_first else '-')
             try:
                 if is_first:
                     edge.id1, edge.from_left = parse_input(input_str) 
