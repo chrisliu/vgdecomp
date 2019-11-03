@@ -28,6 +28,10 @@ inline bool cache_node(const handle_t& handle, traversed_t& traversed_nodes,
 );
 
 std::vector<Bundle> find_bundles(const HandleGraph* g) {
+    /// Complexity Analysis
+    /// Each node is explored once so O(2V) = O(V)
+    /// Each edge is traversed at most 3 times O(3E) = O(E)
+    /// Therefore the complexity is O(V + E) or at worst O(V^2)
     std::vector<Bundle> bundles;
     traversed_t traversed_nodes;
 
@@ -82,10 +86,10 @@ std::vector<Bundle> find_bundles(const HandleGraph* g) {
 std::pair<bool, Bundle> is_in_bundle(const handle_t& handle, traversed_t& traversed_nodes,
     const HandleGraph* g, bool go_left 
 ) {
-    /** OPTIMIZATION
-     * Don't early exit and if there's a failure cache all edges that would have been traversed
-     */
-
+    /// Initialization Complexity Analysis
+    /// g->get_is_reverse is O(1)
+    /// Rest are assignments
+    /// Therefore this block is O(1)
     Bundle bundle;
     bool is_not_bundle = false;
     bool has_reversed_node = false;
@@ -93,7 +97,9 @@ std::pair<bool, Bundle> is_in_bundle(const handle_t& handle, traversed_t& traver
     bool handle_dir     = g->get_is_reverse(handle);
     bool is_handle_left = (handle_dir && go_left) || (!handle_dir && !go_left); // Is handle on the left side
 
-    // Phase 1
+    /// Phase 1 Complexity Analysis
+    /// g->follow_edges could be at most O(V-1) = O(V)
+    /// Therefore this block is O(V)
     // Insert edges from opposite side
     g->follow_edges(handle, go_left, [&](const handle_t& opp_handle) {
         // Cache traversed handle here
@@ -106,7 +112,11 @@ std::pair<bool, Bundle> is_in_bundle(const handle_t& handle, traversed_t& traver
         return std::make_pair(false, bundle);
     }
 
-    // Phase 2
+    /// Phase 2 Complexity Analysis
+    /// g->follow_edges could be at most O(V)
+    /// bundle functions are all O(1) since they are operations on an unordered set
+    /// The number of nodes is at most V-1
+    /// Therefore the complexity is O(V^2)
     int same_side_count = 0; // Used to verify if there's the same number of same nodes for each opposite node.
     bundle.get_bundleside(!is_handle_left).traverse_bundle(
         [&](const handle_t& opp_handle) {
@@ -150,7 +160,11 @@ std::pair<bool, Bundle> is_in_bundle(const handle_t& handle, traversed_t& traver
     cout << "(Phase 2) is_not_bundle: " << ((is_not_bundle) ? "true" : "false") << endl;
 #endif /* DEBUG_FIND_BUNDLES */
 
-    // Phase 3
+    /// Phase 3 Complexity Analysis
+    /// g->follow_edges could be at most O(V)
+    /// bundle functions are all O(1) since they are operations on an unordered set
+    /// The number of nodes is at most V-1
+    /// Therefore the complexity is O(V^2)
     int opposite_side_count = bundle.get_bundleside_size(!is_handle_left); // Used to verify if there's the same number of opposite nodes for each same node.
     bundle.get_bundleside(is_handle_left).traverse_bundle(
         [&](const handle_t& same_handle) {
@@ -179,12 +193,16 @@ std::pair<bool, Bundle> is_in_bundle(const handle_t& handle, traversed_t& traver
     cout << "(Phase 3) is_not_bundle: " << ((is_not_bundle) ? "true" : "false") << endl;
 #endif /* DEBUG_FIND_BUNDLES */
 
-    // Describe bundle
+    /// Describe Bundle Complexity
+    /// All constant assignments
+    /// Therefore the complexity is O(1)
     bundle.set_trivial(bundle.get_bundleside_size(true) == 1 && \ 
         bundle.get_bundleside_size(false) == 1);
     bundle.set_has_reversed_node(has_reversed_node);
 
     return std::make_pair(!is_not_bundle, bundle);
+    /// FinalComplexity Analysis
+    /// O(V^2)
 }
 
 inline bool cache_node(const handle_t& handle, traversed_t& traversed_nodes,
