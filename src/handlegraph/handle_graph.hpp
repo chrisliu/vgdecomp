@@ -140,7 +140,7 @@ public:
     /// in parallel (parallel = true), stopping early is best-effort.
     template<typename Iteratee>
     bool for_each_edge(const Iteratee& iteratee, bool parallel = false) const;
-
+    
     ////////////////////////////////////////////////////////////////////////////
     // Backing protected virtual methods that need to be implemented
     ////////////////////////////////////////////////////////////////////////////
@@ -162,9 +162,6 @@ protected:
     
     
 };
-
-
-
 
 /*
  * Defines an interface for serialization and deserialization for handle graph,
