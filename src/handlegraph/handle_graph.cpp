@@ -1,10 +1,9 @@
-#include "handle_graph.hpp"
 #include "util.hpp"
-
+#include "handle_graph.hpp"
 #include <vector>
 
 /** \file handle.cpp
- * Implement handle graph utility methods, oprtators, and default implementations.
+ * Implement handle graph utility methods, operators, and default implementations.
  */
 
 namespace handlegraph {
@@ -78,7 +77,8 @@ char HandleGraph::get_base(const handle_t& handle, size_t index) const {
 std::string HandleGraph::get_subsequence(const handle_t& handle, size_t index, size_t size) const {
     return get_sequence(handle).substr(index, size);
 }
-
+//commented this out since its included in types.hpp as well.
+/*
 /// Define equality on handles
 bool operator==(const handle_t& a, const handle_t& b) {
     return as_integer(a) == as_integer(b);
@@ -108,7 +108,7 @@ bool operator==(const step_handle_t& a, const step_handle_t& b) {
 bool operator!=(const step_handle_t& a, const step_handle_t& b) {
     return !(a == b);
 }
-
+*/
 }
 
 

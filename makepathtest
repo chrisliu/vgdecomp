@@ -1,0 +1,40 @@
+#Makefile for find_path_connected
+
+BIGRAPH = src/BidirectedGraph.cpp
+BIEDGE = src/BidirectedEdge.cpp
+BIBUILD = src/BidirectedGraphBuilder.cpp
+BINODE = src/BidirectedNode.cpp
+ALGO = src/algorithms/find_path_connected.cpp
+HG = src/handlegraph/handle_graph.cpp
+JSON = src/json/jsoncpp.cpp
+TEST = test/PathConnectedTest.cpp
+FLAGS = -std=c++17 -g -Wall
+OBJECTS = find_path_connected.o BidirectedGraphBuilder.o BidirectedGraph.o handle_graph.o BidirectedEdge.o BidirectedNode.o jsoncpp.o
+
+PathConnectedTest: $(OBJECTS)
+	g++ $(FLAGS) -c $(TEST) -o PathConnectedTest.o
+	g++ $(FLAGS) PathConnectedTest.o $(OBJECTS) -o PathConnectedTest
+
+BidirectedGraphBuilder.o: $(BIBUILD)
+	g++ $(FLAGS) -c $(BIBUILD) -o BidirectedGraphBuilder.o
+
+BidirectedGraph.o: $(BIGRAPH)
+	g++ $(FLAGS) -c $(BIGRAPH) -o BidirectedGraph.o
+
+BidirectedEdge.o : $(BIEDGE)
+	g++ $(FLAGS) -c $(BIEDGE) -o BidirectedEdge.o
+
+BidirectedNode.o : $(BINODE)
+	g++ $(FLAGS) -c $(BINODE) -o BidirectedNode.o
+	
+find_path_connected.o: $(ALGO)
+	g++ $(FLAGS) -c $(ALGO) -o find_path_connected.o
+
+handle_graph.o : $(HG)
+	g++ $(FLAGS) -c $(HG) -o handle_graph.o
+
+jsoncpp.o : $(JSON)
+	g++ $(FLAGS) -c $(JSON) -o jsoncpp.o
+
+clean:
+	rm -f PathConnectedTest.o BidirectedGraph.o BidirectedEdge.o PathConnectedTest
