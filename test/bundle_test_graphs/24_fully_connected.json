@@ -1,0 +1,85 @@
+{
+    "comment": "This is a fully connected graph",
+    "graph": {
+        "edges": [
+            {
+                "id1": 1,
+                "id2": 2,
+                "from_left": false,
+                "to_right": false
+            },
+            {
+                "id1": 1,
+                "id2": 3,
+                "from_left": false,
+                "to_right": false
+            },
+            {
+                "id1": 1,
+                "id2": 4,
+                "from_left": false,
+                "to_right": false
+            },
+            {
+                "id1": 1,
+                "id2": 5,
+                "from_left": false,
+                "to_right": false
+            },
+            {
+                "id1": 2,
+                "id2": 3,
+                "from_left": false,
+                "to_right": false
+            },
+            {
+                "id1": 2,
+                "id2": 4,
+                "from_left": false,
+                "to_right": false
+            },
+            {
+                "id1": 2,
+                "id2": 5,
+                "from_left": false,
+                "to_right": false
+            },
+            {
+                "id1": 3,
+                "id2": 4,
+                "from_left": false,
+                "to_right": false
+            },
+            {
+                "id1": 3,
+                "id2": 5,
+                "from_left": false,
+                "to_right": false
+            },
+            {
+                "id1": 4,
+                "id2": 5,
+                "from_left": false,
+                "to_right": false
+            }
+        ],
+        "nodes": [
+            {
+                "id": 1
+            },
+            {
+                "id": 2
+            },
+            {
+                "id": 3
+            },
+            {
+                "id": 4
+            },
+            {
+                "id": 5
+            }
+        ]
+    },
+    "bundles": []
+}
