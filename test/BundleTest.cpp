@@ -2,7 +2,7 @@
 
 #include "../src/BidirectedGraph.hpp"
 #include "../src/BidirectedGraphBuilder.hpp"
-#include "../src/algorithms/find_bundles.hpp"
+#include "../src/algorithms/find_balanced_bundles.hpp"
 #include "../src/algorithms/bundle.hpp"
 
 using namespace std;
@@ -31,7 +31,7 @@ int main(int argc, char* argv[]) {
     for (int i = 1; i < argc; i++) {
         cout << i << "\t" << argv[i] << endl;
         BidirectedGraph g = BidirectedGraphBuilder::build_graph(argv[i]);
-        auto bundles = find_bundles(&g);
+        auto bundles = find_balanced_bundles(&g);
         for (auto bundle : bundles) {
             print_bundle(&g, bundle);
         }

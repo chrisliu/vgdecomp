@@ -1,6 +1,6 @@
-#include "find_bundles.hpp"
+#include "find_balanced_bundles.hpp"
 
-#ifdef DEBUG_FIND_BUNDLES
+#ifdef DEBUG_FIND_BALANCED_BUNDLES
 #include <iostream> 
 #include <sstream>
 #include <string>
@@ -12,7 +12,7 @@ inline string handle_info_str(const HandleGraph* g, const handle_t& handle) {
     return ss.str();
 } 
 
-#endif /* DEBUG_FIND_BUNDLES */
+#endif /* DEBUG_FIND_BALANCED_BUNDLES */
 
 /// For each id a pair of bools are stored.
 /// The first bool is if the node has been traversed going left
@@ -27,7 +27,7 @@ inline bool cache_node(const handle_t& handle, traversed_t& traversed_nodes,
     const HandleGraph* g, bool go_left = false
 );
 
-std::vector<Bundle> find_bundles(const HandleGraph* g) {
+std::vector<Bundle> find_balanced_bundles(const HandleGraph* g) {
     /// Complexity Analysis
     /// Each node is explored once so O(2V) = O(V)
     /// Each edge is traversed at most 3 times O(3E) = O(E)
@@ -38,9 +38,9 @@ std::vector<Bundle> find_bundles(const HandleGraph* g) {
     g->for_each_handle([&] (const handle_t& handle) {
         if (!cache_node(handle, traversed_nodes, g)) {
             auto ret = is_in_bundle(handle, traversed_nodes, g);
-#ifdef DEBUG_FIND_BUNDLES
+#ifdef DEBUG_FIND_BALANCED_BUNDLES
             cout << g->get_id(handle) << " +: " << ((ret.first) ? "true" : "false") << endl;
-#endif /* DEBUG_FIND_BUNDLES */
+#endif /* DEBUG_FIND_BALANCED_BUNDLES */
             if (ret.first) {
                 bundles.push_back(ret.second);
             }
@@ -48,9 +48,9 @@ std::vector<Bundle> find_bundles(const HandleGraph* g) {
 
         if (!cache_node(handle, traversed_nodes, g, true)) {
             auto ret = is_in_bundle(handle, traversed_nodes, g, true);
-#ifdef DEBUG_FIND_BUNDLES
+#ifdef DEBUG_FIND_BALANCED_BUNDLES
             cout << g->get_id(handle) << " -: " << ((ret.first) ? "true" : "false") << endl;
-#endif /* DEBUG_FIND_BUNDLES */
+#endif /* DEBUG_FIND_BALANCED_BUNDLES */
             if (ret.first) {
                 bundles.push_back(ret.second);
             }
@@ -126,16 +126,16 @@ std::pair<bool, Bundle> is_in_bundle(const handle_t& handle, traversed_t& traver
                     [&](const handle_t& same_handle) {
                         bundle.add_init_node(same_handle, is_handle_left);
                         has_reversed_node |= g->get_is_reverse(same_handle) != handle_dir;
-#ifdef DEBUG_FIND_BUNDLES
+#ifdef DEBUG_FIND_BALANCED_BUNDLES
                         cout << "(same_init - " << handle_info_str(g, same_handle) << ") is_not_bundle: " << ((is_not_bundle) ? "true" : "false") << endl;
                         cout << "(same_init - " << handle_info_str(g, same_handle) << ") has_reversed_node: " << ((has_reversed_node) ? "true" : "false") << endl;
-#endif /* DEBUG_FIND_BUNDLES */
+#endif /* DEBUG_FIND_BALANCED_BUNDLES */
                     }
                 );
                 same_side_count = bundle.get_bundleside_size(is_handle_left);
-#ifdef DEBUG_FIND_BUNDLES
+#ifdef DEBUG_FIND_BALANCED_BUNDLES
                     cout << "(opp_init - " << handle_info_str(g, opp_handle) << ") is_not_bundle: " << ((is_not_bundle) ? "true" : "false") << endl;
-#endif /* DEBUG_FIND_BUNDLES */
+#endif /* DEBUG_FIND_BALANCED_BUNDLES */
             } else {
                 int node_count = 0;
                 g->follow_edges(opp_handle, !go_left,
@@ -143,22 +143,22 @@ std::pair<bool, Bundle> is_in_bundle(const handle_t& handle, traversed_t& traver
                         is_not_bundle |= bundle.add_node(same_handle, is_handle_left);
                         has_reversed_node |= g->get_is_reverse(opp_handle) != handle_dir;
                         node_count++;
-#ifdef DEBUG_FIND_BUNDLES
+#ifdef DEBUG_FIND_BALANCED_BUNDLES
                         cout << "(same - " << handle_info_str(g, same_handle) << ") is_not_bundle: " << ((is_not_bundle) ? "true" : "false") << endl;
-#endif /* DEBUG_FIND_BUNDLES */
+#endif /* DEBUG_FIND_BALANCED_BUNDLES */
                     }
                 );
                 is_not_bundle |= node_count != same_side_count;
-#ifdef DEBUG_FIND_BUNDLES
+#ifdef DEBUG_FIND_BALANCED_BUNDLES
                     cout << "(opp - " << handle_info_str(g, opp_handle) << ") is_not_bundle: " << ((is_not_bundle) ? "true" : "false") << endl;
-#endif /* DEBUG_FIND_BUNDLES */
+#endif /* DEBUG_FIND_BALANCED_BUNDLES */
             }
         }
     );
     
-#ifdef DEBUG_FIND_BUNDLES
+#ifdef DEBUG_FIND_BALANCED_BUNDLES
     cout << "(Phase 2) is_not_bundle: " << ((is_not_bundle) ? "true" : "false") << endl;
-#endif /* DEBUG_FIND_BUNDLES */
+#endif /* DEBUG_FIND_BALANCED_BUNDLES */
 
     /// Phase 3 Complexity Analysis
     /// g->follow_edges could be at most O(V)
@@ -176,22 +176,22 @@ std::pair<bool, Bundle> is_in_bundle(const handle_t& handle, traversed_t& traver
                         is_not_bundle |= bundle.add_node(opp_handle, !is_handle_left);
                         has_reversed_node |= g->get_is_reverse(opp_handle) != handle_dir;
                         node_count++;
-#ifdef DEBUG_FIND_BUNDLES
+#ifdef DEBUG_FIND_BALANCED_BUNDLES
                         cout << "(opp - " << handle_info_str(g, opp_handle) << ") is_not_bundle: " << ((is_not_bundle) ? "true" : "false") << endl;
-#endif /* DEBUG_FIND_BUNDLES */
+#endif /* DEBUG_FIND_BALANCED_BUNDLES */
                     }
                 );
                 is_not_bundle |= node_count != opposite_side_count;
-#ifdef DEBUG_FIND_BUNDLES
+#ifdef DEBUG_FIND_BALANCED_BUNDLES
                     cout << "(same - " << handle_info_str(g, same_handle) << ") is_not_bundle: " << ((is_not_bundle) ? "true" : "false") << endl;
-#endif /* DEBUG_FIND_BUNDLES */
+#endif /* DEBUG_FIND_BALANCED_BUNDLES */
             }
         }
     );
 
-#ifdef DEBUG_FIND_BUNDLES
+#ifdef DEBUG_FIND_BALANCED_BUNDLES
     cout << "(Phase 3) is_not_bundle: " << ((is_not_bundle) ? "true" : "false") << endl;
-#endif /* DEBUG_FIND_BUNDLES */
+#endif /* DEBUG_FIND_BALANCED_BUNDLES */
 
     /// Describe Bundle Complexity
     /// All constant assignments
