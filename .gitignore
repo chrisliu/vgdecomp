@@ -36,5 +36,6 @@
 *.exe
 *.out
 *.app
-Untitled.code-workspace
+hg.code-workspace
 src/BidirectedGraphTEST
+PathConnectedTest
