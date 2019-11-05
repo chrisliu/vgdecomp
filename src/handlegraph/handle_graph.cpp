@@ -4,7 +4,7 @@
 #include <vector>
 
 /** \file handle.cpp
- * Implement handle graph utility methods, oprtators, and default implementations.
+ * Implement handle graph utility methods, operators, and default implementations.
  */
 
 namespace handlegraph {
