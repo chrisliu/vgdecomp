@@ -20,7 +20,7 @@ int main(int argv, char* argc[]){
     files.push_back("test/bundle_test_graphs/42_triple_cyclic_bundles.json");
     files.push_back("test/bundle_test_graphs/15_acyclic_useless_bundle.json");
     files.push_back("test/bundle_test_graphs/04_complex_cyclic_useless_bundle.json");
-    
+    files.push_back("test/path_connected_tests/cyclic_bundle_with_bubbles.json");
     
     BidirectedGraphBuilder builder;
     vector<string>::iterator iter = files.begin();
