@@ -11,9 +11,11 @@ TEST = test/PathConnectedTest.cpp
 FLAGS = -std=c++17 -g -Wall
 OBJECTS = find_path_connected.o BidirectedGraphBuilder.o BidirectedGraph.o handle_graph.o BidirectedEdge.o BidirectedNode.o jsoncpp.o
 
-PathConnectedTest: $(OBJECTS)
-	g++ $(FLAGS) -c $(TEST) -o PathConnectedTest.o
+PathConnectedTest: $(OBJECTS) PathConnectedTest.o	
 	g++ $(FLAGS) PathConnectedTest.o $(OBJECTS) -o PathConnectedTest
+
+PathConnectedTest.o: $(TEST)
+	g++ $(FLAGS) -c $(TEST) -o PathConnectedTest.o
 
 BidirectedGraphBuilder.o: $(BIBUILD)
 	g++ $(FLAGS) -c $(BIBUILD) -o BidirectedGraphBuilder.o
