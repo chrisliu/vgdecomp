@@ -37,4 +37,4 @@ jsoncpp.o : $(JSON)
 	g++ $(FLAGS) -c $(JSON) -o jsoncpp.o
 
 clean:
-	rm -f PathConnectedTest.o BidirectedGraph.o BidirectedEdge.o PathConnectedTest
+	rm -f $(OBJECTS)

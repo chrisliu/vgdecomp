@@ -1,0 +1,17 @@
+{
+    "graph":{
+        "edges":[
+            {
+                "from_left":true,
+                "id1":0,
+                "id2":0,
+                "to_right":true
+            }
+        ],
+        "nodes":[
+            {
+                "id":0
+            }
+        ]
+    }
+}
