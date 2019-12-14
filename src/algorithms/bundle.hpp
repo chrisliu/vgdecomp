@@ -1,23 +1,33 @@
 #ifndef VG_BUNDLE_HPP_INCLUDED
 #define VG_BUNDLE_HPP_INCLUDED
 
+#include <algorithm>
+#include <stdexcept>
 #include <unordered_set>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 #include "../handlegraph/types.hpp"
 #include "../handlegraph/iteratee.hpp"
-
-// Need to double check this include statement 
-// Shouldn't be necessary but IDE gives me 
-// undefinide type error for hnadle_t
+#include "../handlegraph/util.hpp"
 #include "../BidirectedGraph.hpp"
+
+typedef std::unordered_set<handle_t> bundle_set_t;
+typedef std::vector<handle_t> bundle_vector_t;
+
+enum Adjacency {
+    None,
+    Weak,
+    Strong
+};
 
 class BundleSide {
     private:
-        std::unordered_set<handle_t> bundle_set;
-        std::vector<handle_t>        bundle_vector;
-        bool                         is_bundle_freed;
+        bundle_set_t    bundle_set;
+        bundle_vector_t bundle_vector;
+        bundle_vector_t bundle_vector_reversed;
+        bool            is_bundle_freed;
 
     public:
         /// Adds a node handle to this bundle side. 
@@ -49,7 +59,7 @@ class BundleSide {
         /// it's more memory efficient and faster.
         /// bundle_set memory will be freed when this function
         /// is called to conserve memory space.
-        void cache();
+        void cache(BidirectedGraph& g);
 
         /// Iterate through the bundle side with an iterator
         /// Parameters:
@@ -68,6 +78,9 @@ class BundleSide {
         /// on whether or not it's been cached already. However,
         /// I couldn't figure out if it's possible in C++
         void traverse_bundle(const std::function<void(const handle_t&)>& iteratee);
+
+        /// See: https://lemire.me/blog/2017/01/27/how-expensive-are-the-union-and-intersection-of-two-unordered_set-in-c/
+        Adjacency get_adjacency(const BundleSide& other) const;
 
         int size();
 };
@@ -126,7 +139,7 @@ class Bundle {
         /// Left side bundle access
         BundleSide get_bundleside(bool is_left);
 
-        void freeze();
+        void freeze(BidirectedGraph& g);
 
         /// Accessor functions
         bool is_trivial();

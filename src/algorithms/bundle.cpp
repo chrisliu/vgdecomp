@@ -12,9 +12,10 @@ bool BundleSide::add_node(const handle_t& node) {
     return bundle_set.insert(node).second;
 }
 
-void BundleSide::cache() {
+void BundleSide::cache(BidirectedGraph& g) {
     for (const handle_t& node : bundle_set) {
         bundle_vector.push_back(node);
+        bundle_vector_reversed.push_back(g.get_handle(g.get_id(node), !g.get_is_reverse(node)));
     }
 
     // Should prompt C++ to clear the memory
@@ -25,7 +26,13 @@ void BundleSide::cache() {
     bundle_set.rehash(1);
     */
 
-   is_bundle_freed = true;
+    /// Sort for set intersection
+    std::sort(bundle_vector.begin(), bundle_vector.end(), 
+        [](handle_t& h1, handle_t& h2) {return as_integer(h1) < as_integer(h2);});
+    std::sort(bundle_vector_reversed.begin(), bundle_vector_reversed.end(),
+        [](handle_t& h1, handle_t& h2) {return as_integer(h1) < as_integer(h2);});
+
+    is_bundle_freed = true;
 }
 
 void BundleSide::traverse_bundle(const std::function<void(const handle_t&)>& iteratee) {    
@@ -45,6 +52,42 @@ int BundleSide::size() {
         return bundle_vector.size();
     }
     return bundle_set.size();
+}
+
+Adjacency get_adjacency_type(const bundle_vector_t side1, const bundle_vector_t side2) {
+    bundle_vector_t::iterator it;
+    bundle_vector_t intersection(max(side1.size(), side2.size()));
+
+    it = set_intersection(side1.begin(), side1.end(), side2.begin(), side2.end(), intersection.begin(), 
+        [](const handle_t h1, const handle_t h2) -> bool {
+            return as_integer(h1) < as_integer(h2);
+        }
+    );
+
+    size_t intersection_node_count = it - intersection.begin(); 
+
+    if (side1.size() == intersection_node_count && side2.size() == intersection_node_count) {
+        return Adjacency::Strong;
+    } else if (intersection_node_count > 0) {
+        return Adjacency::Weak;
+    }
+    return Adjacency::None;
+}
+
+Adjacency BundleSide::get_adjacency(const BundleSide& other) const {
+    if (!this->is_bundle_freed || !other.is_bundle_freed) {
+        throw std::invalid_argument("Invalid BundleSide in adjacency");
+    }
+
+    Adjacency res;
+    if ((res = get_adjacency_type(this->bundle_vector, other.bundle_vector)) != Adjacency::None ||
+        (res = get_adjacency_type(this->bundle_vector, other.bundle_vector_reversed)) != Adjacency::None ||
+        (res = get_adjacency_type(this->bundle_vector_reversed, other.bundle_vector)) != Adjacency::None ||
+        (res = get_adjacency_type(this->bundle_vector_reversed, other.bundle_vector_reversed)) != Adjacency::None
+    ) {
+        return res;
+    }
+    return Adjacency::None;
 }
 
 /***********************************************
@@ -73,9 +116,9 @@ BundleSide Bundle::get_bundleside(bool is_left) {
     return internal_bundle.second;
 }
 
-void Bundle::freeze() {
-    internal_bundle.first.cache();
-    internal_bundle.second.cache();
+void Bundle::freeze(BidirectedGraph& g) {
+    internal_bundle.first.cache(g);
+    internal_bundle.second.cache(g);
 }
 
 bool Bundle::is_trivial() {
