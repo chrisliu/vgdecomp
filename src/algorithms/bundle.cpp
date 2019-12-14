@@ -1,6 +1,17 @@
 #include "bundle.hpp"
 
 /***********************************************
+ * Custom structures implementation
+ ***********************************************/
+
+/// Counter structure
+struct Count {
+    struct value_type { template<typename T> value_type(const T&) {} };
+    void push_back(const value_type&) { count++; }
+    size_t count = 0;
+};
+
+/***********************************************
  * BundleSide implementation
  ***********************************************/
 
@@ -55,20 +66,18 @@ int BundleSide::size() {
 }
 
 Adjacency get_adjacency_type(const bundle_vector_t side1, const bundle_vector_t side2) {
-    bundle_vector_t::iterator it;
-    bundle_vector_t intersection(max(side1.size(), side2.size()));
-
-    it = set_intersection(side1.begin(), side1.end(), side2.begin(), side2.end(), intersection.begin(), 
+    Count c;
+    set_intersection(side1.begin(), side1.end(), side2.begin(), side2.end(), back_insert_iterator(c), 
         [](const handle_t h1, const handle_t h2) -> bool {
             return as_integer(h1) < as_integer(h2);
         }
     );
 
-    size_t intersection_node_count = it - intersection.begin(); 
+    size_t count = c.count;
 
-    if (side1.size() == intersection_node_count && side2.size() == intersection_node_count) {
+    if (side1.size() == count && side2.size() == count) {
         return Adjacency::Strong;
-    } else if (intersection_node_count > 0) {
+    } else if (count > 0) {
         return Adjacency::Weak;
     }
     return Adjacency::None;
