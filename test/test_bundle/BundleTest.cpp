@@ -1,9 +1,9 @@
 #include <iostream>
 
-#include "../src/BidirectedGraph.hpp"
-#include "../src/BidirectedGraphBuilder.hpp"
-#include "../src/algorithms/find_balanced_bundles.hpp"
-#include "../src/algorithms/bundle.hpp"
+#include "../../src/BidirectedGraph.hpp"
+#include "../../src/BidirectedGraphBuilder.hpp"
+#include "../../src/algorithms/find_balanced_bundles.hpp"
+#include "../../src/algorithms/bundle.hpp"
 
 using namespace std;
 
