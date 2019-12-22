@@ -3,6 +3,8 @@ import json
 exit_codes = ['q', 'Q']
 
 def main():
+    print_help()
+
     # Ask for filename
     filename = get_filename() 
 
@@ -53,6 +55,35 @@ def main():
         json.dump(graph, out, indent = 4)
 
     print(f"Outputted to {filename}")
+
+def print_help():
+    instructions = """Graph Assistant Instructions
+    1. Edge declarations phase
+       - Prompts for the first and second nodes in the edge.
+         Ex.
+            Node 1: <Node1 str>
+            Node 2: <Node2 str>
+         Node string format: \d+[lr]?
+         l and r denotes the left and right side of a node respectively.
+         When done, use 'q' to exit the edge declaration phase.
+    2. Bundle declaration phase
+       - Prompts for a bundle.
+         Ex.
+            Finish bundles? <Finished str>
+         Type 'qq' to indicate there are no more bundles and exit tool.
+         Type <enter> to declare a new bundle.
+       - Prompts for the left side of a bundle.
+         Ex.
+            Left side node: <Node1 str>
+            > <Node2 str>
+         Node string format: \d+r?
+         r is used to indicate that the node will be reversed.
+         Type 'q' when all nodes on the left side have been declared.
+       - Prompts for the right side of a bundle.
+         The steps are the same as the left side.
+    3. Custom json format will be outputted to <difficulty><id>_<name>.json
+    """
+    print(instructions)
 
 def _keep_prompting(prompt, condition):
     while True:
