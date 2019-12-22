@@ -1,226 +1,153 @@
 #include "find_balanced_bundles.hpp"
 
 #ifdef DEBUG_FIND_BALANCED_BUNDLES
-#include <iostream> 
+#include <iostream>
 #include <sstream>
 #include <string>
+
+std::string node_str(const handle_t& handle, const HandleGraph& g) {
+    stringstream ss;
+    ss << "Node " << g.get_id(handle);
+    if (g.get_is_reverse(handle)) ss << " reversed";
+    return ss.str();
+}
+#endif /* DEBUG_FIND_BALANCED_BUNDLES */
+
 using namespace std;
 
-inline string handle_info_str(const HandleGraph* g, const handle_t& handle) {
-    stringstream ss;
-    ss << g->get_id(handle) << ((g->get_is_reverse(handle)) ? "r" : "");
-    return ss.str();
-} 
+/// Returns true if the handle has been cached or false if otherwise
+inline bool cache(const handle_t& handle, unordered_set<handle_t>& cached) { 
+    return !cached.insert(handle).second;
+}
 
-#endif /* DEBUG_FIND_BALANCED_BUNDLES */
+inline bool cache(const handle_t& handle, unordered_set<handle_t>& cached,
+    const HandleGraph& g
+) { 
+    return !cached.insert(g.flip(handle)).second;
+}
 
-/// For each id a pair of bools are stored.
-/// The first bool is if the node has been traversed going left
-/// The second bool is if the node has been traversed going right
-typedef std::unordered_map<nid_t, std::pair<bool, bool>> traversed_t;
-
-// Define functions
-std::pair<bool, Bundle> is_in_bundle(const handle_t& handle, traversed_t& traversed_nodes,
-    const HandleGraph* g, bool go_left = false
-);
-inline bool cache_node(const handle_t& handle, traversed_t& traversed_nodes,
-    const HandleGraph* g, bool go_left = false
-);
-
-std::vector<Bundle> find_balanced_bundles(const HandleGraph* g) {
-    /// Complexity Analysis
-    /// Each node is explored once so O(2V) = O(V)
-    /// Each edge is traversed at most 3 times O(3E) = O(E)
-    /// Therefore the complexity is O(V + E) or at worst O(V^2)
-    std::vector<Bundle> bundles;
-    traversed_t traversed_nodes;
-
-    g->for_each_handle([&] (const handle_t& handle) {
-        if (!cache_node(handle, traversed_nodes, g)) {
-            auto ret = is_in_bundle(handle, traversed_nodes, g);
+/// Returns a Bundle such that if traversing the left side nodes 
+/// such that go_left is false will result in the nodes on the right
+/// side.
+pair<bool, Bundle> is_in_bundle(const handle_t& handle, const HandleGraph& g,
+    unordered_set<handle_t>& cached
+) {
 #ifdef DEBUG_FIND_BALANCED_BUNDLES
-            cout << g->get_id(handle) << " +: " << ((ret.first) ? "true" : "false") << endl;
+    cout << "### " << node_str(handle, g) << " ###" << endl;
 #endif /* DEBUG_FIND_BALANCED_BUNDLES */
-            if (ret.first) {
-                bundles.push_back(ret.second);
+
+    Bundle bundle;
+    bool is_not_bundle = false;
+    bool has_reversed = false;
+    bool handle_dir = g.get_is_reverse(handle);
+
+    /// Phase 1: Find right side nodes
+    g.follow_edges(handle, false, [&](const handle_t& rhs_handle) {
+        bundle.add_init_node(rhs_handle, false);
+        has_reversed = g.get_is_reverse(rhs_handle) != handle_dir;
+    });
+
+    if (!bundle.get_bundleside_size(false)) {
+        return pair(false, bundle);
+    }
+
+#ifdef DEBUG_FIND_BALANCED_BUNDLES
+    cout << "[Phase 1] RHS nodes:" << endl;
+    int count = 1;
+    bundle.get_bundleside(false).traverse_bundle([&](const handle_t rhs_handle) {
+        cout << "  " << count << ". " << node_str(rhs_handle, g) << endl;
+        count++;
+    });
+#endif /* DEBUG_FIND_BALANCED_BUNDLES */
+
+    /// Phase 2: Find left side nodes and verify all lhs sets are the same
+    bool is_first = true;
+    int lhs_node_count = 0;
+    bundle.get_bundleside(false).traverse_bundle([&](const handle_t& rhs_handle) {
+        cache(rhs_handle, cached, g);
+        if (is_first) {
+            g.follow_edges(rhs_handle, true, [&](const handle_t& lhs_handle) {
+                bundle.add_init_node(lhs_handle, true);
+                has_reversed |= g.get_is_reverse(lhs_handle) != handle_dir;
+                cache(lhs_handle, cached);
+                lhs_node_count++;
+            });
+            is_first = false;
+        } else {
+            int node_count = 0;
+            g.follow_edges(rhs_handle, true, [&](const handle_t& lhs_handle) {
+                is_not_bundle |= bundle.add_node(lhs_handle, true);
+                has_reversed |= g.get_is_reverse(lhs_handle) != handle_dir;
+                cache(lhs_handle, cached);
+                node_count++;
+            });
+            is_not_bundle |= node_count != lhs_node_count;
+        }
+    });
+
+#ifdef DEBUG_FIND_BALANCED_BUNDLES
+    cout << "[Phase 2] LHS nodes:" << endl;
+    count = 1;
+    bundle.get_bundleside(true).traverse_bundle([&](const handle_t lhs_handle) {
+        cout << "  " << count << ". " << node_str(lhs_handle, g) << endl;
+        count++;
+    });
+    cout << "[Phase 2] Is bundle: " << ((!is_not_bundle) ? "True" : "False") << endl;
+#endif /* DEBUG_FIND_BALANCED_BUNDLES */
+
+    /// Phase 3: Find right side nodes and verify all rhs sets are the same
+    int rhs_node_count = bundle.get_bundleside_size(false);
+    bundle.get_bundleside(true).traverse_bundle([&](const handle_t& lhs_handle) {
+        if (lhs_handle != handle) {
+            int node_count = 0;
+            g.follow_edges(lhs_handle, false, [&](const handle_t& rhs_handle) {
+                is_not_bundle |= bundle.add_node(rhs_handle, false);
+                has_reversed |= g.get_is_reverse(rhs_handle) != handle_dir;
+                cache(rhs_handle, cached, g);
+                node_count++;
+            });
+            is_not_bundle |= node_count != rhs_node_count;
+        }
+    });
+
+#ifdef DEBUG_FIND_BALANCED_BUNDLES
+    cout << "[Phase 3] RHS nodes:" << endl;
+    count = 1;
+    bundle.get_bundleside(false).traverse_bundle([&](const handle_t rhs_handle) {
+        cout << "  " << count << ". " << node_str(rhs_handle, g) << endl;
+        count++;
+    });
+    cout << "[Phase 3] Is bundle: " << ((!is_not_bundle) ? "True" : "False") << endl;
+#endif /* DEBUG_FIND_BALANCED_BUNDLES */
+
+    /// Phase Descriptor: Describe bundle characteristics
+    bundle.set_trivial(bundle.get_bundleside_size(true) == 1 &&
+        bundle.get_bundleside_size(false) == 1);
+    bundle.set_has_reversed_node(has_reversed);
+
+    return pair(!is_not_bundle, bundle);
+}
+
+vector<Bundle> find_balanced_bundles(const HandleGraph& g) {
+    vector<Bundle> bundles;
+    unordered_set<handle_t> cached;
+
+    g.for_each_handle([&](const handle_t& handle) {
+        if (!cache(handle, cached)) {
+            auto [r_is_bundle, r_bundle] = is_in_bundle(handle, g, cached);
+            if (r_is_bundle) {
+                bundles.push_back(r_bundle);
             }
         }
 
-        if (!cache_node(handle, traversed_nodes, g, true)) {
-            auto ret = is_in_bundle(handle, traversed_nodes, g, true);
-#ifdef DEBUG_FIND_BALANCED_BUNDLES
-            cout << g->get_id(handle) << " -: " << ((ret.first) ? "true" : "false") << endl;
-#endif /* DEBUG_FIND_BALANCED_BUNDLES */
-            if (ret.first) {
-                bundles.push_back(ret.second);
+        handle_t reversed = g.flip(handle);
+        if (!cache(reversed, cached)) {
+            auto [l_is_bundle, l_bundle] = is_in_bundle(reversed, g, cached);
+            if (l_is_bundle) {
+                bundles.push_back(l_bundle);
             }
         }
     });
 
     return bundles;
-}
-
-/// Algorithm:
-/// Terminology:
-///   Same side: Nodes on the same side of starting node <handle>
-///   Opposite side: Nodes on the opposite side of starting node <handle>
-/// Phase 1:
-///   Find all nodes on the <(go_left) ? "left" : "right"> side of the 
-///   starting node <handle>. We'll call this opposite side.
-/// Phase 2:
-///   Find all nodes on the <(go_left) ? "right" : "left"> side for each
-///   node in the opposite side. Call each set of same side nodes found per 
-///   opposite side node SSS1, SSS2, ... , SSSn. If there exists a difference
-///   between SSSa, SSSb isn't an empty set, then it's not a balanced bundle 
-///   and terminate early. Otherwise, call the nodes found same side.
-/// Phase 3:
-///   Find all nodes on the <(go_left) ? "left" : "right"> side fo each node
-///   in the same side. If any node found doesn't belong to the opposite side,
-///   then it's not a balanced bundle and terminate early. Otherwise, return 
-///   the discovered balanced bundle.
-///
-/// Returns:
-///   A pair of (bool, Bundle). The bool indicates if a bundle has been found,
-///   true if there's one else if otherwise. The Bundle will either be the 
-///   discovered bundle or a placeholder.
-std::pair<bool, Bundle> is_in_bundle(const handle_t& handle, traversed_t& traversed_nodes,
-    const HandleGraph* g, bool go_left 
-) {
-    /// Initialization Complexity Analysis
-    /// g->get_is_reverse is O(1)
-    /// Rest are assignments
-    /// Therefore this block is O(1)
-    Bundle bundle;
-    bool is_not_bundle = false;
-    bool has_reversed_node = false;
-    // Get which side of the bundle the handle is on
-    bool handle_dir     = g->get_is_reverse(handle);
-    bool is_handle_left = (handle_dir && go_left) || (!handle_dir && !go_left); // Is handle on the left side
-
-    /// Phase 1 Complexity Analysis
-    /// g->follow_edges could be at most O(V-1) = O(V)
-    /// Therefore this block is O(V)
-    // Insert edges from opposite side
-    g->follow_edges(handle, go_left, [&](const handle_t& opp_handle) {
-        // Cache traversed handle here
-        bundle.add_init_node(opp_handle, !is_handle_left);
-        has_reversed_node |= g->get_is_reverse(opp_handle) != handle_dir;
-    });
-
-    // If there isn't anything, terminate
-    if (bundle.get_bundleside_size(!is_handle_left) == 0) {
-        return std::make_pair(false, bundle);
-    }
-
-    /// Phase 2 Complexity Analysis
-    /// g->follow_edges could be at most O(V)
-    /// bundle functions are all O(1) since they are operations on an unordered set
-    /// The number of nodes is at most V-1
-    /// Therefore the complexity is O(V^2)
-    int same_side_count = 0; // Used to verify if there's the same number of same nodes for each opposite node.
-    bundle.get_bundleside(!is_handle_left).traverse_bundle(
-        [&](const handle_t& opp_handle) {
-            cache_node(opp_handle, traversed_nodes, g, !go_left);
-            if (!same_side_count) { // same_side_count >= 1 if the first opposite node is traversed since there's at least the starting node.
-                g->follow_edges(opp_handle, !go_left, 
-                    [&](const handle_t& same_handle) {
-                        bundle.add_init_node(same_handle, is_handle_left);
-                        has_reversed_node |= g->get_is_reverse(same_handle) != handle_dir;
-#ifdef DEBUG_FIND_BALANCED_BUNDLES
-                        cout << "(same_init - " << handle_info_str(g, same_handle) << ") is_not_bundle: " << ((is_not_bundle) ? "true" : "false") << endl;
-                        cout << "(same_init - " << handle_info_str(g, same_handle) << ") has_reversed_node: " << ((has_reversed_node) ? "true" : "false") << endl;
-#endif /* DEBUG_FIND_BALANCED_BUNDLES */
-                    }
-                );
-                same_side_count = bundle.get_bundleside_size(is_handle_left);
-#ifdef DEBUG_FIND_BALANCED_BUNDLES
-                    cout << "(opp_init - " << handle_info_str(g, opp_handle) << ") is_not_bundle: " << ((is_not_bundle) ? "true" : "false") << endl;
-#endif /* DEBUG_FIND_BALANCED_BUNDLES */
-            } else {
-                int node_count = 0;
-                g->follow_edges(opp_handle, !go_left,
-                    [&](const handle_t& same_handle) {
-                        is_not_bundle |= bundle.add_node(same_handle, is_handle_left);
-                        has_reversed_node |= g->get_is_reverse(opp_handle) != handle_dir;
-                        node_count++;
-#ifdef DEBUG_FIND_BALANCED_BUNDLES
-                        cout << "(same - " << handle_info_str(g, same_handle) << ") is_not_bundle: " << ((is_not_bundle) ? "true" : "false") << endl;
-#endif /* DEBUG_FIND_BALANCED_BUNDLES */
-                    }
-                );
-                is_not_bundle |= node_count != same_side_count;
-#ifdef DEBUG_FIND_BALANCED_BUNDLES
-                    cout << "(opp - " << handle_info_str(g, opp_handle) << ") is_not_bundle: " << ((is_not_bundle) ? "true" : "false") << endl;
-#endif /* DEBUG_FIND_BALANCED_BUNDLES */
-            }
-        }
-    );
-    
-#ifdef DEBUG_FIND_BALANCED_BUNDLES
-    cout << "(Phase 2) is_not_bundle: " << ((is_not_bundle) ? "true" : "false") << endl;
-#endif /* DEBUG_FIND_BALANCED_BUNDLES */
-
-    /// Phase 3 Complexity Analysis
-    /// g->follow_edges could be at most O(V)
-    /// bundle functions are all O(1) since they are operations on an unordered set
-    /// The number of nodes is at most V-1
-    /// Therefore the complexity is O(V^2)
-    int opposite_side_count = bundle.get_bundleside_size(!is_handle_left); // Used to verify if there's the same number of opposite nodes for each same node.
-    bundle.get_bundleside(is_handle_left).traverse_bundle(
-        [&](const handle_t& same_handle) {
-            if (same_handle != handle) {
-                cache_node(same_handle, traversed_nodes, g, go_left);
-                int node_count = 0;
-                g->follow_edges(same_handle, go_left, 
-                    [&](const handle_t& opp_handle) {
-                        is_not_bundle |= bundle.add_node(opp_handle, !is_handle_left);
-                        has_reversed_node |= g->get_is_reverse(opp_handle) != handle_dir;
-                        node_count++;
-#ifdef DEBUG_FIND_BALANCED_BUNDLES
-                        cout << "(opp - " << handle_info_str(g, opp_handle) << ") is_not_bundle: " << ((is_not_bundle) ? "true" : "false") << endl;
-#endif /* DEBUG_FIND_BALANCED_BUNDLES */
-                    }
-                );
-                is_not_bundle |= node_count != opposite_side_count;
-#ifdef DEBUG_FIND_BALANCED_BUNDLES
-                    cout << "(same - " << handle_info_str(g, same_handle) << ") is_not_bundle: " << ((is_not_bundle) ? "true" : "false") << endl;
-#endif /* DEBUG_FIND_BALANCED_BUNDLES */
-            }
-        }
-    );
-
-#ifdef DEBUG_FIND_BALANCED_BUNDLES
-    cout << "(Phase 3) is_not_bundle: " << ((is_not_bundle) ? "true" : "false") << endl;
-#endif /* DEBUG_FIND_BALANCED_BUNDLES */
-
-    /// Describe Bundle Complexity
-    /// All constant assignments
-    /// Therefore the complexity is O(1)
-    bundle.set_trivial(bundle.get_bundleside_size(true) == 1 && \ 
-        bundle.get_bundleside_size(false) == 1);
-    bundle.set_has_reversed_node(has_reversed_node);
-
-    return std::make_pair(!is_not_bundle, bundle);
-    /// FinalComplexity Analysis
-    /// O(V^2)
-}
-
-inline bool cache_node(const handle_t& handle, traversed_t& traversed_nodes,
-    const HandleGraph* g, bool go_left
-) {
-    nid_t id          = g->get_id(handle);
-    bool is_reverse   = g->get_is_reverse(handle);
-    bool is_left_side = (go_left && !is_reverse) || (!go_left && is_reverse); // On the left side of the node
-
-    traversed_nodes.emplace(id, std::pair<bool, bool>());
-
-    bool ret;
-    if (is_left_side) {
-        ret = traversed_nodes[id].first;
-        traversed_nodes[id].first = true;
-    } else {
-        ret = traversed_nodes[id].second;
-        traversed_nodes[id].second = true;
-    }
-    return ret;
 }
