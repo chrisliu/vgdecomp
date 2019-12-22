@@ -81,7 +81,7 @@ def add_edge():
 
     def parse_input(node_str, is_first = True):
         """Returns a tuple of (node_id, is_reverse)."""
-        return int(node_str[0]), node_str[1] == ('-' if is_first else '+')
+        return int(node_str[:-1]), node_str[-1] == ('l' if is_first else 'r')
     
     def is_exit(input_str):
         return input_str in exit_codes
@@ -97,7 +97,8 @@ def add_edge():
             input_str = input(prompt)
             if is_exit(input_str):
                 return True
-            input_str = input_str.ljust(2, '+' if is_first else '-')
+            if input_str[-1] not in "lr":
+                input_str += 'r' if is_first else 'l'
             try:
                 if is_first:
                     edge.id1, edge.from_left = parse_input(input_str) 
@@ -120,7 +121,7 @@ def add_bundle():
 
     def parse_input(node_str):
         """Returns a tuple of (node_id, is_reverse)."""
-        return int(node_str[0]), node_str[1] == '-'
+        return int(node_str[:-1]), node_str[-1] == 'r'
 
     def is_exit(input_str):
         return input_str in exit_codes
@@ -130,7 +131,8 @@ def add_bundle():
             input_str = input(prompt)
             if is_exit(input_str):
                 return None
-            input_str = input_str.ljust(2, '+')
+            if input_str[-1] not in "fr":
+                input_str += 'f'
             try:
                 return parse_input(input_str)
             except:
