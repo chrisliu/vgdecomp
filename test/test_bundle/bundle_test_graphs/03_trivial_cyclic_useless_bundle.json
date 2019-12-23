@@ -33,7 +33,7 @@
                 },
                 {
                     "id": 2,
-                    "is_reverse": true
+                    "is_reverse": false 
                 }
             ],
             "right": [

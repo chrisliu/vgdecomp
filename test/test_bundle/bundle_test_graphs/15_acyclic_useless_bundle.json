@@ -1,5 +1,5 @@
 {
-    "comment": "This is a useless bundle (no information) that's acyclic.",
+    "comment": "This is a useless bundle (no information) without cycles.",
     "graph": {
         "edges": [
             {
@@ -11,23 +11,17 @@
             {
                 "id1": 2,
                 "id2": 3,
-                "from_left": true,
-                "to_right": true
-            },
-            {
-                "id1": 2,
-                "id2": 4,
                 "from_left": false,
                 "to_right": false
             },
             {
-                "id1": 4,
-                "id2": 3,
+                "id1": 3,
+                "id2": 4,
                 "from_left": true,
                 "to_right": false
             },
             {
-                "id1": 3,
+                "id1": 4,
                 "id2": 5,
                 "from_left": false,
                 "to_right": false
@@ -37,6 +31,12 @@
                 "id2": 5,
                 "from_left": false,
                 "to_right": false
+            },
+            {
+                "id1": 2,
+                "id2": 4,
+                "from_left": true,
+                "to_right": true
             }
         ],
         "nodes": [
@@ -65,8 +65,8 @@
                     "is_reverse": false
                 },
                 {
-                    "id": 3,
-                    "is_reverse": true
+                    "id": 4,
+                    "is_reverse": false
                 }
             ],
             "right": [
@@ -76,6 +76,24 @@
                 },
                 {
                     "id": 5,
+                    "is_reverse": false
+                }
+            ]
+        },
+        {
+            "left": [
+                {
+                    "id": 2,
+                    "is_reverse": false
+                },
+                {
+                    "id": 4,
+                    "is_reverse": true
+                }
+            ],
+            "right": [
+                {
+                    "id": 3,
                     "is_reverse": false
                 }
             ]
