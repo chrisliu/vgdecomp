@@ -7,7 +7,8 @@ WARNING    = -Wall -Wextra -Wpedantic -Wshadow -Wold-style-cast
 COMPILECPP = g++ -std=c++17 -g -O0 ${WARNING}
 
 # Main program
-MAIN_PRG   = BundleTest.cpp
+MAIN_PRG   = bundle_test.cpp
+# MAIN_PRG   = BundleTest.cpp
 # Bidirected graph sources
 BG_SRCS    = ${RELPATH}src/BidirectedEdge.cpp ${RELPATH}src/BidirectedNode.cpp \
 	${RELPATH}src/BidirectedGraph.cpp ${RELPATH}src/BidirectedGraphBuilder.cpp 
@@ -22,7 +23,7 @@ JSON_SRCS  = ${RELPATH}src/json/jsoncpp.cpp
 SOURCES    = ${MAIN_PRG} ${BG_SRCS} ${ALGO_SRCS} ${HG_SRCS} ${JSON_SRCS}
 OBJECTS    = ${SOURCES:.cpp=.o}
 # Executable binary
-EXECBIN    = BundleTest 
+EXECBIN    = bundle_test 
 
 all : ${EXECBIN}
 
