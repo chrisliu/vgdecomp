@@ -10,8 +10,8 @@
 #include <fstream>
 #include <iostream>
 #include <string>
-#include "json/json/json.h"
-#include "handlegraph/types.hpp"
+#include "../deps/json/json/json.h"
+#include "../deps/handlegraph/types.hpp"
 #include "BidirectedGraph.hpp"
 
 using namespace handlegraph;

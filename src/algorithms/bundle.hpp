@@ -8,9 +8,9 @@
 #include <utility>
 #include <vector>
 
-#include "../handlegraph/types.hpp"
-#include "../handlegraph/iteratee.hpp"
-#include "../handlegraph/util.hpp"
+#include "../../deps/handlegraph/types.hpp"
+#include "../../deps/handlegraph/iteratee.hpp"
+#include "../../deps/handlegraph/util.hpp"
 #include "../BidirectedGraph.hpp"
 
 typedef std::unordered_set<handle_t> bundle_set_t;

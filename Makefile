@@ -7,8 +7,8 @@ VALGRIND   = valgrind --leak-check=full --show-reachable=yes
 
 BG_SRCS    = src/BidirectedEdge.cpp src/BidirectedNode.cpp src/BidirectedGraph.cpp src/BidirectedGraphBuilder.cpp # Bidirected graph sources
 ALGO_SRCS  = src/algorithms/find_balanced_bundles.cpp src/algorithms/bundle.cpp # Algorithm sources
-HG_SRCS    = src/handlegraph/handle_graph.cpp # Handlegraph sources
-JSON_SRCS  = src/json/jsoncpp.cpp # JSON Library Sources
+HG_SRCS    = deps/handlegraph/handle_graph.cpp # Handlegraph sources
+JSON_SRCS  = deps/json/jsoncpp.cpp # JSON Library Sources
 SOURCES    = ${MAIN_PRG} ${BG_SRCS} ${ALGO_SRCS} ${HG_SRCS} ${JSON_SRCS}
 OBJECTS    = ${SOURCES:.cpp=.o}
 

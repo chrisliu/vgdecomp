@@ -1,5 +1,5 @@
 #define CATCH_CONFIG_MAIN
-#include "../catch2/catch.hpp"
+#include "../../deps/catch2/catch.hpp"
 
 #include <algorithm>
 #include <iostream>
@@ -13,8 +13,8 @@
 #include "../../src/BidirectedGraphBuilder.hpp"
 #include "../../src/algorithms/find_balanced_bundles.hpp"
 #include "../../src/algorithms/bundle.hpp"
-#include "../../src/handlegraph/handle_graph.hpp"
-#include "../../src/json/json/json.h"
+#include "../../deps/handlegraph/handle_graph.hpp"
+#include "../../deps/json/json/json.h"
 
 #define JSON_PATH "bundle_test_graphs"
 

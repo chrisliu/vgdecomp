@@ -1,5 +1,5 @@
 #define CATCH_CONFIG_RUNNER
-#include "../catch2/catch.hpp"
+#include "../../deps/catch2/catch.hpp"
 #include "../../src/BidirectedGraph.hpp"
 #include "../../src/algorithms/bundle.hpp"
 
