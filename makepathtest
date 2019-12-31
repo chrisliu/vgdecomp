@@ -5,8 +5,8 @@ BIEDGE = src/BidirectedEdge.cpp
 BIBUILD = src/BidirectedGraphBuilder.cpp
 BINODE = src/BidirectedNode.cpp
 ALGO = src/algorithms/find_path_connected.cpp
-HG = src/handlegraph/handle_graph.cpp
-JSON = src/json/jsoncpp.cpp
+HG = deps/handlegraph/handle_graph.cpp
+JSON = deps/json/jsoncpp.cpp
 TEST = test/PathConnectedTest.cpp
 FLAGS = -std=c++17 -g -Wall
 OBJECTS = find_path_connected.o BidirectedGraphBuilder.o BidirectedGraph.o handle_graph.o BidirectedEdge.o BidirectedNode.o jsoncpp.o
