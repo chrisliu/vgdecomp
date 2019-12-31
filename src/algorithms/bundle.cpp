@@ -1,8 +1,11 @@
 #include "bundle.hpp"
 #include <algorithm>
+#include <iterator>
 #include <stdexcept>
 #include <unordered_map>
 #include "../../deps/handlegraph/util.hpp"
+
+using namespace handlegraph;
 
 /***********************************************
  * Custom structures implementation
@@ -27,7 +30,7 @@ bool BundleSide::add_node(const handle_t& node) {
     return bundle_set.insert(node).second;
 }
 
-void BundleSide::cache(BidirectedGraph& g) {
+void BundleSide::cache(HandleGraph& g) {
     for (const handle_t& node : bundle_set) {
         bundle_vector.push_back(node);
         bundle_vector_reversed.push_back(g.get_handle(g.get_id(node), !g.get_is_reverse(node)));
@@ -71,7 +74,7 @@ int BundleSide::size() {
 
 Adjacency get_adjacency_type(const bundle_vector_t side1, const bundle_vector_t side2) {
     Count c;
-    set_intersection(side1.begin(), side1.end(), side2.begin(), side2.end(), back_insert_iterator(c), 
+    set_intersection(side1.begin(), side1.end(), side2.begin(), side2.end(), std::back_insert_iterator(c), 
         [](const handle_t h1, const handle_t h2) -> bool {
             return as_integer(h1) < as_integer(h2);
         }
@@ -129,7 +132,7 @@ BundleSide Bundle::get_bundleside(bool is_left) {
     return internal_bundle.second;
 }
 
-void Bundle::freeze(BidirectedGraph& g) {
+void Bundle::freeze(HandleGraph& g) {
     internal_bundle.first.cache(g);
     internal_bundle.second.cache(g);
 }
@@ -138,14 +141,14 @@ bool Bundle::is_trivial() {
     return is_bundle_trivial; 
 }
 
-void Bundle::set_trivial(bool is_bundle_trivial) {
-    this->is_bundle_trivial = is_bundle_trivial;
+void Bundle::set_trivial(bool is_bundle_trivial_) {
+    this->is_bundle_trivial = is_bundle_trivial_;
 }
 
 bool Bundle::has_reversed_node() {
     return has_reversed;
 }
 
-void Bundle::set_has_reversed_node(bool has_reversed) {
-    this->has_reversed = has_reversed;
+void Bundle::set_has_reversed_node(bool has_reversed_) {
+    this->has_reversed = has_reversed_;
 }

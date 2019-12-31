@@ -1,6 +1,8 @@
 #include "find_balanced_bundles.hpp"
 #include <unordered_set>
 
+using namespace handlegraph;
+
 #ifdef DEBUG_FIND_BALANCED_BUNDLES
 #include <iostream>
 #include <sstream>
