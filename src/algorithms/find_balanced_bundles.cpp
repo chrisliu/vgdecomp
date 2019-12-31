@@ -1,4 +1,5 @@
 #include "find_balanced_bundles.hpp"
+#include <unordered_set>
 
 #ifdef DEBUG_FIND_BALANCED_BUNDLES
 #include <iostream>

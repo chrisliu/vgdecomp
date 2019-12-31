@@ -1,16 +1,12 @@
 #ifndef VG_BUNDLE_HPP_INCLUDED
 #define VG_BUNDLE_HPP_INCLUDED
 
-#include <algorithm>
-#include <stdexcept>
-#include <unordered_set>
-#include <unordered_map>
 #include <utility>
+#include <unordered_set>
 #include <vector>
 
 #include "../../deps/handlegraph/types.hpp"
 #include "../../deps/handlegraph/iteratee.hpp"
-#include "../../deps/handlegraph/util.hpp"
 #include "../BidirectedGraph.hpp"
 
 typedef std::unordered_set<handle_t> bundle_set_t;

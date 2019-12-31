@@ -7,12 +7,10 @@
 /* Data structures for internal representation */
 #include <vector>
 #include <unordered_map>
-#include <set>
 
 /* Handlegraph includes */
 #include "../deps/handlegraph/handle_graph.hpp"
 #include "../deps/handlegraph/types.hpp"
-#include "../deps/handlegraph/util.hpp"
 
 using namespace std;
 using namespace handlegraph;

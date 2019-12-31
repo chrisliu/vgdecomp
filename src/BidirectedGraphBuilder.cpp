@@ -1,4 +1,8 @@
 #include "BidirectedGraphBuilder.hpp"
+#include <fstream>
+#include <iostream>
+#include "../deps/json/json/json.h"
+#include "../deps/handlegraph/types.hpp"
 
 BidirectedGraph BidirectedGraphBuilder::build_graph(std::string filename) { // No error checks
     std::ifstream graph_file(filename, std::ifstream::binary);
@@ -11,7 +15,7 @@ BidirectedGraph BidirectedGraphBuilder::build_graph(std::string filename) { // N
 
     if (!resp) {
 #ifdef DEBUG_GRAPHBUILDER
-        std::cout << "(Parse Fail)" << errs << std::endl;
+        std::cerr << "(Parse Fail)" << errs << std::endl;
 #endif
         return BidirectedGraph();
     }
@@ -19,7 +23,7 @@ BidirectedGraph BidirectedGraphBuilder::build_graph(std::string filename) { // N
     if (graph_json["graph"].empty() || 
         !graph_json["graph"]["nodes"].isArray() || !graph_json["graph"]["edges"].isArray()) {
 #ifdef DEBUG_GRAPHBUILDER
-        std::cout << "Improper input format" << std::endl;
+        std::cerr << "Improper input format" << std::endl;
 #endif
         return BidirectedGraph();
     }

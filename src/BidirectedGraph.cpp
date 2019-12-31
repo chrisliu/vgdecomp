@@ -1,6 +1,8 @@
 #include "BidirectedGraph.hpp"
 #include <queue>
 
+#include "../deps/handlegraph/util.hpp"
+
 #ifdef DEBUG_BIDIRECTED_GRAPH
 #include <iostream>
 using namespace std;

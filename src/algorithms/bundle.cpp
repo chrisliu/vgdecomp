@@ -1,4 +1,8 @@
 #include "bundle.hpp"
+#include <algorithm>
+#include <stdexcept>
+#include <unordered_map>
+#include "../../deps/handlegraph/util.hpp"
 
 /***********************************************
  * Custom structures implementation

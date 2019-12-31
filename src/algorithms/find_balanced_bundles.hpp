@@ -4,7 +4,6 @@
 // #define DEBUG_FIND_BALANCED_BUNDLES
 
 #include <vector>
-#include <unordered_set>
 
 #include "../BidirectedGraph.hpp"
 #include "bundle.hpp"

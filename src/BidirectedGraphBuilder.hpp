@@ -7,11 +7,7 @@
 
 #define DEBUG_GRAPHBUILDER
 
-#include <fstream>
-#include <iostream>
 #include <string>
-#include "../deps/json/json/json.h"
-#include "../deps/handlegraph/types.hpp"
 #include "BidirectedGraph.hpp"
 
 using namespace handlegraph;
