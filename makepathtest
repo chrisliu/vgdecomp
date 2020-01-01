@@ -1,9 +1,7 @@
 #Makefile for find_path_connected
 
 BIGRAPH = src/BidirectedGraph.cpp
-BIEDGE = src/BidirectedEdge.cpp
 BIBUILD = src/BidirectedGraphBuilder.cpp
-BINODE = src/BidirectedNode.cpp
 ALGO = src/algorithms/find_path_connected.cpp
 HG = deps/handlegraph/handle_graph.cpp
 JSON = deps/json/jsoncpp.cpp
@@ -22,12 +20,6 @@ BidirectedGraphBuilder.o: $(BIBUILD)
 
 BidirectedGraph.o: $(BIGRAPH)
 	g++ $(FLAGS) -c $(BIGRAPH) -o BidirectedGraph.o
-
-BidirectedEdge.o : $(BIEDGE)
-	g++ $(FLAGS) -c $(BIEDGE) -o BidirectedEdge.o
-
-BidirectedNode.o : $(BINODE)
-	g++ $(FLAGS) -c $(BINODE) -o BidirectedNode.o
 	
 find_path_connected.o: $(ALGO)
 	g++ $(FLAGS) -c $(ALGO) -o find_path_connected.o

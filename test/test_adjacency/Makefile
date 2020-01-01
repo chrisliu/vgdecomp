@@ -9,8 +9,7 @@ COMPILECPP = g++ -std=c++17 -g -O0 ${WARNING}
 # Main program
 MAIN_PRG   = adjacency_test.cpp
 # Bidirected graph sources
-BG_SRCS    = ${RELPATH}src/BidirectedEdge.cpp ${RELPATH}src/BidirectedNode.cpp \
-	${RELPATH}src/BidirectedGraph.cpp ${RELPATH}src/BidirectedGraphBuilder.cpp 
+BG_SRCS    = ${RELPATH}src/BidirectedGraph.cpp ${RELPATH}src/BidirectedGraphBuilder.cpp 
 # Algorithm sources
 ALGO_SRCS  = ${RELPATH}src/algorithms/find_balanced_bundles.cpp \
 	${RELPATH}src/algorithms/bundle.cpp 
