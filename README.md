@@ -8,7 +8,7 @@ Algorithms to find balanced bundles and use them to further decompose a varianti
  - [x] Bundle side adjancency relationship (none, weak, strong) algorithm.
  - [ ] Path connectedness algorithm that finds all path connected nodes.
  - [ ] Determining TTSP algorithm.
- - [ ] Port and test vgteam's acyclicity algorithm.
+ - [x] Port and test vgteam's acyclicity algorithm.
  - [ ] Load vg graphs and run algorithms.
  - [ ] Compact bundles into nodes.
 
