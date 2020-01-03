@@ -18,11 +18,14 @@ BidirectedGraph::BidirectedGraph() {
 
 void BidirectedGraph::add_edge(nid_t id1, nid_t id2, bool from_left, bool to_right){
     BidirectedEdge from_id1(id1, id2, from_left, to_right);
-    BidirectedEdge from_id2(id2, id1, !to_right, !from_left);
-
     edges.emplace(make_pair(id1, vector<BidirectedEdge>()));
-    edges.emplace(make_pair(id2, vector<BidirectedEdge>()));
     edges[id1].push_back(from_id1);
+
+    /// Make a complement edge for id2 if the edge doesn't leave and enter the same node side
+    if (id1 == id2 && from_left != to_right) return;
+
+    BidirectedEdge from_id2(id2, id1, !to_right, !from_left);
+    edges.emplace(make_pair(id2, vector<BidirectedEdge>()));
     edges[id2].push_back(from_id2);
 }
 
