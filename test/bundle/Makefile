@@ -8,7 +8,6 @@ COMPILECPP = g++ -std=c++17 -g -O0 ${WARNING}
 
 # Main program
 MAIN_PRG   = bundle_test.cpp
-# MAIN_PRG   = BundleTest.cpp
 # Bidirected graph sources
 BG_SRCS    = ${RELPATH}/src/BidirectedGraph.cpp ${RELPATH}/src/BidirectedGraphBuilder.cpp 
 # Algorithm sources
