@@ -16,7 +16,7 @@
 #include "../../deps/handlegraph/handle_graph.hpp"
 #include "../../deps/json/json/json.h"
 
-#define JSON_PATH "bundle_test_graphs"
+#define JSON_TEST_GRAPHS_DIR "graphs"
 
 using namespace std;
 namespace fs = filesystem;
@@ -32,7 +32,7 @@ int check_bundle_match(vector<Bundle>& found_bundles, const vector<bundle_pair>&
 TEST_CASE("JSON Bundle Tests") {
     /// Get test cases
     vector<string> test_cases;
-    for (auto& entry : fs::directory_iterator(JSON_PATH))
+    for (auto& entry : fs::directory_iterator(JSON_TEST_GRAPHS_DIR))
         if (entry.path().extension() == ".json")
             test_cases.push_back(entry.path());
     sort(test_cases.begin(), test_cases.end());
