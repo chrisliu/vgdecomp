@@ -7,7 +7,6 @@ from typing import Callable, Optional
 def main():
     parser = setup_parser()
     parsed = parser.parse_args()
-    
     process_args(parsed)
 
 def setup_parser():
@@ -73,12 +72,54 @@ def process_args(parsed: argparse.Namespace):
         serialize_vg(graph, filename)
 
 def display_tool_help():
-    tool_help_msg = """This is the tool help message
+    tool_help_msg = """    Node declaration stage:
+    | Node: int
+    | Sequence: str of ACTG (upper or lower case)
+    | Type 'q' (upper or lower case) anytime to quit; the last complete node will be saved.
 
+    Edge declaration stage:
+    | Node1: node side format (from node side)
+    | Node2: node side format (to node side)
+    | 
+    | Node side format: An integer followed by an optional l or r (upper or lower case)
+    | | l indicates left side of a node and r indicates right side of a node
+    | | By default node 1 is right side and node 2 is left side.
+    | | ie.
+    | | | 15l = left side of node 15
+    |
+    | Type 'q' (upper or lower case) anytime to quit; the last complete edge will be saved.
+
+    Bundle declaration stage:
+    | Left: bundleside node format
+    | > bundleside node format
+    | ...
+    | Right: bundleside node format
+    | > bundleside node format
+    | ...
+    |
+    | Bundleside node format: An integer followed by an optional r (upper or lower case)
+    | | r indicates if the handle will be reversed relative to the rest of the bundle
+    | | By default the handles are in the same orientation
+    | | ie.
+    | | | 15 = node 15 oriented in the same direction as the rest of the bundle
+    | | | 15r = node 15 oriented in the opposite direction as the rest of the bundle
+    |
+    | Type 'q' (upper or lower case) to stop declaring left or right side nodes.
+    | Type 'qq' (upper or lower case) anytime to quit; the lats complete bundle will be saved.
+
+    Filename stage:
+    | Filenames will be reformatted such that spaces are replaced with underscores.
+    | The custom vg styled json format will be outputted as (filename).json.
+    | A vg compliant json format will be outputted as (filename)_vg.json.
+
+    Description stage:
+    | The custom vg styled json format allows for a description of the graph put directly in
+    | the json file.
     """
     print(tool_help_msg)
 
 def prompt_nodes(graph: dict):
+    """Prompts for nodes in the graph and inserts them."""
     graph['node'] = list()
 
     node_pattern = re.compile('\d+')
@@ -92,10 +133,10 @@ def prompt_nodes(graph: dict):
 
     def add_node() -> bool:
         ## Prompt for id and sequence but allow for early exits
-        node_id = proper_input("| Node: ", valid_node, def_exit)
-        if node_id is None: return False
-        sequence = proper_input("| Sequence: ", valid_sequence, def_exit)
-        if sequence is None: return False
+        ret, node_id = proper_input("| Node: ", valid_node, def_exit)
+        if not ret: return False
+        ret, sequence = proper_input("| Sequence: ", valid_sequence, def_exit)
+        if not ret: return False
 
         ## Add node
         graph['node'].append(
@@ -112,6 +153,7 @@ def prompt_nodes(graph: dict):
     while add_node(): pass
 
 def prompt_edges(graph: dict):
+    """Prompts for edges in the graph and inserts them."""
     graph['edge'] = list()
 
     node_side_pattern = re.compile('(\d+)([lLrR]?)')
@@ -121,10 +163,10 @@ def prompt_edges(graph: dict):
     
     def add_edge() -> bool:
         ## Prompt for node sides but allow for early exits
-        node1 = proper_input("| Node 1: ", valid_node_side, def_exit)
-        if node1 is None: return False
-        node2 = proper_input("| Node 2: ", valid_node_side, def_exit)
-        if node2 is None: return False
+        ret, node1 = proper_input("| Node 1: ", valid_node_side, def_exit)
+        if not ret: return False
+        ret, node2 = proper_input("| Node 2: ", valid_node_side, def_exit)
+        if not ret: return False
 
         ## Get edge information
         node1_match = node_side_pattern.fullmatch(node1)
@@ -148,7 +190,75 @@ def prompt_edges(graph: dict):
 
 def prompt_bundles(graph: dict):
     graph['bundle'] = list()
-    print("(debug) Prompting bundles")
+
+    node_pattern = re.compile('(\d+)([rR]?)')
+
+    def valid_node(response: str) -> bool:
+        return node_pattern.fullmatch(response) is not None
+
+    def extended_exit(response: str) -> bool:
+        return def_exit(response) or response.lower() == 'qq'
+    
+    def add_bundle() -> bool:
+        bundle = {'left': list(), 'right': list()}
+
+        ## Left side
+        is_first = True
+        while True:
+            ret, node = proper_input("| Left: " if is_first else "| > ",
+                valid_node, extended_exit
+            )
+            if not ret:
+                ## Quit if no more bundles are to be added
+                if len(node) == 2:
+                    return False
+                ## Else end left side bundle nodes initialization
+                break
+            
+            ## Add node to bundleside
+            node_match = node_pattern.fullmatch(node)
+            bundle['left'].append(
+                {
+                    'id': int(node_match.group(1)),
+                    'is_reverse': False if node_match.group == '' else True
+                }
+            )
+
+            ## Not first anymore
+            is_first = False            
+        
+        ## Right side
+        is_first = True
+        while True:
+            ret, node = proper_input("| Right: " if is_first else "| > ",
+                valid_node, extended_exit
+            )
+            if not ret:
+                ## Quit if no more bundles are to be added
+                if len(node) == 2:
+                    return False
+                ## Else end left side bundle nodes initialization
+                break
+            
+            ## Add node to bundleside
+            node_match = node_pattern.fullmatch(node)
+            bundle['right'].append(
+                {
+                    'id': int(node_match.group(1)),
+                    'is_reverse': False if node_match.group == '' else True
+                }
+            )
+
+            ## Not first anymore
+            is_first = False 
+        
+        ## Added bundle to list of bundles
+        graph['bundle'].append(bundle)
+        
+        return True
+
+    print("Bundles:")
+    while add_bundle(): pass
 
 def init_nodes(graph: dict):
     """Gets all nodes in defined edges and assigns an empty sequence."""
@@ -163,28 +273,24 @@ def init_nodes(graph: dict):
 
 def prompt_name() -> str:
     """Prompts and returns a formatted filename."""
-    filename = proper_input("Filename: ", lambda s: s[-5:] != '.json')
+    _, filename = proper_input("Filename: ", lambda s: s[-5:] != '.json')
     filename = filename.replace(' ', '_')
     filename = filename.strip('_')
     return filename
 
 def prompt_desc(graph: dict):
     """Prompts and adds description to graph dictionary."""
-    description = proper_input("Description: ")
+    _, description = proper_input("Description: ")
     graph['description'] = description
 
 def reorder(graph: dict) -> dict:
     """Reorder dictionary so graph info can be seen first."""
-    first_keys = ['description']
-    new_graph = dict()
+    order = ['description', 'node', 'edge', 'bundle']
 
-    for key in first_keys: 
-        new_graph[key] = graph[key]
-    
-    # Put the rest in 
-    for k, v in graph.items():
-        if k not in first_keys:
-            new_graph[k] = v
+    new_graph = dict()
+    for key in order:
+        if key in graph:
+            new_graph[key] = graph[key]
     
     return new_graph
 
@@ -209,11 +315,11 @@ def proper_input(prompt: str,
         response = input(prompt)
         ## If exit, return None
         if exit_fn(response):
-            return None
+            return False, response
         
         ## If valid response, return response
         if check_fn(response):
-            return response
+            return True, response
 
 def def_exit(response: str) -> bool:
     return response in ['q', 'Q']
