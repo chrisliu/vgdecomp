@@ -6,35 +6,93 @@ from typing import Callable, Optional
 
 def main():
     parser = setup_parser()
-    parsed = parser.parse_args()
-    process_args(parsed)
+    args = parser.parse_args()
+    args.process(args)
 
-def setup_parser():
+def setup_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog = 'graph_assistant_dev',
-        description = 'A tool to generate custom graphs in vg\'s json format.'
+        description = 'A tool to manipulate custom graphs in vg\'s json format.'
     )
-    parser.add_argument('--tool-help', 
+    
+    ## Add subparsers
+    subparsers = parser.add_subparsers(help = "graph manipulation options")
+    setup_create_parser(subparsers)
+    setup_convert_parser(subparsers)
+
+    return parser
+
+def setup_create_parser(subparser: argparse._SubParsersAction):
+    parser_create = subparser.add_parser(
+        'create', 
+        description = 'A tool to create graphs in a custom vg inspired format (and optionally a vg compliant format).',
+        help = 'create json graphs'
+    )
+    parser_create.add_argument('--tool-help', 
         action = 'store_true',
         help = 'explains format for adding nodes and edges (and bundles)'
     )
-    parser.add_argument('-b', '--bundles',
+    parser_create.add_argument('-b', '--bundles',
         action = 'store_true',
         help = 'enable bundle declaration'
     )
-    parser.add_argument('-d', '--default-nodes',
+    parser_create.add_argument('-d', '--default-nodes',
         action = 'store_true',
         help = 'don\'t ask for node sequences'
     )
-    parser.add_argument('-c', '--vg-compliant',
+    parser_create.add_argument('-c', '--vg-compliant',
         action = 'store_true',
         help = 'output another vg compliant version'
     )
-    return parser
+    parser_create.set_defaults(process = process_create)
 
-def process_args(parsed: argparse.Namespace):
+def setup_convert_parser(subparser: argparse._SubParsersAction):
+    parser_convert = subparser.add_parser(
+        'convert',
+        description = 'A tool to convert between json formats.',
+        help = 'convert json formats'
+    )
+    input_group = parser_convert.add_argument_group('input formats', 'Supported input formats.')
+    input_group.add_argument('-C', '--custom-in',
+        action = 'store_const',
+        help = 'input custom JSON format (default)',
+        dest = 'input_format',
+        const = 'custom',
+        default = 'custom'
+    )
+    input_group.add_argument('-L', '--legacy-in',
+        action = 'store_const',
+        help = 'input legacy JSON format',
+        dest = 'input_format',
+        const = 'legacy',
+    )
+    output_group = parser_convert.add_argument_group('output formats', 'Supported output formats.')
+    output_group.add_argument('-v', '--vg',
+        action = 'store_const',
+        help = 'output vg compliant JSON format (default)',
+        dest = 'output_format',
+        const = 'vg',
+        default = 'vg'
+    )
+    output_group.add_argument('-c', '--custom',
+        action = 'store_const',
+        help = 'output custom JSON format',
+        dest = 'output_format',
+        const = 'custom'
+    )
+    parser_convert.add_argument('infile', 
+        help = 'input filename'
+    )
+    parser_convert.add_argument('-o', '--outfile',
+        help = 'output filename',
+        default = None
+    )
+    parser_convert.set_defaults(process = process_convert)
+
+def process_create(args: argparse.Namespace):
+    """Creates a custom (and optionally a vg) JSON format graph."""
     ## Tool help has highest precedence and exits when done
-    if parsed.tool_help:
+    if args.tool_help:
         display_tool_help()
         return
 
@@ -42,17 +100,17 @@ def process_args(parsed: argparse.Namespace):
     graph = dict()
     
     ## If not default nodes, ask to initialize node sequences
-    if not parsed.default_nodes:
+    if not args.default_nodes:
         prompt_nodes(graph)
     
     prompt_edges(graph)
 
     ## If bundles are needed, prompt
-    if parsed.bundles:
+    if args.bundles:
         prompt_bundles(graph)
 
     ## If default nodes was asked, initialize nodes
-    if parsed.default_nodes:
+    if args.default_nodes:
         init_nodes(graph)
 
     ## Prompt for a filename
@@ -68,8 +126,77 @@ def process_args(parsed: argparse.Namespace):
     serialize(graph, filename)
 
     ## If vg compliant version is asked, serialize one
-    if parsed.vg_compliant:
+    if args.vg_compliant:
         serialize_vg(graph, filename)
+
+def process_convert(args: argparse.Namespace):
+    """Converts input file format into output file format.
+
+    Supported Conversions:
+         To  Custom  VG  Legacy
+    From
+    Custom     N     Y     N
+    VG         N     N     N
+    Legacy     Y     Y     N
+    """
+
+    ## Verify input/output filenames
+    if args.infile[-5:] != '.json':
+        print("Error: Unsupported input file format (input file must be a json file).")
+        return
+    if args.outfile is not None and args.outfile[-5:] != '.json':
+        print("Error: Unsupported output file format (output file must be a json file).")
+        return
+
+    ## Deserialize graph json
+    try:
+        with open(args.infile) as infile:
+            graph = json.load(infile)
+    except FileNotFoundError:
+        print("Error: Missing input file (input file not found).")
+        return
+    except json.decoder.JSONDecodeError:
+        print("Error: JSON parse error (input file has malformed JSON).")
+        return
+    except:
+        print("Error: Read error (some error occured when reading the input file).")
+        return
+    
+    ## Convert to final output
+    conv_graph = dict()
+    try:
+        if args.input_format == 'legacy':
+            ## Always convert to custom
+            conv_graph = legacy_to_custom(graph)
+            if args.output_format == 'vg':
+                ## Convert custom to VG
+                conv_graph = custom_to_vg(conv_graph)
+                pass
+        elif args.input_format == 'custom':
+            if args.output_format == 'vg':
+                ## Convert to VG format
+                conv_graph = custom_to_vg(graph)
+                pass
+            else:
+                ## Raise exception
+                print("Error: Unsupported operation (can't convert from {} to {}).".format(args.input_format, args.output_format))
+                return
+    except:
+        print("Error: Improper format (input file is not in the {} JSON format).".format(args.input_format))
+        return
+    
+    ## Serialize
+    ## Set output filename if needed
+    outfile = args.outfile
+    if outfile is None:
+        outfile = args.infile[:-5] + '_' + args.output_format + args.infile[-5:]
+
+    try:
+        with open(outfile, 'w') as out:
+            json.dump(conv_graph, out, indent = 4)
+    except:
+        print("Error: Dump error (some error occured when dumping the file).")
+        return
 
 def display_tool_help():
     tool_help_msg = """    Node declaration stage:
@@ -189,6 +316,7 @@ def prompt_edges(graph: dict):
     while add_edge(): pass
 
 def prompt_bundles(graph: dict):
+    """Prompts for bundles in the graph and inserts them."""
     graph['bundle'] = list()
 
     node_pattern = re.compile('(\d+)([rR]?)')
@@ -301,9 +429,7 @@ def serialize(graph: dict, filename: str):
 
 def serialize_vg(graph: dict, filename: str):
     """Serializes a vg compliant json format."""
-    vg_graph = dict()
-    vg_graph['node'] = graph['node']
-    vg_graph['edge'] = graph['edge']
+    vg_graph = custom_to_vg(graph)
     with open('{}_vg.json'.format(filename), 'w') as out:
         json.dump(vg_graph, out, indent = 4)
 
@@ -322,7 +448,35 @@ def proper_input(prompt: str,
             return True, response
 
 def def_exit(response: str) -> bool:
+    """Default exit: Exits when 'q' (upper/lower) is given."""
     return response in ['q', 'Q']
+
+def custom_to_vg(graph: dict) -> dict:
+    """Converts the custom JSON format to the vg JSON format."""
+    vg_graph = dict()
+    vg_graph['node'] = graph['node']
+    vg_graph['edge'] = graph['edge']
+    return vg_graph
+
+def legacy_to_custom(graph: dict) -> dict:
+    """Converts the legacy JSON format to the custom JSON format."""
+    def conv_edge(edge: dict) -> dict:
+        custom_edge = {'from': edge['id1'], 'to': edge['id2']}
+        if edge['from_left']:
+            custom_edge['from_start'] = True
+        if edge['to_right']:
+            custom_edge['to_end'] = True
+        return custom_edge
+
+    custom_graph = dict()
+    custom_graph['description'] = graph['comment']
+    custom_graph['node'] = [
+        {'id': node['id'], 'sequence': ''}
+         for node in graph['graph']['nodes']
+    ]
+    custom_graph['edge'] = [conv_edge(edge) for edge in graph['graph']['edges']]
+    custom_graph['bundle'] = graph['bundles']
+    return custom_graph
 
 if __name__ == '__main__':
     main()
