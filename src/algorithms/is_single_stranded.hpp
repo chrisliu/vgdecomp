@@ -7,14 +7,11 @@
  * Defines algorithms for deciding if a graph contains reversing edges.
  */
 
-#include "../../deps/handlegraph/handle_graph.hpp"
+#include "handle.hpp"
 
 #include <unordered_set>
 #include <unordered_map>
 #include <vector>
-
-using HandleGraph = handlegraph::HandleGraph;
-using handle_t = handlegraph::handle_t;
 
 /// Returns a vector of handles where the orientation of each handle indicates an
 /// orientation that could be used to convert the graph into a single-stranded graph.

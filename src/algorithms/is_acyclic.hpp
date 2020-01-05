@@ -7,8 +7,7 @@
  * Defines algorithms for deciding if a graph is acyclic or directed acyclic
  */
 
-/// Using HandleGraph and handle_t that's been defined in is_single_stranded.hpp
-#include "is_single_stranded.hpp"
+#include "handle.hpp"
 
 #include <unordered_set>
 #include <vector>
