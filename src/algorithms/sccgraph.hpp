@@ -1,7 +1,6 @@
 #ifndef VG_SCCGRAPH_HPP_INCLUDED
 #define VG_SCCGRAPH_HPP_INCLUDED
 
-
 #define debug
 #ifdef debug
 #include <iostream>
@@ -127,7 +126,7 @@ SCCGraph::SCCGraph(const HandleGraph& g, const vector<unordered_set<nid_t>> sccs
                 /// If node isn't in the same SCC, ignore
                 if (node_scc[g.get_id(handle)] != node_scc[g.get_id(child_handle)]) return;
 
-                /// If node has been/will be traversed, ignore
+                /// If node has been traversed, ignore
                 if (orientations.count(g.get_id(child_handle))) return;
                 
                 /// Add node's orientation into SCC and set as next node
