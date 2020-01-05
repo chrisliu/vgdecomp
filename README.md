@@ -2,7 +2,7 @@
 Algorithms to find balanced bundles and use them to further decompose a variantion graph.
 
 ## Project Objectives and Progress
-
+### Main Objectives
  - [x] Bidirected graph with libhandlegraph.
  - [x] Balanced bundle finding algorithm described in *Describing the Local Structure of Sequence Graphs*.
  - [x] Bundle side adjancency relationship (none, weak, strong) algorithm.
@@ -11,6 +11,8 @@ Algorithms to find balanced bundles and use them to further decompose a varianti
  - [x] Port and test vgteam's acyclicity algorithm.
  - [ ] Load vg graphs and run algorithms.
  - [ ] Compact bundles into nodes.
+### Side Objectives
+ - [ ] Deprecate BidirectedGraphBuilder and add `serialize(outstream&)` and `deserialize(instream&)` to BidirectedGraph
 
 ## Dependencies
 - catch2 @ [6c9a255dc2973e97b2d6a155d36f47e145382d32](https://github.com/catchorg/Catch2/commit/6c9a255dc2973e97b2d6a155d36f47e145382d32)
