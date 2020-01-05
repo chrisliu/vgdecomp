@@ -13,8 +13,12 @@ Algorithms to find balanced bundles and use them to further decompose a varianti
  - [ ] Compress bundles into nodes.
  - [ ] Use vg json representation.
 ### Side Objectives
- - [ ] Deprecate BidirectedGraphBuilder and add `serialize(ofstream&)` and `deserialize(ifstream&)` to BidirectedGraph
- - [ ] Improve graph_assistant.py (add command line options for various tasks and improve code legibility).
+ - [ ] Deprecate BidirectedGraphBuilder and add `serialize(ofstream&)` and `deserialize(ifstream&)` to BidirectedGraph. Also support vg JSON format instead of legacy JSON format.
+ - [x] Improve graph_assistant.py (add command line options for various tasks and improve code legibility).
+
+## Tools
+ 1. Graph Assistant [(Python3)](test/graph_assistant.py)  
+ Create and convert custom test graphs. Supports custom vg-inspired JSON format, vg compliant JSON format, and old legacy JSON format.
 
 ## Dependencies
 - catch2 @ [6c9a255dc2973e97b2d6a155d36f47e145382d32](https://github.com/catchorg/Catch2/commit/6c9a255dc2973e97b2d6a155d36f47e145382d32)
