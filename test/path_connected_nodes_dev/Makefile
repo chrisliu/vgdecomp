@@ -8,10 +8,14 @@ COMPILECPP = g++ -std=c++17 -g -O0 ${WARNING}
 
 # Main program
 MAIN_PRG   = path_connected_nodes_dev_test.cpp 
+# MAIN_PRG   = scc_and_topo_test.cpp 
 # Bidirected graph sources
 BG_SRCS    = ${RELPATH}/src/BidirectedGraph.cpp ${RELPATH}/src/BidirectedGraphBuilder.cpp 
 # Algorithm sources
-ALGO_SRCS  = ${RELPATH}/src/algorithms/strongly_connected_components.cpp ${RELPATH}/src/algorithms/dfs.cpp ${RELPATH}/src/algorithms/topological_sort.cpp 
+ALGO_SRCS  = ${RELPATH}/src/algorithms/strongly_connected_components.cpp \
+			 ${RELPATH}/src/algorithms/dfs.cpp \
+			 ${RELPATH}/src/algorithms/topological_sort.cpp \
+			 ${RELPATH}/src/algorithms/find_path_connected_dev.cpp
 # Handlegraph sources
 HG_SRCS    = ${RELPATH}/deps/handlegraph/handle_graph.cpp
 # JSON library sources
