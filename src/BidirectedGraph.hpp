@@ -7,6 +7,7 @@
 /* Data structures for internal representation */
 #include <vector>
 #include <unordered_map>
+#include <fstream>
 
 /* Handlegraph includes */
 #include "../deps/handlegraph/handle_graph.hpp"
@@ -24,7 +25,7 @@ class BidirectedGraph : public HandleGraph {
         node_map reachable_nodes;
         edge_map edges;
     public:
-        BidirectedGraph();
+        bool deserialize(ifstream& infile);        
 
         vector<const handle_t> get_reachable_nodes(handle_t node);
         void add_edge(nid_t id1, nid_t id2, bool from_left, bool to_right);

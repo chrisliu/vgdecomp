@@ -1,5 +1,7 @@
 #include "BidirectedGraph.hpp"
+#include <string>
 #include <queue>
+#include "../deps/json/json/json.h"
 
 #include "../deps/handlegraph/util.hpp"
 
@@ -8,8 +10,30 @@
 using namespace std;
 #endif /* DEBUG_BIDIRECTED_GRAPH */
 
-BidirectedGraph::BidirectedGraph() {
+/// Deserializes vg JSON fromat
+/// Returns true if deserialize successfully or false if otherwise
+bool BidirectedGraph::deserialize(ifstream& infile) {
+    Json::CharReaderBuilder reader;
+    Json::Value graph_json;
+    string errs;
+    bool resp = Json::parseFromStream(reader, infile, &graph_json, &errs);
 
+    /// If file not in json format, print error and return false
+    if (!resp) {
+        cerr << "Error: Parse failed" << endl << errs << endl;
+        return false;
+    }
+
+    /// TODO: check if it's proper vg JSON format
+    Json::Value edges = graph_json["edge"];
+    for (auto& edge : edges) {
+        nid_t id1 = edge["from"].asInt64();
+        nid_t id2 = edge["to"].asInt64();
+        bool from_left = edge.get("from_start", false).asBool();
+        bool to_right = edge.get("to_end", false).asBool();
+        add_edge(id1, id2, from_left, to_right);
+    }
+    return true;
 }
 
 // vector<const handle_t> BidirectedGraph::get_reachable_nodes(handle_t id){
