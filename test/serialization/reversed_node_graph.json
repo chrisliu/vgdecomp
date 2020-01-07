@@ -1,0 +1,29 @@
+{
+    "description": "This is the simple graph but node 2 is reversed.",
+    "node": [
+        {
+            "id": 1,
+            "sequence": ""
+        },
+        {
+            "id": 2,
+            "sequence": ""
+        },
+        {
+            "id": 3,
+            "sequence": ""
+        }
+    ],
+    "edge": [
+        {
+            "from": 1,
+            "to": 2,
+            "to_end": true
+        },
+        {
+            "from": 2,
+            "to": 3,
+            "from_start": true
+        }
+    ]
+}
