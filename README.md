@@ -1,3 +1,4 @@
+
 # VG Balanced Bundle Decomposition
 Algorithms to find balanced bundles and use them to further decompose a variantion graph.
 
@@ -9,11 +10,11 @@ Algorithms to find balanced bundles and use them to further decompose a varianti
  - [ ] Path connectedness algorithm that finds all path connected nodes.
  - [ ] TTSP algorithm.
  - [x] Port and test vg's acyclicity algorithm.
- - [ ] Deserialize vg graph formats.
+ - [x] Deserialize vg graph formats.
  - [ ] Compress bundles into nodes.
  - [ ] Use vg json representation.
 ### Side Objectives
- - [ ] Deprecate BidirectedGraphBuilder and add `serialize(ofstream&)` and `deserialize(ifstream&)` to BidirectedGraph. Also support vg JSON format instead of legacy JSON format.
+ - [ ] Deprecate BidirectedGraphBuilder and add `serialize(ofstream&)` and ~~`deserialize(ifstream&)`~~(COMPLETED) to BidirectedGraph. Also support vg JSON format instead of legacy JSON format.
  - [x] Improve graph_assistant.py (add command line options for various tasks and improve code legibility).
 
 ## Tools
