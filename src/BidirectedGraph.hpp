@@ -121,6 +121,7 @@ class BidirectedGraph : public DeletableHandleGraph {
         /// which it would return 0.
         void reassign_node_ids(const function<nid_t(const nid_t&)>& get_new_id);
 
+<<<<<<< HEAD
         /// Remove the node belonging to the given handle and all of its edges.
         /// Does not update any stored paths.
         /// Invalidates the destroyed handle.
@@ -137,6 +138,8 @@ class BidirectedGraph : public DeletableHandleGraph {
         /// Remove all nodes and edges.
         void clear();
 
+=======
+>>>>>>> 5856e31c2da303ca917b814110950b88c63dda7d
     protected:
         
         /// Loop over all the handles to next/previous (right/left) nodes. Passes

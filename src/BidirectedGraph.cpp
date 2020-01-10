@@ -12,7 +12,11 @@ using namespace std;
 
 
 //******************************************************************************
+<<<<<<< HEAD
 // Non handle graph functions 
+=======
+// Non handlegraph/mutable handlegraph functions 
+>>>>>>> 5856e31c2da303ca917b814110950b88c63dda7d
 //******************************************************************************
 
 /// Deserializes vg JSON fromat
@@ -55,7 +59,11 @@ void BidirectedGraph::add_edge(nid_t id1, nid_t id2, bool from_left, bool to_rig
 }
 
 //******************************************************************************
+<<<<<<< HEAD
 // Handle graph public functions 
+=======
+// Handlegraph public functions 
+>>>>>>> 5856e31c2da303ca917b814110950b88c63dda7d
 //******************************************************************************
 
 /// Method to check if a node exists by ID
@@ -127,7 +135,11 @@ nid_t BidirectedGraph::max_node_id() const {
 }
 
 //******************************************************************************
+<<<<<<< HEAD
 // Mutable handle graph public functions 
+=======
+// Mutable handlegraph public functions 
+>>>>>>> 5856e31c2da303ca917b814110950b88c63dda7d
 //******************************************************************************
 
 handle_t BidirectedGraph::create_handle(const string& sequence) {
@@ -167,6 +179,7 @@ void BidirectedGraph::reassign_node_ids(const function<nid_t(const nid_t&)>& get
 }
 
 //******************************************************************************
+<<<<<<< HEAD
 // Deletable handle graph public functions
 //******************************************************************************
 
@@ -184,6 +197,9 @@ void BidirectedGraph::clear() {
 
 //******************************************************************************
 // Handle graph protected functions
+=======
+// Handlegraph protected functions
+>>>>>>> 5856e31c2da303ca917b814110950b88c63dda7d
 //******************************************************************************
 
 bool BidirectedGraph::follow_edges_impl(const handle_t& handle, bool go_left, const function<bool(const handle_t&)>& iteratee) const {
