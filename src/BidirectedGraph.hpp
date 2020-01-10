@@ -8,9 +8,10 @@
 #include <vector>
 #include <unordered_map>
 #include <fstream>
+#include <string>
 
 /* Handlegraph includes */
-#include "../deps/handlegraph/handle_graph.hpp"
+#include "../deps/handlegraph/mutable_handle_graph.hpp"
 #include "../deps/handlegraph/types.hpp"
 
 using namespace std;
@@ -20,7 +21,7 @@ typedef unordered_map<nid_t, vector<const handle_t>> node_map;
 typedef unordered_map<nid_t, vector<BidirectedEdge>> edge_map;
 typedef pair<nid_t, vector<BidirectedEdge>>          edge_map_pair;
 
-class BidirectedGraph : public HandleGraph {
+class BidirectedGraph : public MutableHandleGraph {
     private:
         node_map reachable_nodes;
         edge_map edges;
@@ -66,9 +67,60 @@ class BidirectedGraph : public HandleGraph {
         /// largest ID is unavailable. Return value is unspecified if the graph is empty.
         nid_t max_node_id() const;
 
-#ifdef DEBUG_BIDIRECTED_GRAPH
-        void print_edges() const;
-#endif /* DEBUG_BIDIRECTED_GRAPH */
+        /// Create a new node with the given sequence and return the handle.
+        handle_t create_handle(const string& sequence);
+
+        /// Create a new node with the given id and sequence, then return the handle.
+        handle_t create_handle(const string& sequence, const nid_t& id);
+        
+        /// Create an edge connecting the given handles in the given order and orientations.
+        /// Ignores existing edges.
+        void create_edge(const handle_t& left, const handle_t& right);
+        
+        /// Alter the node that the given handle corresponds to so the orientation
+        /// indicated by the handle becomes the node's local forward orientation.
+        /// Rewrites all edges pointing to the node and the node's sequence to
+        /// reflect this. Invalidates all handles to the node (including the one
+        /// passed). Returns a new, valid handle to the node in its new forward
+        /// orientation. Note that it is possible for the node's ID to change.
+        /// Does not update any stored paths. May change the ordering of the underlying
+        /// graph.
+        handle_t apply_orientation(const handle_t& handle);
+        
+        /// Split a handle's underlying node at the given offsets in the handle's
+        /// orientation. Returns all of the handles to the parts. Other handles to
+        /// the node being split may be invalidated. The split pieces stay in the
+        /// same local forward orientation as the original node, but the returned
+        /// handles come in the order and orientation appropriate for the handle
+        /// passed in.
+        /// Updates stored paths.
+        vector<handle_t> divide_handle(const handle_t& handle, const vector<size_t>& offsets);
+        
+        /// Adjust the representation of the graph in memory to improve performance.
+        /// Optionally, allow the node IDs to be reassigned to further improve
+        /// performance.
+        /// Note: Ideally, this method is called one time once there is expected to be
+        /// few graph modifications in the future.
+        void optimize(bool allow_id_reassignment = true);
+
+        /// Reorder the graph's internal structure to match that given.
+        /// This sets the order that is used for iteration in functions like for_each_handle.
+        /// Optionally may compact the id space of the graph to match the ordering, from 1->|ordering|.
+        /// This may be a no-op in the case of graph implementations that do not have any mechanism to maintain an ordering.
+        void apply_ordering(const vector<handle_t>& order, bool compact_ids = false);
+
+        /// Set a minimum id to increment the id space by, used as a hint during construction.
+        /// May have no effect on a backing implementation.
+        void set_id_increment(const nid_t& min_id);
+
+        /// Renumber all node IDs using the given function, which, given an old ID, returns the new ID.
+        /// Modifies the graph in place. Invalidates all outstanding handles.
+        /// If the graph supports paths, they also must be updated.
+        /// The mapping function may return 0. In this case, the input ID will
+        /// remain unchanged. The mapping function should not return any ID for
+        /// which it would return 0.
+        void reassign_node_ids(const function<nid_t(const nid_t&)>& get_new_id);
+
     protected:
         
         /// Loop over all the handles to next/previous (right/left) nodes. Passes
