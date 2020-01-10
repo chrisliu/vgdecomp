@@ -1,18 +1,16 @@
-
 # VG Balanced Bundle Decomposition
-Algorithms to find balanced bundles and use them to further decompose a variantion graph.
+Algorithms to find balanced bundles and use them to further decompose a variation graph.
 
 ## Project Objectives and Progress
 ### Main Objectives
  - [x] Bidirected graph with libhandlegraph.
  - [x] Balanced bundle finding algorithm described in *Describing the Local Structure of Sequence Graphs*.
  - [x] Bundle side adjancency relationship (none, weak, strong) algorithm.
- - [ ] Path connectedness algorithm that finds all path connected nodes.
- - [ ] TTSP algorithm.
+ - [x] Path connectedness algorithm that finds all path connected nodes *(optimization needed)*.
  - [x] Port and test vg's acyclicity algorithm.
  - [x] Deserialize vg graph formats.
- - [ ] Compress bundles into nodes.
- - [ ] Use vg json representation.
+ - [ ] Add algorithm to perform the 3 reduction actions.
+ - [ ] Improve underlying BidirectedGraph architecture (efficient mutability).
 ### Side Objectives
  - [ ] Deprecate BidirectedGraphBuilder and add `serialize(ofstream&)` and ~~`deserialize(ifstream&)`~~(COMPLETED) to BidirectedGraph. Also support vg JSON format instead of legacy JSON format.
  - [x] Improve graph_assistant.py (add command line options for various tasks and improve code legibility).
@@ -31,7 +29,7 @@ Algorithms to find balanced bundles and use them to further decompose a varianti
 ## Contributors
 - Christopher Liu (Undergraduate researcher)
 - Ryan Nishimoto (Undergraduate researcher)
-- Yohei Rosen (Graduate student researcher)
+- Yohei Rosen (PHD candidate)
 
 ## Works Referenced
 1. (2017) Describing the Local Structure of Sequence Graphs - Yohei Rosen, Jordan Eizenga, and Benedict Paten [[link]](https://link.springer.com/chapter/10.1007/978-3-319-58163-7_2)
