@@ -7,6 +7,7 @@
 /* Data structures for internal representation */
 #include <vector>
 #include <unordered_map>
+#include <unordered_set>
 #include <fstream>
 #include <string>
 
@@ -17,22 +18,14 @@
 using namespace std;
 using namespace handlegraph;
 
-typedef unordered_map<nid_t, vector<const handle_t>> node_map; 
-typedef unordered_map<nid_t, vector<BidirectedEdge>> edge_map;
-typedef pair<nid_t, vector<BidirectedEdge>>          edge_map_pair;
-
 class BidirectedGraph : public DeletableHandleGraph {
     private:
-        node_map reachable_nodes;
-        edge_map edges;
+        unordered_map<nid_t, string> nodes;
+        unordered_map<handle_t, unordered_set<handle_t>> edges;
+        nid_t cur_id = 0;
+
     public:
         bool deserialize(ifstream& infile);        
-
-        vector<const handle_t> get_reachable_nodes(handle_t node);
-        void add_edge(nid_t id1, nid_t id2, bool from_left, bool to_right);
-        bool is_acyclic();
-        void populate_reachable_nodes();
-        void print_reachable_nodes();
 
         /// Method to check if a node exists by ID
         bool has_node(nid_t node_id) const;
