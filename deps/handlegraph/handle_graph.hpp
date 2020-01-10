@@ -21,6 +21,8 @@ namespace handlegraph {
  */
 class HandleGraph {
 public:
+    
+    virtual ~HandleGraph() = default;
 
     ////////////////////////////////////////////////////////////////////////////
     // Interface that needs to be implemented
@@ -58,7 +60,7 @@ public:
     /// Return the largest ID in the graph, or some larger number if the
     /// largest ID is unavailable. Return value is unspecified if the graph is empty.
     virtual nid_t max_node_id() const = 0;
-    
+
     ////////////////////////////////////////////////////////////////////////////
     // Stock interface that uses backing virtual methods
     ////////////////////////////////////////////////////////////////////////////
@@ -104,9 +106,17 @@ public:
     virtual bool has_edge(const handle_t& left, const handle_t& right) const;
     
     /// Convenient wrapper of has_edge for edge_t argument.
-    inline bool has_edge(const edge_t& edge) {
+    inline bool has_edge(const edge_t& edge) const {
         return has_edge(edge.first, edge.second);
     }
+    
+    /// Return the total number of edges in the graph. If not overridden,
+    /// counts them all in linear time.
+    virtual size_t get_edge_count() const;
+    
+    /// Return the total length of all nodes in the graph, in bp. If not
+    /// overridden, loops over all nodes in linear time.
+    virtual size_t get_total_length() const;
     
     /// Returns one base of a handle's sequence, in the orientation of the
     /// handle.
@@ -164,23 +174,25 @@ protected:
 };
 
 /*
- * Defines an interface for serialization and deserialization for handle graph,
+ * Defines an interface providing a vectorization of the graph nodes and edges,
  * which can be co-inherited alongside HandleGraph.
  */
-class SerializableHandleGraph {
-    
-public:
-    
-    /// Write the contents of this graph to an ostream.
-    virtual void serialize(std::ostream& out) const = 0;
-    
-    /// Sets the contents of this graph to the contents of a serialized graph from
-    /// an istream. The serialized graph must be from the same implementation of the
-    /// HandleGraph interface as is calling deserialize(). Can only be called by an
-    /// empty graph.
-    virtual void deserialize(std::istream& in) = 0;
-};
+class VectorizableHandleGraph {
 
+public:
+
+    virtual ~VectorizableHandleGraph() = default;
+
+    /// Return the start position of the node in a (possibly implict) sorted array
+    /// constructed from the concatenation of the node sequences
+    virtual size_t node_vector_offset(const nid_t& node_id) const = 0;
+
+    /// Return the node overlapping the given offset in the implicit node vector
+    virtual nid_t node_at_vector_offset(const size_t& offset) const = 0;
+
+    /// Return a unique index among edges in the graph
+    virtual size_t edge_index(const edge_t& edge) const = 0;
+};
 
 ////////////////////////////////////////////////////////////////////////////
 // Template Implementations

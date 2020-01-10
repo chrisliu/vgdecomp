@@ -1,10 +1,11 @@
 #include "handle_graph.hpp"
+#include "mutable_handle_graph.hpp"
 #include "util.hpp"
 
 #include <vector>
 
 /** \file handle.cpp
- * Implement handle graph utility methods, operators, and default implementations.
+ * Implement handle graph utility methods, oprtators, and default implementations.
  */
 
 namespace handlegraph {
@@ -71,12 +72,35 @@ bool HandleGraph::has_edge(const handle_t& left, const handle_t& right) const {
     return !not_seen;
 }
 
+size_t HandleGraph::get_edge_count() const {
+    size_t total = 0;
+    for_each_edge([&](const edge_t& ignored) {
+        total++;
+    });
+    return total;
+};
+
+size_t HandleGraph::get_total_length() const {
+    size_t total = 0;
+    for_each_handle([&](const handle_t& h) {
+        total += get_length(h);
+    });
+    return total;
+};
+
 char HandleGraph::get_base(const handle_t& handle, size_t index) const {
     return get_sequence(handle)[index];
 }
 
 std::string HandleGraph::get_subsequence(const handle_t& handle, size_t index, size_t size) const {
     return get_sequence(handle).substr(index, size);
+}
+
+void MutableHandleGraph::increment_node_ids(nid_t increment) {
+    // Increment IDs by just reassigning IDs and applying the increment as the ID translation
+    reassign_node_ids([&](const nid_t& old_id) -> nid_t {
+        return old_id + increment;
+    });
 }
 
 /// Define equality on handles
