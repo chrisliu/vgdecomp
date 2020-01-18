@@ -131,6 +131,11 @@ pair<bool, Bundle> is_in_bundle(const handle_t& handle, const HandleGraph& g,
     return pair(!is_not_bundle, bundle);
 }
 
+pair<bool, Bundle> is_in_bundle(const handle_t& handle, const HandleGraph& g) {
+    unordered_set<handle_t> cache;
+    return is_in_bundle(handle, g, cache);
+}
+
 vector<Bundle> find_balanced_bundles(const HandleGraph& g) {
     vector<Bundle> bundles;
     unordered_set<handle_t> cached;
