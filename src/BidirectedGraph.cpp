@@ -1,6 +1,4 @@
 #include "BidirectedGraph.hpp"
-#include <string>
-#include <queue>
 #include "../deps/json/json/json.h"
 
 #include "../deps/handlegraph/util.hpp"
@@ -9,6 +7,11 @@
 #include <iostream>
 using namespace std;
 #endif /* DEBUG_BIDIRECTED_GRAPH */
+
+
+//******************************************************************************
+// Non handle graph functions 
+//******************************************************************************
 
 /// Deserializes vg JSON fromat
 /// Returns true if deserialize successfully or false if otherwise
@@ -25,170 +28,34 @@ bool BidirectedGraph::deserialize(ifstream& infile) {
     }
 
     /// TODO: check if it's proper vg JSON format
+
+    /// Construct nodes
+    Json::Value nodes = graph_json["node"];
+    for (auto& node : nodes) {
+        nid_t id1 = node["id"].asInt64();
+        string sequence = node["sequence"].asString();
+        create_handle(sequence, id1);
+    }
+
+    /// Construct edges
     Json::Value edges = graph_json["edge"];
     for (auto& edge : edges) {
         nid_t id1 = edge["from"].asInt64();
         nid_t id2 = edge["to"].asInt64();
         bool from_left = edge.get("from_start", false).asBool();
         bool to_right = edge.get("to_end", false).asBool();
-        add_edge(id1, id2, from_left, to_right);
+        create_edge(get_handle(id1, from_left), get_handle(id2, to_right));
     }
     return true;
 }
 
-// vector<const handle_t> BidirectedGraph::get_reachable_nodes(handle_t id){
-//     return reachable_nodes[get_id(id)];
-// }
-
-void BidirectedGraph::add_edge(nid_t id1, nid_t id2, bool from_left, bool to_right){
-    BidirectedEdge from_id1(id1, id2, from_left, to_right);
-    edges.emplace(make_pair(id1, vector<BidirectedEdge>()));
-    edges[id1].push_back(from_id1);
-
-    /// Make a complement edge for id2 if the edge doesn't leave and enter the same node side
-    if (id1 == id2 && from_left != to_right) return;
-
-    BidirectedEdge from_id2(id2, id1, !to_right, !from_left);
-    edges.emplace(make_pair(id2, vector<BidirectedEdge>()));
-    edges[id2].push_back(from_id2);
-}
-
-// bool BidirectedGraph::is_acyclic(){
-//     return true;
-// }
-// //idk if this works
-// void BidirectedGraph::populate_reachable_nodes(){
-    
-//     unordered_map<const nid_t, char > colormap;
-//     for_each_handle_impl([&] (const handle_t& handle) {
-//         vector<const handle_t> component;
-//         queue<handle_t> queue;
-//         queue.push(handle);
-//         colormap[get_id(handle)] = 'g';
-//         while(queue.size()!=0){
-//             handle_t currnode = queue.front();
-//             queue.pop();
-//             follow_edges_impl(currnode, true, [&](const handle_t& handle){
-//                 if(colormap.find(get_id(handle))!=colormap.end()){
-//                     return true;
-//                 }
-//                 ((vector<const handle_t>) component).push_back(handle);
-//                 colormap[get_id(handle)] = 'g';
-//                 return true;
-//             });
-//         }
-//         colormap[get_id(handle)] = 'b';
-//         vector<const handle_t>::iterator iter= component.begin();
-//         while(iter!=component.end()){
-//             reachable_nodes.emplace(make_pair(get_id(*iter), component));
-//         }
-//         return true;
-//     }, false);
-// }
-
-
-// lowercase g means entering from left
-// uppercase G means entering from right
-//void BidirectedGraph::mod_BFS(nid_t id){
-    /*
-    if(reachable_nodes.find(id)==reachable_nodes.end()){
-        reachable_nodes.emplace(id, vector<handle_t>());
-    }
-    
-    queue<nid_t> queue = ::queue<nid_t>();
-    queue.push(id);
-    colormap.emplace(make_pair(id, 'g'));
-    while(queue.size()!=0){
-        nid_t currnode = queue.front();
-        queue.pop();
-        char color = colormap.at(currnode);
-        vector<BidirectedEdge>::iterator veciter = edges.at(id).begin();
-        while(veciter!=edges.at(id).end()){
-            if(color=='g'){
-                if(veciter->id1==currnode && !veciter->from_left && colormap.find(veciter->id2)==colormap.end()){
-                    reachable_nodes.at(id).push_back(get_handle(veciter->id2, false));
-                    queue.push(veciter->id2);
-                    colormap.emplace(veciter->id2, veciter->to_right ? 'G' : 'g');
-                }
-                else if(veciter->id2==currnode && veciter->to_right && colormap.find(veciter->id1)==colormap.end()){
-                    reachable_nodes.at(id).push_back(get_handle(veciter->id1, false));
-                    queue.push(veciter->id1);
-                    colormap.emplace(veciter->id1, veciter->from_left ? 'g' : 'G');
-                }
-            }
-            else if(color=='G'){
-                if(veciter->id1==currnode && veciter->from_left && colormap.find(veciter->id2)==colormap.end()){
-                    reachable_nodes.at(id).push_back(get_handle(veciter->id2, false));
-                    queue.push(veciter->id2);
-                    colormap.emplace(veciter->id2, veciter->to_right ? 'G' : 'g');
-                }
-                else if(veciter->id2==currnode && !veciter->to_right && colormap.find(veciter->id1)==colormap.end()){
-                    reachable_nodes.at(id).push_back(get_handle(veciter->id1, false));
-                    queue.push(veciter->id1);
-                    colormap.emplace(veciter->id1, veciter->from_left ? 'g' : 'G');
-                }
-            }
-            ++veciter;
-        }
-        colormap.at(currnode) = 'b';
-    }
-    queue = ::queue<nid_t>();
-    colormap = unordered_map<nid_t, char>();
-    queue.push(id);
-    colormap.emplace(make_pair(id, 'G'));
-    while(queue.size()!=0){
-        nid_t currnode = queue.front();
-        queue.pop();
-        char color = colormap.at(currnode);
-        vector<BidirectedEdge>::iterator veciter = edges.at(id).begin();
-        while(veciter!=edges.at(id).end()){
-            if(color=='g'){
-                if(veciter->id1==currnode && !veciter->from_left && colormap.find(veciter->id2)==colormap.end()){
-                    reachable_nodes.at(id).push_back(get_handle(veciter->id2, false));
-                    queue.push(veciter->id2);
-                    colormap.emplace(veciter->id2, veciter->to_right ? 'G' : 'g');
-                }
-                else if(veciter->id2==currnode && veciter->to_right && colormap.find(veciter->id1)==colormap.end()){
-                    reachable_nodes.at(id).push_back(get_handle(veciter->id1, false));
-                    queue.push(veciter->id1);
-                    colormap.emplace(veciter->id1, veciter->from_left ? 'g' : 'G');
-                }
-            }
-            else if(color=='G'){
-                if(veciter->id1==currnode && veciter->from_left && colormap.find(veciter->id2)==colormap.end()){
-                    reachable_nodes.at(id).push_back(get_handle(veciter->id2, false));
-                    queue.push(veciter->id2);
-                    colormap.emplace(veciter->id2, veciter->to_right ? 'G' : 'g');
-                }
-                else if(veciter->id2==currnode && !veciter->to_right && colormap.find(veciter->id1)==colormap.end()){
-                    reachable_nodes.at(id).push_back(get_handle(veciter->id1, false));
-                    queue.push(veciter->id1);
-                    colormap.emplace(veciter->id1, veciter->from_left ? 'g' : 'G');
-                }
-            }
-            ++veciter;
-        }
-        colormap.at(currnode) = 'b';
-    }
-    */
-//}
-
-// void BidirectedGraph::print_reachable_nodes(){
-//     unordered_map<nid_t, vector<const handle_t> >::iterator reachable = reachable_nodes.begin();
-//     while(reachable!=reachable_nodes.end()){
-//         vector<const handle_t>::iterator nodeiter = reachable->second.begin();
-//         printf("Printing path connected nodes from %llu:\n", reachable->first);
-//         while(nodeiter!=reachable->second.end()){
-//             printf("%llu\n", get_id(*nodeiter));
-//             nodeiter++;
-//         }
-//         reachable++;
-//     }
-// }
+//******************************************************************************
+// Handle graph public functions 
+//******************************************************************************
 
 /// Method to check if a node exists by ID
 bool BidirectedGraph::has_node(nid_t nodeid) const {
-    return edges.find(nodeid) != edges.end();
+    return nodes.count(nodeid);
 }
 
 /// Look up the handle for the node with the given ID in the given orientation
@@ -213,30 +80,30 @@ handle_t BidirectedGraph::flip(const handle_t& handle) const {
 
 /// Get the length of a node
 size_t BidirectedGraph::get_length(const handle_t& handle) const {
-    return 0;
+    return get_sequence(handle).size();
 }
 
 /// Get the sequence of a node, presented in the handle's local forward
 /// orientation.
-std::string BidirectedGraph::get_sequence(const handle_t& handle) const {
-    return "";
+string BidirectedGraph::get_sequence(const handle_t& handle) const {
+    return nodes.at(get_id(handle));
 }
 
 /// Return the number of nodes in the graph
 size_t BidirectedGraph::get_node_count() const {
-    return edges.size();
+    return nodes.size();
 }
 
 /// Return the smallest ID in the graph, or some smaller number if the
 /// smallest ID is unavailable. Return value is unspecified if the graph is empty.
 nid_t BidirectedGraph::min_node_id() const {
-    // Should work with default comparator, otherwise use
-    edge_map::const_iterator res = min_element(edges.begin(), edges.end(),
-                                        [](const edge_map_pair& node1, const edge_map_pair& node2) {
-                                            return node1.first < node2.first;
-                                        });
-    if (res != edges.end()) {
-        return res->first;
+    auto res = min_element(nodes.begin(), nodes.end(),
+        [] (const auto& n1, const auto& n2) {
+            return n1.first < n2.first;
+        }
+    );
+    if (res != nodes.end()) {
+        return res->first;   
     }
     return 0;
 }
@@ -244,50 +111,123 @@ nid_t BidirectedGraph::min_node_id() const {
 /// Return the largest ID in the graph, or some larger number if the
 /// largest ID is unavailable. Return value is unspecified if the graph is empty.
 nid_t BidirectedGraph::max_node_id() const {
-    edge_map::const_iterator res = max_element(edges.begin(), edges.end(),
-                                        [](const edge_map_pair& node1, const edge_map_pair& node2) {
-                                            return node1.first < node2.first;
-                                        });
-    if (res != edges.end()) {
+    auto res = max_element(nodes.begin(), nodes.end(),
+        [](const auto& n1, const auto& n2) {
+            return n1.first < n2.first;
+        }
+    );
+    if (res != nodes.end()) {
         return res->first;
     }
     return 0;
 }
 
-bool BidirectedGraph::follow_edges_impl(const handle_t& handle, bool go_left, const std::function<bool(const handle_t&)>& iteratee) const {
-    nid_t node_id    = get_id(handle);
-    bool  is_reverse = get_is_reverse(handle);
-    bool  on_left    = (go_left && !is_reverse) || (!go_left && is_reverse);
-    for (const BidirectedEdge& node_edge : edges.at(node_id)) {
-        bool flow = (node_edge.from_left ^ node_edge.to_right) ^ is_reverse; // The node return should follow the "flow" of the walk
-        if (node_edge.from_left == on_left && !iteratee(get_handle(node_edge.id2, flow))) {
-            return false;
-        }
+//******************************************************************************
+// Mutable handle graph public functions 
+//******************************************************************************
+
+handle_t BidirectedGraph::create_handle(const string& sequence) {
+    nodes[cur_id] = sequence;
+    cur_id++; /// Increment node id
+    return get_handle(cur_id - 1);
+}
+
+handle_t BidirectedGraph::create_handle(const string& sequence, const nid_t& id) {
+    nodes[id] = sequence;
+    cur_id = (id > cur_id) ? id + 1 : cur_id; // Simple cur_id update function
+    return get_handle(id);
+}
+
+void BidirectedGraph::create_edge(const handle_t& left, const handle_t& right) {
+    /// From left to right
+    edges.emplace(left, unordered_set<handle_t>());
+    edges[left].insert(right);
+
+    /// Create complement from right to left
+    edges.emplace(flip(right), unordered_set<handle_t>());
+    edges[flip(right)].insert(flip(left));
+}
+
+handle_t BidirectedGraph::apply_orientation(const handle_t& handle) {
+    /// TODO: Incorrect implementation
+    return handle;
+}
+
+vector<handle_t> BidirectedGraph::divide_handle(const handle_t& handle, const vector<size_t>& offsets) {
+    /// TODO: Incorrect implementation
+    return vector<handle_t>();
+}
+
+void BidirectedGraph::optimize(bool allow_id_reassignment) {
+    /// TODO: Incorrect implementation
+}
+
+void BidirectedGraph::apply_ordering(const vector<handle_t>& order, bool compact_ids) {
+    /// TODO: Incorrect implementation
+}
+
+void BidirectedGraph::set_id_increment(const nid_t& min_id) {
+    /// TODO: Incorrect implementation
+}
+
+void BidirectedGraph::reassign_node_ids(const function<nid_t(const nid_t&)>& get_new_id) {
+    /// TODO: Incorrect implementation
+}
+
+//******************************************************************************
+// Deletable handle graph public functions
+//******************************************************************************
+
+void BidirectedGraph::destroy_handle(const handle_t& handle) {
+    /// Erase from nodes
+    nodes.erase(get_id(handle));
+
+    /// Remove edges
+    handle_t flipped = flip(handle);
+    /// Remove complement edges
+    for (auto& rhandle : edges[handle]) {
+        edges[flip(rhandle)].erase(flipped);
+    }
+    /// Delete "forward edges" from handle
+    edges.erase(handle);
+}
+
+void BidirectedGraph::destroy_edge(const handle_t& left, const handle_t& right) {
+    /// Erase forward edge
+    edges[left].erase(right);
+    /// Erase complement edge
+    edges[flip(right)].erase(flip(left));
+}
+
+void BidirectedGraph::clear() {
+    nodes.clear();
+    edges.clear();
+}
+
+//******************************************************************************
+// Handle graph protected functions
+//******************************************************************************
+
+bool BidirectedGraph::follow_edges_impl(const handle_t& handle, bool go_left, const function<bool(const handle_t&)>& iteratee) const {
+    /// Get handle of proper direction
+    handle_t lhandle;
+    if (go_left) lhandle = flip(handle);
+    else lhandle = *const_cast<handle_t*>(&handle);
+
+    /// Early exit if there aren't any edges for that handle
+    if (!edges.count(lhandle)) return true;
+
+    /// Otherwise iterate through every edge
+    for (auto& rhandle : edges.at(lhandle)) {
+        if (!iteratee(rhandle)) return false;
     }
     return true;
 }
         
 
-bool BidirectedGraph::for_each_handle_impl(const std::function<bool(const handle_t&)>& iteratee, bool parallel) const {
-    for (const auto& node_edges : edges) {
-        if (!iteratee(get_handle(node_edges.first, false))) {
-            return false;
-        }
+bool BidirectedGraph::for_each_handle_impl(const function<bool(const handle_t&)>& iteratee, bool parallel) const {
+    for (auto& [nid, _] : nodes) {
+        if (!iteratee(get_handle(nid))) return false;
     }
     return true;
 }
-
-#ifdef DEBUG_BIDIRECTED_GRAPH
-inline void pprint_edge(const BidirectedEdge& edge) {
-    cout << " - " << "Node " << edge.id1 << ((edge.from_left) ? '-' : '+') << " <-> " << "Node " << edge.id2 << ((edge.to_right) ? '+' : '-') << endl;
-}
-
-void BidirectedGraph::print_edges() const {
-    for (const auto& node_edges : edges) {
-        cout << "Node " << node_edges.first << endl;
-        for (const BidirectedEdge& edge : node_edges.second) {
-            pprint_edge(edge);
-        }
-    }
-}
-#endif /* DEBUG_BIDIRECTED_GRAPH */
