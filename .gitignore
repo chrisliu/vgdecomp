@@ -39,7 +39,3 @@
 
 #debug
 *.dSYM
-
-hg.code-workspace
-src/BidirectedGraphTEST
-PathConnectedTest
