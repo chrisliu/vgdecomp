@@ -143,6 +143,9 @@ void BidirectedGraph::create_edge(const handle_t& left, const handle_t& right) {
     edges.emplace(left, unordered_set<handle_t>());
     edges[left].insert(right);
 
+    // Don't create complement if it's an inversion
+    if (left == flip(right)) return;
+
     /// Create complement from right to left
     edges.emplace(flip(right), unordered_set<handle_t>());
     edges[flip(right)].insert(flip(left));
@@ -219,7 +222,7 @@ bool BidirectedGraph::follow_edges_impl(const handle_t& handle, bool go_left, co
 
     /// Otherwise iterate through every edge
     for (auto& rhandle : edges.at(lhandle)) {
-        if (!iteratee(rhandle)) return false;
+        if (!iteratee((go_left ? flip(rhandle) : rhandle))) return false;
     }
     return true;
 }
