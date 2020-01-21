@@ -1,6 +1,5 @@
 #ifndef BidirectedGraph_hpp
 #define BidirectedGraph_hpp
-#include "BidirectedEdge.hpp"
 
 // #define DEBUG_BIDIRECTED_GRAPH
 
