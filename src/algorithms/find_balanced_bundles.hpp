@@ -19,6 +19,6 @@ std::vector<Bundle> find_balanced_bundles(const handlegraph::HandleGraph& g);
 /// Determines if the given handle is part of a bundle.
 /// Returns (true, bundle) if it's in a bundle
 ///   Otherwise returns (false, bundle) if it's not in a bundle
-std::pair<bool, Bundle> is_in_bundle(const handlegraph::handle_t& handle, const handlegraph::HandleGraph& g);
+std::pair<bool, Bundle> find_balanced_bundle(const handlegraph::handle_t& handle, const handlegraph::HandleGraph& g);
 
 #endif /* VG_ALGORITHMS_FIND_BALANCED_BUNDLE_HPP_INCLUDED */
