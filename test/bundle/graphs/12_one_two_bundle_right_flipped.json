@@ -1,33 +1,31 @@
 {
-    "comment": "This is a balanced bundle where the left side has 1 node and the right side has 2 nodes. One of the right nodes is flipped.",
-    "graph": {
-        "edges": [
-            {
-                "id1": 1,
-                "id2": 2,
-                "from_left": false,
-                "to_right": true
-            },
-            {
-                "id1": 1,
-                "id2": 3,
-                "from_left": false,
-                "to_right": false
-            }
-        ],
-        "nodes": [
-            {
-                "id": 1
-            },
-            {
-                "id": 2
-            },
-            {
-                "id": 3
-            }
-        ]
-    },
-    "bundles": [
+    "description": "This is a balanced bundle where the left side has 1 node and the right side has 2 nodes. One of the right nodes is flipped.",
+    "node": [
+        {
+            "id": 1,
+            "sequence": ""
+        },
+        {
+            "id": 2,
+            "sequence": ""
+        },
+        {
+            "id": 3,
+            "sequence": ""
+        }
+    ],
+    "edge": [
+        {
+            "from": 1,
+            "to": 2,
+            "to_end": true
+        },
+        {
+            "from": 1,
+            "to": 3
+        }
+    ],
+    "bundle": [
         {
             "left": [
                 {

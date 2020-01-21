@@ -1,78 +1,82 @@
 {
-    "comment": "This is the one two three graph arranged such that the largest ids are first.",
-    "graph": {
-        "edges": [
-            {
-                "id1": 6,
-                "id2": 3,
-                "from_left": true,
-                "to_right": true
-            },
-            {
-                "id1": 5,
-                "id2": 3,
-                "from_left": true,
-                "to_right": true
-            },
-            {
-                "id1": 4,
-                "id2": 3,
-                "from_left": true,
-                "to_right": true
-            },
-            {
-                "id1": 6,
-                "id2": 2,
-                "from_left": true,
-                "to_right": true
-            },
-            {
-                "id1": 5,
-                "id2": 2,
-                "from_left": true,
-                "to_right": true
-            },
-            {
-                "id1": 4,
-                "id2": 2,
-                "from_left": true,
-                "to_right": true
-            },
-            {
-                "id1": 3,
-                "id2": 1,
-                "from_left": true,
-                "to_right": true
-            },
-            {
-                "id1": 2,
-                "id2": 1,
-                "from_left": true,
-                "to_right": true
-            }
-        ],
-        "nodes": [
-            {
-                "id": 1
-            },
-            {
-                "id": 2
-            },
-            {
-                "id": 3
-            },
-            {
-                "id": 4
-            },
-            {
-                "id": 5
-            },
-            {
-                "id": 6
-            }
-        ]
-    },
-    "bundles": [
+    "description": "This is the one two three graph arranged such that the largest ids are first.",
+    "node": [
+        {
+            "id": 1,
+            "sequence": ""
+        },
+        {
+            "id": 2,
+            "sequence": ""
+        },
+        {
+            "id": 3,
+            "sequence": ""
+        },
+        {
+            "id": 4,
+            "sequence": ""
+        },
+        {
+            "id": 5,
+            "sequence": ""
+        },
+        {
+            "id": 6,
+            "sequence": ""
+        }
+    ],
+    "edge": [
+        {
+            "from": 6,
+            "to": 3,
+            "from_start": true,
+            "to_end": true
+        },
+        {
+            "from": 5,
+            "to": 3,
+            "from_start": true,
+            "to_end": true
+        },
+        {
+            "from": 4,
+            "to": 3,
+            "from_start": true,
+            "to_end": true
+        },
+        {
+            "from": 6,
+            "to": 2,
+            "from_start": true,
+            "to_end": true
+        },
+        {
+            "from": 5,
+            "to": 2,
+            "from_start": true,
+            "to_end": true
+        },
+        {
+            "from": 4,
+            "to": 2,
+            "from_start": true,
+            "to_end": true
+        },
+        {
+            "from": 3,
+            "to": 1,
+            "from_start": true,
+            "to_end": true
+        },
+        {
+            "from": 2,
+            "to": 1,
+            "from_start": true,
+            "to_end": true
+        }
+    ],
+    "bundle": [
         {
             "left": [
                 {
