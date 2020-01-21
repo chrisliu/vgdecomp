@@ -2,6 +2,7 @@
 #include <unordered_set>
 
 using namespace handlegraph;
+using namespace std;
 
 #ifdef DEBUG_FIND_BALANCED_BUNDLES
 #include <iostream>
@@ -15,8 +16,6 @@ std::string node_str(const handle_t& handle, const HandleGraph& g) {
     return ss.str();
 }
 #endif /* DEBUG_FIND_BALANCED_BUNDLES */
-
-using namespace std;
 
 /// Returns true if the handle has been cached or false if otherwise
 inline bool cache(const handle_t& handle, unordered_set<handle_t>& cached) { 
