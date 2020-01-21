@@ -10,7 +10,6 @@
 #include <unordered_set>
 
 #include "../../src/BidirectedGraph.hpp"
-#include "../../src/BidirectedGraphBuilder.hpp"
 #include "../../src/algorithms/find_balanced_bundles.hpp"
 #include "../../src/algorithms/bundle.hpp"
 #include "../../deps/handlegraph/handle_graph.hpp"
@@ -40,7 +39,9 @@ TEST_CASE("JSON Bundle Tests") {
     /// Test cases
     for (auto& case_path : test_cases) {
         SECTION(case_path) {
-            BidirectedGraph g = BidirectedGraphBuilder::build_graph(case_path);
+            ifstream json_file(case_path, ifstream::binary);
+            BidirectedGraph g;
+            REQUIRE(g.deserialize(json_file));
             auto found_bundles = find_balanced_bundles(g);
             auto true_bundles = get_true_bundles(case_path, g);
 
@@ -63,7 +64,7 @@ vector<bundle_pair> get_true_bundles(const string& path, const BidirectedGraph& 
     graph_file.close();
 
     vector<bundle_pair> bundles;
-    Json::Value bundles_json = graph_json["bundles"];
+    Json::Value bundles_json = graph_json["bundle"];
     for (auto& bundle_json : bundles_json) {
         /// Construct left side
         bundleside left, left_flipped;
