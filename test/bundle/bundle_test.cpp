@@ -92,16 +92,16 @@ vector<bundle_pair> get_true_bundles(const string& path, const BidirectedGraph& 
 
 bundle_pair bundle_to_bundle_pair(Bundle& bundle, const BidirectedGraph& g) {
     bundleside left, left_flipped;
-    bundle.get_bundleside(true).traverse_bundle([&](const handle_t& handle) {
+    for (const auto& handle : bundle.get_left()) {
         left.insert(handle);
         left_flipped.insert(g.flip(handle));
-    });
+    }
 
     bundleside right, right_flipped;
-    bundle.get_bundleside(false).traverse_bundle([&](const handle_t& handle) {
+    for (const auto& handle : bundle.get_right()) {
         right.insert(handle);
         right_flipped.insert(g.flip(handle));
-    });
+    }
 
     return pair(pair(left, right), pair(left_flipped, right_flipped));
 }

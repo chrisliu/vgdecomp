@@ -15,6 +15,7 @@ std::string node_str(const handle_t& handle, const HandleGraph& g) {
     if (g.get_is_reverse(handle)) ss << " reversed";
     return ss.str();
 }
+using namespace std;
 #endif /* DEBUG_FIND_BALANCED_BUNDLES */
 
 /// Returns true if the handle has been cached or false if otherwise
@@ -45,31 +46,31 @@ pair<bool, Bundle> is_in_bundle(const handle_t& handle, const HandleGraph& g,
 
     /// Phase 1: Find right side nodes
     g.follow_edges(handle, false, [&](const handle_t& rhs_handle) {
-        bundle.add_init_node(rhs_handle, false);
+        bundle.get_right().add_init_node(rhs_handle);
         has_reversed = g.get_is_reverse(rhs_handle) != handle_dir;
     });
 
-    if (!bundle.get_bundleside_size(false)) {
+    if (!bundle.get_right().size()) {
         return pair(false, bundle);
     }
 
 #ifdef DEBUG_FIND_BALANCED_BUNDLES
     cout << "[Phase 1] RHS nodes:" << endl;
     int count = 1;
-    bundle.get_bundleside(false).traverse_bundle([&](const handle_t rhs_handle) {
+    for (const auto& rhs_handle : bundle.get_right()) {
         cout << "  " << count << ". " << node_str(rhs_handle, g) << endl;
         count++;
-    });
+    }
 #endif /* DEBUG_FIND_BALANCED_BUNDLES */
 
     /// Phase 2: Find left side nodes and verify all lhs sets are the same
     bool is_first = true;
     int lhs_node_count = 0;
-    bundle.get_bundleside(false).traverse_bundle([&](const handle_t& rhs_handle) {
+    for (const auto& rhs_handle : bundle.get_right()) {
         cache(rhs_handle, cached, g);
         if (is_first) {
             g.follow_edges(rhs_handle, true, [&](const handle_t& lhs_handle) {
-                bundle.add_init_node(lhs_handle, true);
+                bundle.get_left().add_init_node(lhs_handle);
                 has_reversed |= g.get_is_reverse(lhs_handle) != handle_dir;
                 cache(lhs_handle, cached);
                 lhs_node_count++;
@@ -78,53 +79,53 @@ pair<bool, Bundle> is_in_bundle(const handle_t& handle, const HandleGraph& g,
         } else {
             int node_count = 0;
             g.follow_edges(rhs_handle, true, [&](const handle_t& lhs_handle) {
-                is_not_bundle |= bundle.add_node(lhs_handle, true);
+                is_not_bundle |= bundle.get_left().add_node(lhs_handle);
                 has_reversed |= g.get_is_reverse(lhs_handle) != handle_dir;
                 cache(lhs_handle, cached);
                 node_count++;
             });
             is_not_bundle |= node_count != lhs_node_count;
         }
-    });
+    }
 
 #ifdef DEBUG_FIND_BALANCED_BUNDLES
     cout << "[Phase 2] LHS nodes:" << endl;
     count = 1;
-    bundle.get_bundleside(true).traverse_bundle([&](const handle_t lhs_handle) {
+    for (const auto& lhs_handle : bundle.get_left()) {
         cout << "  " << count << ". " << node_str(lhs_handle, g) << endl;
         count++;
-    });
+    }
     cout << "[Phase 2] Is bundle: " << ((!is_not_bundle) ? "True" : "False") << endl;
 #endif /* DEBUG_FIND_BALANCED_BUNDLES */
 
     /// Phase 3: Find right side nodes and verify all rhs sets are the same
-    int rhs_node_count = bundle.get_bundleside_size(false);
-    bundle.get_bundleside(true).traverse_bundle([&](const handle_t& lhs_handle) {
+    int rhs_node_count = bundle.get_right().size();
+    for (const auto& lhs_handle : bundle.get_left()) {
         if (lhs_handle != handle) {
             int node_count = 0;
             g.follow_edges(lhs_handle, false, [&](const handle_t& rhs_handle) {
-                is_not_bundle |= bundle.add_node(rhs_handle, false);
+                is_not_bundle |= bundle.get_right().add_node(rhs_handle);
                 has_reversed |= g.get_is_reverse(rhs_handle) != handle_dir;
                 cache(rhs_handle, cached, g);
                 node_count++;
             });
             is_not_bundle |= node_count != rhs_node_count;
         }
-    });
+    }
 
 #ifdef DEBUG_FIND_BALANCED_BUNDLES
     cout << "[Phase 3] RHS nodes:" << endl;
     count = 1;
-    bundle.get_bundleside(false).traverse_bundle([&](const handle_t rhs_handle) {
+    
+    for (const auto& rhs_handle : bundle.get_right()) {
         cout << "  " << count << ". " << node_str(rhs_handle, g) << endl;
         count++;
-    });
+    }
     cout << "[Phase 3] Is bundle: " << ((!is_not_bundle) ? "True" : "False") << endl;
 #endif /* DEBUG_FIND_BALANCED_BUNDLES */
 
     /// Phase Descriptor: Describe bundle characteristics
-    bundle.set_trivial(bundle.get_bundleside_size(true) == 1 &&
-        bundle.get_bundleside_size(false) == 1);
+    bundle.set_trivial(bundle.get_left().size() == 1 && bundle.get_right().size() == 1);
     bundle.set_has_reversed_node(has_reversed);
 
     return pair(!is_not_bundle, bundle);

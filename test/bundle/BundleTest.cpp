@@ -20,15 +20,13 @@ std::string node_to_str(const handle_t& handle, const HandleGraph& g) {
 
 void print_bundle(BidirectedGraph& g, Bundle& bundle) {
     cout << "Left" << endl;
-    bundle.get_bundleside(true).traverse_bundle([&](const handle_t& l_handle) {
+    for (const auto& l_handle : bundle.get_left()) {
         cout << node_to_str(l_handle, g) << endl;
-        return true;
-    });
+    }
     cout << "Right" << endl;
-    bundle.get_bundleside(false).traverse_bundle([&](const handle_t& r_handle) {
+    for (const auto& r_handle: bundle.get_right()) {
         cout << node_to_str(r_handle, g) << endl;
-        return true;
-    }); 
+    }; 
     cout << "Is a trivial bundle:  " << ((bundle.is_trivial()) ? "true" : "false") << endl;
     cout << "Has reversed node(s): " << ((bundle.has_reversed_node()) ? "true" : "false") << endl;
 }
