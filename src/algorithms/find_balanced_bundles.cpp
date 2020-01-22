@@ -144,6 +144,8 @@ vector<Bundle> find_balanced_bundles(const HandleGraph& g) {
         if (!cache(handle, cached)) {
             auto [r_is_bundle, r_bundle] = is_in_bundle(handle, g, cached);
             if (r_is_bundle) {
+                /// Cache bundle sides
+                r_bundle.update_bundlesides(g);
                 bundles.push_back(r_bundle);
             }
         }
@@ -152,6 +154,8 @@ vector<Bundle> find_balanced_bundles(const HandleGraph& g) {
         if (!cache(reversed, cached)) {
             auto [l_is_bundle, l_bundle] = is_in_bundle(reversed, g, cached);
             if (l_is_bundle) {
+                /// Cache bundle sides
+                l_bundle.update_bundlesides(g);
                 bundles.push_back(l_bundle);
             }
         }
