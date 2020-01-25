@@ -185,7 +185,7 @@ void BidirectedGraph::destroy_handle(const handle_t& handle) {
     /// Erase from nodes
     nodes.erase(get_id(handle));
 
-    /// Remove edges
+    /// Remove edges in the "forward" direction
     handle_t flipped = flip(handle);
     /// Remove complement edges
     for (auto& rhandle : edges[handle]) {
@@ -193,6 +193,14 @@ void BidirectedGraph::destroy_handle(const handle_t& handle) {
     }
     /// Delete "forward edges" from handle
     edges.erase(handle);
+
+    /// Remove edges in the "backward" direction
+    /// Remove complement edges
+    for (auto& rhandle : edges[flipped]) {
+        edges[flip(rhandle)].erase(handle);
+    }
+    /// Delete "forward edges" from handle
+    edges.erase(flipped);
 }
 
 void BidirectedGraph::destroy_edge(const handle_t& left, const handle_t& right) {

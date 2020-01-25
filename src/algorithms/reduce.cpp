@@ -5,7 +5,13 @@ using namespace handlegraph;
 using namespace std;
 
 /// Reduction action 1
-inline void reduce_degree_one_node(DeletableHandleGraph& g, handle_t& node) {
+void reduce_degree_one_node(DeletableHandleGraph& g, handle_t& node) {
+    handle_t left_neighbor;
+    g.follow_edges(node, true, [&](const handle_t& handle) { left_neighbor = handle; });
+    handle_t right_neighbor;
+    g.follow_edges(node, false, [&](const handle_t& handle) { right_neighbor = handle; });
+    g.create_edge(left_neighbor, right_neighbor);
+
     g.destroy_handle(node);
 }
 
@@ -16,11 +22,10 @@ handle_t reduce_trivial_bundle(DeletableHandleGraph& g, Bundle& bundle) {
 
     /// Create new node
     handle_t new_handle = g.create_handle("");
-    handle_t new_handle_flipped = g.flip(new_handle);
 
     /// Remap left side edges of lhandle to new node
-    g.follow_edges(g.flip(l_handle), false, [&](const handle_t& child_handle) {
-        g.create_edge(new_handle_flipped, child_handle);
+    g.follow_edges(l_handle, true, [&](const handle_t& child_handle) {
+        g.create_edge(child_handle, new_handle);
     });
 
     /// Remap right side edges of rhandle to new node
@@ -35,7 +40,7 @@ handle_t reduce_trivial_bundle(DeletableHandleGraph& g, Bundle& bundle) {
 }
 
 /// Reduction action 3
-void reduce_bundle(DeletableHandleGraph& g, Bundle& bundle) {
+Bundle* reduce_bundle(DeletableHandleGraph& g, Bundle& bundle) {
     /// Create new nodes for left and right side
     handle_t newl_handle = g.create_handle("");
     handle_t newr_handle = g.create_handle("");
@@ -62,4 +67,9 @@ void reduce_bundle(DeletableHandleGraph& g, Bundle& bundle) {
     for (const auto& node : bundle.get_right()) {
         g.destroy_handle(node);
     }
+
+    Bundle* reduced_bundle = new Bundle();
+    (*reduced_bundle).get_left().add_init_node(newl_handle);
+    (*reduced_bundle).get_right().add_init_node(newr_handle);
+    return reduced_bundle;
 }
