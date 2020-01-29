@@ -204,6 +204,9 @@ void BidirectedGraph::destroy_handle(const handle_t& handle) {
 }
 
 void BidirectedGraph::destroy_edge(const handle_t& left, const handle_t& right) {
+    /// Check if it's been destroyed already
+    if (!edges.count(left)) return;
+
     /// Erase forward edge
     edges[left].erase(right);
     /// Erase complement edge
