@@ -5,6 +5,8 @@
 using namespace std;
 using namespace handlegraph;
 
+BundlePool* BundlePool::instance = nullptr;
+
 /// Counter structure
 struct Count {
     struct value_type { template<typename T> value_type(const T&) {} };
