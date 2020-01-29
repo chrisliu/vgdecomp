@@ -3,6 +3,7 @@
 
 #include "../../deps/handlegraph/deletable_handle_graph.hpp"
 #include "find_balanced_bundles.hpp"
+#include "bundle.hpp"
 
 /// Temporarily exposing reduction actions
 void reduce_degree_one_node(handlegraph::DeletableHandleGraph& g, handlegraph::handle_t& node); // R1 

@@ -68,7 +68,7 @@ Bundle* reduce_bundle(DeletableHandleGraph& g, Bundle& bundle) {
         g.destroy_handle(node);
     }
 
-    Bundle* reduced_bundle = new Bundle();
+    Bundle* reduced_bundle = BundlePool::get_instance()->get_bundle();
     (*reduced_bundle).get_left().add_init_node(newl_handle);
     (*reduced_bundle).get_right().add_init_node(newr_handle);
     return reduced_bundle;
