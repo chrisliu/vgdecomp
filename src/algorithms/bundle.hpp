@@ -8,7 +8,7 @@
 #include "../../deps/handlegraph/types.hpp"
 #include "../../deps/handlegraph/handle_graph.hpp"
 
-enum Adjacency {
+enum adjacency_t {
     None,
     Weak,
     Strong
@@ -47,7 +47,7 @@ class BundleSide {
 
         void update(const handlegraph::HandleGraph& g);
 
-        Adjacency get_adjacency_type(const BundleSide& other) const;
+        adjacency_t get_adjacency_type(const BundleSide& other) const;
 
         std::vector<handlegraph::handle_t> get_nodes() { return std::vector<handlegraph::handle_t>(nodes.begin(), nodes.end()); }
 

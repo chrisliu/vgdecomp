@@ -25,7 +25,7 @@ void BundleSide::update(const HandleGraph& g) {
     }
 }
 
-Adjacency _get_adjacency_type(const unordered_set<handle_t> side1, const unordered_set<handle_t> side2) {
+adjacency_t _get_adjacency_type(const unordered_set<handle_t> side1, const unordered_set<handle_t> side2) {
     Count c;
     set_intersection(side1.begin(), side1.end(), side2.begin(), side2.end(),
         back_insert_iterator(c), [](const handle_t& h1, const handle_t& h2) {
@@ -36,22 +36,22 @@ Adjacency _get_adjacency_type(const unordered_set<handle_t> side1, const unorder
     size_t count = c.count;
 
     if (side1.size() == count && side2.size() == count) {
-        return Adjacency::Strong;
+        return adjacency_t::Strong;
     } else if (count > 0) {
-        return Adjacency::Weak;
+        return adjacency_t::Weak;
     }
-    return Adjacency::None;
+    return adjacency_t::None;
 }
 
-Adjacency BundleSide::get_adjacency_type(const BundleSide& other) const {
-    Adjacency res;
-    if ((res = _get_adjacency_type(nodes, other.nodes)) != Adjacency::None ||
-        (res = _get_adjacency_type(nodes, other.nodes_flipped)) != Adjacency::None ||
-        (res = _get_adjacency_type(nodes_flipped, other.nodes)) != Adjacency::None ||
-        (res = _get_adjacency_type(nodes_flipped, other.nodes_flipped)) != Adjacency::None) {
+adjacency_t BundleSide::get_adjacency_type(const BundleSide& other) const {
+    adjacency_t res;
+    if ((res = _get_adjacency_type(nodes, other.nodes)) != adjacency_t::None ||
+        (res = _get_adjacency_type(nodes, other.nodes_flipped)) != adjacency_t::None ||
+        (res = _get_adjacency_type(nodes_flipped, other.nodes)) != adjacency_t::None ||
+        (res = _get_adjacency_type(nodes_flipped, other.nodes_flipped)) != adjacency_t::None) {
         return res;
     }
-    return Adjacency::None;
+    return adjacency_t::None;
 }
 
 void Bundle::update_bundlesides(const HandleGraph& g) {
