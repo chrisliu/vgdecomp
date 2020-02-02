@@ -16,12 +16,17 @@ struct Global {
 };
 BundlePool* Global::bpool = BundlePool::get_instance();
 
+/// Returns the first neighbor of the node.
+inline handle_t get_first_neighbor(HandleGraph& g, handle_t& node, bool is_left) {
+    handle_t neighbor;
+    g.follow_edges(node, is_left, [&](const handle_t& handle) { neighbor = handle; return false; });
+    return neighbor;
+}
+
 /// Reduction action 1
 void reduce_degree_one_node(DeletableHandleGraph& g, handle_t& node) {
-    handle_t left_neighbor;
-    g.follow_edges(node, true, [&](const handle_t& handle) { left_neighbor = handle; });
-    handle_t right_neighbor;
-    g.follow_edges(node, false, [&](const handle_t& handle) { right_neighbor = handle; });
+    handle_t left_neighbor = get_first_neighbor(g, node, true);
+    handle_t right_neighbor = get_first_neighbor(g, node, false);
     g.create_edge(left_neighbor, right_neighbor);
 
     g.destroy_handle(node);
@@ -80,7 +85,7 @@ Bundle* reduce_bundle(DeletableHandleGraph& g, Bundle& bundle) {
         g.destroy_handle(node);
     }
 
-    Bundle* reduced_bundle = BundlePool::get_instance()->get_bundle();
+    Bundle* reduced_bundle = Global::bpool->get_bundle();
     (*reduced_bundle).get_left().add_init_node(newl_handle);
     (*reduced_bundle).get_right().add_init_node(newr_handle);
     return reduced_bundle;
@@ -113,8 +118,7 @@ void unmark_bundle(HandleGraph& g, Bundle* bundle, bundle_map_t& bundle_map) {
 /// Performs reduction action 1 where node is the removed node.
 void perform_reduction1(DeletableHandleGraph& g, handle_t& node, bundle_map_t& bundle_map) {
     /// Get left neighbor so bundle finding could be done post node removal
-    handle_t left_neighbor;
-    g.follow_edges(node, true, [&](const handle_t& handle) { left_neighbor = handle; });
+    handle_t left_neighbor = get_first_neighbor(g, node, true);
     
     /// Delete node entry in bundle_map if any
     if (bundle_map.count(node)) unmark_bundle(g, bundle_map[node], bundle_map);
@@ -180,40 +184,98 @@ void perform_reduction3(DeletableHandleGraph& g, Bundle& bundle, bundle_map_t& b
     if (in_bundle2) { mark_bundle(g, bundle2, bundle_map); }
 }
 
-bool is_reduction1(const HandleGraph& g, const nid_t& handle) {
-
+/// Returns middle node's handle as return_handle
+bool is_reduction1(const HandleGraph& g, const nid_t& node_id, handle_t& return_handle) {
+    handle_t node = g.get_handle(node_id);
+    if (g.get_degree(node, false) == 1 && g.get_degree(node, true) == 1) {
+        return_handle = node;
+        return true;
+    }
+    return false;
 }
 
-bool is_reduction2(const HandleGraph& g, const nid_t& handle) {
-
+/// Returns direction of node_id (for the trivial bundle) as return_handle
+bool is_reduction2(const HandleGraph& g, const nid_t& node_id, bundle_map_t& bundle_map, handle_t& return_handle) {
+    handle_t node = g.get_handle(node_id);
+    if (bundle_map.count(node) && bundle_map[node]->is_trivial()) {
+        return_handle = node;
+        return true;
+    }
+    if (bundle_map.count(g.flip(node)) && bundle_map[g.flip(node)]->is_trivial()) {
+        return_handle = g.flip(node);
+        return true;
+    }
+    return false;
 }
 
-bool is_reduction3(const HandleGraph& g, const nid_t& handle) {
+/// Returns the middle bundle as return_handle
+bool is_reduction3(const HandleGraph& g, const nid_t& node_id, bundle_map_t& bundle_map, handle_t& return_handle) {
+    function<bool(const handle_t& handle)> is_valid_reduction = [&](const handle_t& node) {
+        /// Check conditions for the middle bundle
+        if (!bundle_map.count(node)) return false; /// There is no bundle
+        Bundle* mid_b = bundle_map[node];
+        if (mid_b->is_trivial()) return false; /// Ignore trivial middle bundles
 
+        /// Check conditions for the "left" bundle
+        if (!bundle_map.count(g.flip(node))) return false; /// Nothing on the "left"
+        Bundle* left_b = bundle_map[g.flip(node)];
+        if (mid_b->get_adjacency_type(*left_b) != adjacency_t::Strong) return false;
+
+        /// Check conditions for the "right" bundle
+        handle_t node_ = (mid_b->is_reversed(node)) ? g.flip(node) : node; /// The correct orientation to iterate through the bundle
+        handle_t node_mid_r; /// Some node that's on the opposite side of node in the middle bundle
+        mid_b->traverse_bundle(node_, [&](const handle_t& handle) { node_mid_r = handle; return false; });
+        if (!bundle_map.count(node_mid_r)) return false;                
+        Bundle* right_b = bundle_map[node_mid_r];
+        if (mid_b->get_adjacency_type(*right_b) != adjacency_t::Strong) return false; 
+
+        return_handle = node;
+        return true;
+    };
+
+    handle_t node = g.get_handle(node_id);
+    if (is_valid_reduction(node)) {
+        return true;
+    }
+    if (is_valid_reduction(g.flip(node))) {
+        return true;
+    }
+    
+    return false;
 }
 
 /// Returns true if the final graph is trivial
 void reduce_graph(DeletableHandleGraph& g) {
-    unordered_set<nid_t> updated;
-    g.for_each_handle([&](const handle_t& handle) { updated.insert(g.get_id(handle)); });
+    // unordered_set<nid_t> updated;
+    // g.for_each_handle([&](const handle_t& handle) { updated.insert(g.get_id(handle)); });
+    bundle_map_t bundle_map;
 
-    while (!updated.empty()) {
-        unordered_set<nid_t> updated_new;
+    // while (!updated.empty()) {
+    bool updated = true;                                                // Unoptimized
+    while (updated) {                                                   // Unoptimized
+        // unordered_set<nid_t> updated_new;
+        updated = false;
 
-        for (auto& node_id : updated) {
+        // for (auto& node_id : updated) {
+        g.for_each_handle([&](const handle_t& handle) {                 // Unoptimized
+            nid_t node_id = g.get_id(handle);                           // Unoptimized
+
             /// Check if handle is in the graph
-            if (!g.has_node(node_id)) continue;
+            // if (!g.has_node(node_id)) continue;
+            if (!g.has_node(node_id)) return;                           // Unoptimized
 
+            handle_t return_handle;
             /// If node is in graph, check conditions for RA1, RA3, then RA2
-            if (is_reduction2(g, node_id)) {
+            if (is_reduction1(g, node_id, return_handle)) {
 
-            } else if (is_reduction3(g, node_id)) {
+            } else if (is_reduction3(g, node_id, bundle_map, return_handle)) {
 
-            } else if (is_reduction2(g, node_id)) {
+            } else if (is_reduction2(g, node_id, bundle_map, return_handle)) {
 
             }
         }
+        );                                                              // Unoptimized
 
-        updated = updated_new;
+        // updated = updated_new;
     }
 }
