@@ -2,11 +2,11 @@
 #define VG_ALGORITHMS_BUNDLE_HPP_INCLUDED
 
 #include <unordered_set>
-#include <vector>
 #include <list>
 
 #include "../../deps/handlegraph/types.hpp"
 #include "../../deps/handlegraph/handle_graph.hpp"
+#include "../../deps/handlegraph/iteratee.hpp"
 
 enum adjacency_t {
     None,
@@ -49,12 +49,13 @@ class BundleSide {
 
         adjacency_t get_adjacency_type(const BundleSide& other) const;
 
-        std::vector<handlegraph::handle_t> get_nodes() { return std::vector<handlegraph::handle_t>(nodes.begin(), nodes.end()); }
+        void reset();
+        
+        bool is_reversed(const handlegraph::handle_t& handle) const;
 
-        void reset() { 
-            nodes.clear();
-            nodes_flipped.clear();
-        }
+        bool is_member(const handlegraph::handle_t& handle) const;
+
+        bool iterate_nodes(const std::function<bool(const handlegraph::handle_t&)>& iteratee, bool is_reversed) const;
 };
 
 /// Glorified wrapper for std::pair<BundleSide, BundleSide>
@@ -92,6 +93,13 @@ class Bundle {
         }
 
         void update_bundlesides(const handlegraph::HandleGraph& g);
+
+        bool traverse_bundle(const handlegraph::handle_t& handle, const std::function<bool(const handlegraph::handle_t&)>& iteratee) const;
+
+        /// Returns if go_left is false if calling follow_edges will traverse the bundle or not
+        bool is_reversed(const handlegraph::handle_t& handle) const;
+
+        adjacency_t get_adjacency_type(const Bundle& other) const;
 };
 
 /// Bundle pool object

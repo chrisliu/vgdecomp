@@ -25,6 +25,37 @@ void BundleSide::update(const HandleGraph& g) {
     }
 }
 
+void BundleSide::reset() {
+    nodes.clear();
+    nodes_flipped.clear();
+}
+
+bool BundleSide::is_reversed(const handle_t& handle) const  {
+    return nodes_flipped.find(handle) != nodes_flipped.end();
+}
+
+bool BundleSide::is_member(const handle_t& handle) const {
+    return nodes.find(handle) != nodes.end() ||
+        nodes_flipped.find(handle) != nodes_flipped.end();
+}
+
+bool BundleSide::iterate_nodes(const function<bool(const handle_t&)>& iteratee, bool is_reversed) const {
+    if (is_reversed) {
+        for (auto& handle : nodes_flipped) {
+            if (!iteratee(handle)) {
+                return false;
+            }
+        }
+    } else {
+        for (auto& handle : nodes) {
+            if (!iteratee(handle)) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 adjacency_t _get_adjacency_type(const unordered_set<handle_t> side1, const unordered_set<handle_t> side2) {
     Count c;
     set_intersection(side1.begin(), side1.end(), side2.begin(), side2.end(),
@@ -57,4 +88,26 @@ adjacency_t BundleSide::get_adjacency_type(const BundleSide& other) const {
 void Bundle::update_bundlesides(const HandleGraph& g) {
     left.update(g);
     right.update(g);
+}
+
+bool Bundle::traverse_bundle(const handle_t& handle, const function<bool(const handle_t&)>& iteratee) const {
+    if (left.is_member(handle)) {
+        return right.iterate_nodes(iteratee, left.is_reversed(handle));
+    } else if (right.is_member(handle)) {
+        return left.iterate_nodes(iteratee, right.is_reversed(handle));
+    }
+}
+
+bool Bundle::is_reversed(const handle_t& handle) const {
+    return (left.is_member(handle) && left.is_reversed(handle)) ||
+        (right.is_member(handle) && !right.is_reversed(handle));
+}
+
+adjacency_t Bundle::get_adjacency_type(const Bundle& other) const {
+    adjacency_t type;
+    if ((type = left.get_adjacency_type(other.left)) != adjacency_t::None ||
+        (type = left.get_adjacency_type(other.right)) != adjacency_t::None ||
+        (type = right.get_adjacency_type(other.left)) != adjacency_t::None ||
+        (type = right.get_adjacency_type(other.right)) != adjacency_t::None);
+    return type;
 }
