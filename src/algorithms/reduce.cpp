@@ -1,5 +1,5 @@
 #include "reduce.hpp"
-#include <unordered_map>
+// #include <unordered_map>
 #include <vector>
 
 using namespace handlegraph;
@@ -246,36 +246,44 @@ bool is_reduction3(const HandleGraph& g, const nid_t& node_id, bundle_map_t& bun
 
 /// Returns true if the final graph is trivial
 void reduce_graph(DeletableHandleGraph& g) {
-    // unordered_set<nid_t> updated;
-    // g.for_each_handle([&](const handle_t& handle) { updated.insert(g.get_id(handle)); });
+    /// Construct bundle_map
     bundle_map_t bundle_map;
+    auto bundles = find_balanced_bundles(g);
+    for (auto& bundle : bundles) {
+        mark_bundle(g, bundle, bundle_map);
+    }
 
-    // while (!updated.empty()) {
-    bool updated = true;                                                // Unoptimized
-    while (updated) {                                                   // Unoptimized
-        // unordered_set<nid_t> updated_new;
-        updated = false;
+    bool has_update = true;
+    while (has_update) {
+        has_update = false;
+        /// Get nodes to be traversed 
+        vector<nid_t> node_ids;
+        g.for_each_handle([&](const handle_t& handle) { node_ids.push_back(g.get_id(handle)); });
 
-        // for (auto& node_id : updated) {
-        g.for_each_handle([&](const handle_t& handle) {                 // Unoptimized
-            nid_t node_id = g.get_id(handle);                           // Unoptimized
-
-            /// Check if handle is in the graph
-            // if (!g.has_node(node_id)) continue;
-            if (!g.has_node(node_id)) return;                           // Unoptimized
-
-            handle_t return_handle;
-            /// If node is in graph, check conditions for RA1, RA3, then RA2
-            if (is_reduction1(g, node_id, return_handle)) {
-
-            } else if (is_reduction3(g, node_id, bundle_map, return_handle)) {
-
-            } else if (is_reduction2(g, node_id, bundle_map, return_handle)) {
-
+        handle_t return_handle;
+        for (auto& node_id : node_ids) {
+            /// Ignore if the node's been changed
+            if (!g.has_node(node_id)) continue;
+            if (is_reduction2(g, node_id, bundle_map, return_handle)) {
+                perform_reduction2(g, *bundle_map[return_handle], bundle_map);
+                has_update = true;
             }
         }
-        );                                                              // Unoptimized
-
-        // updated = updated_new;
+        for (auto& node_id : node_ids) {
+            /// Ignore if the node's been changed
+            if (!g.has_node(node_id)) continue;
+            if (is_reduction3(g, node_id, bundle_map, return_handle)) {
+                perform_reduction3(g, *bundle_map[return_handle], bundle_map);
+                has_update = true;
+            }
+        }
+        for (auto& node_id : node_ids) {
+            /// Ignore if the node's been changed
+            if (!g.has_node(node_id)) continue;
+            if (is_reduction1(g, node_id, return_handle)) {
+                perform_reduction1(g, return_handle, bundle_map);
+                has_update = true;
+            }
+        }
     }
 }
