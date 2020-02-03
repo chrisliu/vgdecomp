@@ -5,7 +5,7 @@
 using namespace handlegraph;
 using namespace std;
 
-using bundle_map_t = unordered_map<handle_t, Bundle*>;
+// using bundle_map_t = unordered_map<handle_t, Bundle*>;
 
 //******************************************************************************
 // Helper functions
