@@ -1,0 +1,219 @@
+{
+    "description": "This is the comprehensive test graph created on Feb 4th to test all reduction actions.",
+    "node": [
+        {
+            "id": 1,
+            "sequence": ""
+        },
+        {
+            "id": 2,
+            "sequence": ""
+        },
+        {
+            "id": 3,
+            "sequence": ""
+        },
+        {
+            "id": 4,
+            "sequence": ""
+        },
+        {
+            "id": 5,
+            "sequence": ""
+        },
+        {
+            "id": 6,
+            "sequence": ""
+        },
+        {
+            "id": 7,
+            "sequence": ""
+        },
+        {
+            "id": 8,
+            "sequence": ""
+        },
+        {
+            "id": 9,
+            "sequence": ""
+        },
+        {
+            "id": 10,
+            "sequence": ""
+        },
+        {
+            "id": 11,
+            "sequence": ""
+        },
+        {
+            "id": 12,
+            "sequence": ""
+        },
+        {
+            "id": 13,
+            "sequence": ""
+        },
+        {
+            "id": 14,
+            "sequence": ""
+        },
+        {
+            "id": 15,
+            "sequence": ""
+        },
+        {
+            "id": 16,
+            "sequence": ""
+        },
+        {
+            "id": 17,
+            "sequence": ""
+        },
+        {
+            "id": 18,
+            "sequence": ""
+        },
+        {
+            "id": 19,
+            "sequence": ""
+        },
+        {
+            "id": 20,
+            "sequence": ""
+        }
+    ],
+    "edge": [
+        {
+            "from": 1,
+            "to": 2
+        },
+        {
+            "from": 1,
+            "to": 3
+        },
+        {
+            "from": 2,
+            "to": 4
+        },
+        {
+            "from": 2,
+            "to": 5
+        },
+        {
+            "from": 3,
+            "to": 4
+        },
+        {
+            "from": 3,
+            "to": 5
+        },
+        {
+            "from": 4,
+            "to": 6
+        },
+        {
+            "from": 5,
+            "to": 6
+        },
+        {
+            "from": 1,
+            "to": 7
+        },
+        {
+            "from": 7,
+            "to": 6
+        },
+        {
+            "from": 6,
+            "to": 8
+        },
+        {
+            "from": 8,
+            "to": 9
+        },
+        {
+            "from": 8,
+            "to": 10
+        },
+        {
+            "from": 9,
+            "to": 11
+        },
+        {
+            "from": 9,
+            "to": 12
+        },
+        {
+            "from": 10,
+            "to": 11
+        },
+        {
+            "from": 10,
+            "to": 12
+        },
+        {
+            "from": 11,
+            "to": 13
+        },
+        {
+            "from": 11,
+            "to": 14
+        },
+        {
+            "from": 12,
+            "to": 13
+        },
+        {
+            "from": 12,
+            "to": 14
+        },
+        {
+            "from": 13,
+            "to": 15
+        },
+        {
+            "from": 13,
+            "to": 16
+        },
+        {
+            "from": 14,
+            "to": 15
+        },
+        {
+            "from": 14,
+            "to": 16
+        },
+        {
+            "from": 15,
+            "to": 19
+        },
+        {
+            "from": 16,
+            "to": 19
+        },
+        {
+            "from": 9,
+            "to": 17
+        },
+        {
+            "from": 10,
+            "to": 17
+        },
+        {
+            "from": 17,
+            "to": 18
+        },
+        {
+            "from": 18,
+            "to": 16
+        },
+        {
+            "from": 8,
+            "to": 20
+        },
+        {
+            "from": 20,
+            "to": 19
+        }
+    ]
+}
