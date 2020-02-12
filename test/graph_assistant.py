@@ -7,7 +7,10 @@ from typing import Callable, Optional
 def main():
     parser = setup_parser()
     args = parser.parse_args()
-    args.process(args)
+    try:
+        args.process(args)
+    except:
+        pass
 
 def setup_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
