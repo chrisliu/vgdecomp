@@ -134,7 +134,7 @@ handle_t BidirectedGraph::create_handle(const string& sequence) {
 
 handle_t BidirectedGraph::create_handle(const string& sequence, const nid_t& id) {
     nodes[id] = sequence;
-    cur_id = (id > cur_id) ? id + 1 : cur_id; // Simple cur_id update function
+    cur_id = (id >= cur_id) ? id + 1 : cur_id; // Simple cur_id update function
     return get_handle(id);
 }
 
