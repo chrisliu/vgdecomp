@@ -1,7 +1,7 @@
 #ifndef VG_ALGORITHMS_FIND_BALANCED_BUNDLE_HPP_INCLUDED
 #define VG_ALGORITHMS_FIND_BALANCED_BUNDLE_HPP_INCLUDED
 
-#define DEBUG_FIND_BALANCED_BUNDLES
+// #define DEBUG_FIND_BALANCED_BUNDLES
 
 #include <vector>
 
@@ -16,9 +16,9 @@
 /// will denote the left side and the right side of a bundle.
 std::vector<Bundle*> find_balanced_bundles(const handlegraph::HandleGraph& g);
 
-/// Determines if the given handle is part of a bundle.
+/// Determines if the given handle is part of a bundle. go_left = false.
 /// Returns (true, bundle) if it's in a bundle
-///   Otherwise returns (false, bundle) if it's not in a bundle
+/// Otherwise returns (false, bundle) if it's not in a bundle
 std::pair<bool, Bundle*> find_balanced_bundle(const handlegraph::handle_t& handle, const handlegraph::HandleGraph& g);
 
 #endif /* VG_ALGORITHMS_FIND_BALANCED_BUNDLE_HPP_INCLUDED */
