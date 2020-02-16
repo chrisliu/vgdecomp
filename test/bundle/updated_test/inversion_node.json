@@ -1,0 +1,24 @@
+{
+    "description": "This is an inversion with a node.",
+    "node": [
+        {
+            "id": 1,
+            "sequence": ""
+        },
+        {
+            "id": 2,
+            "sequence": ""
+        }
+    ],
+    "edge": [
+        {
+            "from": 1,
+            "to": 1,
+            "to_end": true
+        },
+        {
+            "from": 1,
+            "to": 2
+        }
+    ]
+}
