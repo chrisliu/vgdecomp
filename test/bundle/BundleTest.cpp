@@ -4,10 +4,10 @@
 #include <string>
 
 #include "../../src/BidirectedGraph.hpp"
-#include "../../src/algorithms/find_balanced_bundles.hpp"
+#include "../../src/algorithms/find_bundles.hpp"
 #include "../../src/algorithms/bundle.hpp"
 
-#define DEBUG_BIDIRECTED_GRAPH
+// #define DEBUG_BIDIRECTED_GRAPH
 
 using namespace std;
 
@@ -27,8 +27,10 @@ void print_bundle(BidirectedGraph& g, Bundle& bundle) {
     for (const auto& r_handle: bundle.get_right()) {
         cout << node_to_str(r_handle, g) << endl;
     }; 
-    cout << "Is a trivial bundle:  " << ((bundle.is_trivial()) ? "true" : "false") << endl;
-    cout << "Has reversed node(s): " << ((bundle.has_reversed_node()) ? "true" : "false") << endl;
+    cout << "Is a trivial bundle:  " << (bundle.is_trivial() ? "true" : "false") << endl;
+    cout << "Has reversed node(s): " << (bundle.has_reversed_node() ? "true" : "false") << endl;
+    cout << "Is cyclic bundle:     " << (bundle.is_cyclic() ? "true" : "false") << endl;
+    cout << "Is a balanced bundle: " << (bundle.is_balanced() ? "true" : "false") << endl;
 }
 
 void print_edges(BidirectedGraph& g) {
@@ -72,9 +74,9 @@ int main(int argc, char* argv[]) {
         ifstream json_file(argv[i], ifstream::binary);
         BidirectedGraph g;
         cout << "Deserialization: " << (g.deserialize(json_file) ? "success" : "failure") << "!" << endl;
-        auto bundles = find_balanced_bundles(g);
+        auto bundles = find_bundles(g);
         for (auto bundle : bundles) {
-            print_bundle(g, bundle);
+            print_bundle(g, *bundle);
         }
         cout << "Nodes: ";
         g.for_each_handle([&](const handle_t& handle) {

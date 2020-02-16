@@ -7,11 +7,12 @@ WARNING    = -Wall -Wextra -Wpedantic -Wshadow -Wold-style-cast
 COMPILECPP = g++ -std=c++17 -g -O0 ${WARNING}
 
 # Main program
-MAIN_PRG   = bundle_test.cpp
+# MAIN_PRG   = bundle_test.cpp
+MAIN_PRG   = BundleTest.cpp
 # Bidirected graph sources
 BG_SRCS    = ${RELPATH}/src/BidirectedGraph.cpp
 # Algorithm sources
-ALGO_SRCS  = ${RELPATH}/src/algorithms/find_balanced_bundles.cpp \
+ALGO_SRCS  = ${RELPATH}/src/algorithms/find_bundles.cpp \
 	${RELPATH}/src/algorithms/bundle.cpp 
 # Handlegraph sources
 HG_SRCS    = ${RELPATH}/deps/handlegraph/handle_graph.cpp
