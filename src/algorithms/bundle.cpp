@@ -90,6 +90,17 @@ void Bundle::update_bundlesides(const HandleGraph& g) {
     right.update(g);
 }
 
+void Bundle::define_properties(const HandleGraph& g) {
+    update_bundlesides(g);
+
+    is_bundle_trivial = left.size() == 1 && right.size() == 1;
+
+    is_bundle_cyclic = false;
+    for (const auto& left_handle : left) {
+        is_bundle_cyclic |= right.is_member(left_handle);
+    }
+}
+
 bool Bundle::traverse_bundle(const handle_t& handle, const function<bool(const handle_t&)>& iteratee) const {
     if (left.is_member(handle)) {
         return right.iterate_nodes(iteratee, left.is_reversed(handle));
