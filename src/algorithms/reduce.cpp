@@ -2,16 +2,17 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <vector>
+#include "find_bundles.hpp"
 #include "wang_hash.hpp"
 #include "../../deps/handlegraph/util.hpp"
 
-#ifdef DEBUG
+#ifdef DEBUG_REDUCE
 #include <iostream> 
 void print_node(const HandleGraph& g, const handle_t& handle) {
     std::cout << "(Node " <<  g.get_id(handle) << (g.get_is_reverse(handle) ? "r" : "") << ") ";
 }
 using namespace std;
-#endif /* DEBUG */
+#endif /* DEBUG_REDUCE */
 
 using namespace handlegraph;
 using namespace std;
@@ -162,7 +163,7 @@ void perform_reduction1(DeletableHandleGraph& g, handle_t& node, bundle_map_t& b
     /// Only need to check left neighbor because if the right neighbor is part of some bundle
     /// that bundle has to be connected to the left neighbor (since there's now an edge
     /// between the two).
-    auto [in_bundle, bundle] = find_balanced_bundle(left_neighbor, g);
+    auto [in_bundle, bundle] = find_bundle(left_neighbor, g);
     if (in_bundle) mark_bundle(g, bundle, bundle_map);
 
     /// The left neighbor and right neighbor have been updated
@@ -179,25 +180,25 @@ inline void update_bundle_nodes(const HandleGraph& g, Bundle& bundle, node_updat
 
 /// Performs reduction action 2 where bundle is the trivial bundle.
 void perform_reduction2(DeletableHandleGraph& g, Bundle& bundle, bundle_map_t& bundle_map, node_update_t& updates) {
-    /// Perform reduction action 2
-    handle_t node = reduce_trivial_bundle(g, bundle);
-
     /// Delete node entries in bundle
     handle_t left = *bundle.get_left().begin();
     handle_t right = *bundle.get_right().begin();
     unmark_bundle(g, &bundle, bundle_map);
     if (bundle_map.count(g.flip(left))) unmark_bundle(g, bundle_map[g.flip(left)], bundle_map); 
     if (bundle_map.count(right)) unmark_bundle(g, bundle_map[right], bundle_map);
-    /// TODO: Should implement a method to rename a node in a bundle (saves having to
+    // TODO: Should implement a method to rename a node in a bundle (saves having to
     /// recompute a bundle that's simply has one node that's been renamed).
 
+    /// Perform reduction action 2
+    handle_t node = reduce_trivial_bundle(g, bundle);
+
     /// Try to reinitialize bundles (if any)
-    auto [in_bundle1, bundle1] = find_balanced_bundle(g.flip(node), g);
+    auto [in_bundle1, bundle1] = find_bundle(g.flip(node), g);
     if (in_bundle1) { 
         mark_bundle(g, bundle1, bundle_map); 
         update_bundle_nodes(g, *bundle1, updates);
     }
-    auto [in_bundle2, bundle2] = find_balanced_bundle(node, g);
+    auto [in_bundle2, bundle2] = find_bundle(node, g);
     if (in_bundle2) { 
         mark_bundle(g, bundle2, bundle_map); 
         update_bundle_nodes(g, *bundle2, updates);
@@ -209,25 +210,18 @@ void perform_reduction2(DeletableHandleGraph& g, Bundle& bundle, bundle_map_t& b
     updates.updated13.insert(g.flip(node)); // TODO: Rationalize if this is necessary
 }
 
-void perform_reduction3(DeletableHandleGraph& g, handle_set_t& orbit, bundle_map_t& bundle_map, node_update_t& updates) {
+handle_t _perform_reduction3(DeletableHandleGraph& g, handle_set_t& orbit, bundle_map_t& bundle_map, node_update_t& updates) {
     /// Unmark the bundle this orbit belongs to
     handle_t o_handle = *orbit.begin();
-    unmark_bundle(g, bundle_map[o_handle], bundle_map);
     bool is_lbundle = bundle_map.count(g.flip(o_handle));
-    if (is_lbundle) unmark_bundle(g, bundle_map[g.flip(o_handle)], bundle_map);
 
     /// Perform reduction action 3
     handle_t new_handle = reduce_orbit(g, orbit);
     
-    /// Reinitialize old bundle
-    auto [_, rbundle] = find_balanced_bundle(new_handle, g);
-    mark_bundle(g, rbundle, bundle_map);
-    update_bundle_nodes(g, *rbundle, updates);
-
     /// If the left neighbor was originally a bundle, reinintialize that too
     /// Doing it this way since there's no guarantee a flipping an expired handle will work
     if (is_lbundle) {
-        auto [_, lbundle] = find_balanced_bundle(g.flip(new_handle), g);
+        auto [_, lbundle] = find_bundle(g.flip(new_handle), g);
         mark_bundle(g, lbundle, bundle_map);
         update_bundle_nodes(g, *lbundle, updates);
     }
@@ -236,6 +230,32 @@ void perform_reduction3(DeletableHandleGraph& g, handle_set_t& orbit, bundle_map
     /// Current node has been updated
     updates.updated13.insert(new_handle);
     updates.updated13.insert(g.flip(new_handle)); // TODO: Rationalize if this is necessary
+
+    return new_handle;
+}
+
+inline void balance_bundle(MutableHandleGraph& g, Bundle& bundle) {
+    for (const auto& lhs_handle : bundle.get_left()) {
+        for (const auto& rhs_handle : bundle.get_right()) {
+            g.create_edge(lhs_handle, rhs_handle);
+        }
+    }
+}
+
+void perform_reduction3(DeletableHandleGraph& g, vector<handle_set_t> orbits, bundle_map_t& bundle_map, node_update_t& updates) {
+    /// Unmark bundle and balanced if needed
+    handle_t o_handle = *(*orbits.begin()).begin();
+    Bundle* obundle = bundle_map[o_handle];
+    if (!obundle->is_balanced()) balance_bundle(g, *obundle);
+    unmark_bundle(g, obundle, bundle_map);
+
+    handle_t new_handle;
+    for (auto& orbit : orbits) new_handle = _perform_reduction3(g, orbit, bundle_map, updates);
+
+    /// Reinitialize old bundle
+    auto [_, nbundle] = find_bundle(new_handle, g);
+    mark_bundle(g, nbundle, bundle_map);
+    update_bundle_nodes(g, *nbundle, updates);
 }
 
 /// Returns middle node's handle as return_handle
@@ -322,52 +342,60 @@ bool reduce_graph(DeletableHandleGraph& g) {
         updates.updated13.insert(g.flip(handle));
     });
     bundle_map_t bundle_map;
-    auto bundles = find_balanced_bundles(g);
+    auto bundles = find_bundles(g);
     for (auto& bundle : bundles) mark_bundle(g, bundle, bundle_map);
 
     /// Main Algorithm
     /// TODO: Add node_update_t as a parameter for all reduction actions
+#ifdef DEBUG_REDUCE
+    int iteration = 1;
+#endif /* DEBUG_REDUCE */
+
     bool actionavail;
     do {
-#ifdef DEBUG
-        cout << "-------- Algo Loop ---------" << endl;
-#endif /* DEBUG */
+#ifdef DEBUG_REDUCE
+        cout << "-------- Algo Loop " << iteration++ << " ---------" << endl;
+#endif /* DEBUG_REDUCE */
         actionavail = false;
         
         while (updates.updated13.size()) {
             handle_t u = updates.get_updated13();
-#ifdef DEBUG
+#ifdef DEBUG_REDUCE
             print_node(g, u);
             cout << "[BEGIN] updates.updated13.size(): " << (updates.updated13.size() + 1) << endl;
+#endif /*DEBUG_REDUCE */
             if (!g.has_node(g.get_id(u))) continue; /// Check if node still exists
-#endif /*DEBUG */
 
-            /// Check RA2
+            // if (g.get_id(u) == 26) {// && g.get_is_reverse(u)) {
+            //     cout << "Left" << endl;
+            //     g.follow_edges(u, true, [&](const handle_t& h) {cout << g.get_id(h) << " ";});
+            //     cout << endl;
+            //     cout << "Right" << endl;
+            //     g.follow_edges(u, false, [&](const handle_t& h) {cout << g.get_id(h) << " ";});
+            //     cout << endl;
+                
+            //     if (bundle_map.count(u)) {
+            //         cout << "Left Bundleside" << endl;
+            //         for (auto& handle : bundle_map[u]->get_left()) {
+            //             cout << g.get_id(handle) << (g.get_is_reverse(handle) ? "r" : "") << " ";
+            //         }
+            //         cout << endl;
+            //         cout << "Right Bundleside" << endl;
+            //         for (auto& handle : bundle_map[u]->get_right()) {
+            //             cout << g.get_id(handle) << (g.get_is_reverse(handle) ? "r" : "") << " ";
+            //         }
+            //         cout << endl;
+            //         cout << "Bundle is balanced: " << (bundle_map[u]->is_balanced() ? "true" : "false") << endl; 
+            //     }
+            // }
+
+            /// Check RA3
             vector<handle_set_t> orbits;
             if (bundle_map.count(u)) orbits = find_orbits(g, *bundle_map[u]);
-
-            if (g.get_id(u) == 4 && g.get_is_reverse(u)) {
-                g.follow_edges(u, true, [&](const handle_t& h) {cout << g.get_id(h) << " ";});
-                cout << endl;
-                g.follow_edges(u, false, [&](const handle_t& h) {cout << g.get_id(h) << " ";});
-                cout << endl;
-                
-                if (bundle_map.count(u)) {
-                    for (auto& handle : bundle_map[u]->get_left()) {
-                        cout << g.get_id(handle) << (g.get_is_reverse(handle) ? "r" : "") << " ";
-                    }
-                    cout << endl;
-                    for (auto& handle : bundle_map[u]->get_right()) {
-                        cout << g.get_id(handle) << (g.get_is_reverse(handle) ? "r" : "") << " ";
-                    }
-                    cout << endl;
-                }
-            }
-
             if (bundle_map.count(u) && orbits.size()) {
-#ifdef DEBUG
+#ifdef DEBUG_REDUCE
                 print_node(g, u);
-                cout << "Reduction action 3 available" << endl;
+                cout << "\033[36mReduction action 3 available\033[0m" << endl;
                 for (size_t i = 0; i < orbits.size(); i++) {
                     print_node(g, u);
                     cout << "Orbit " << (i + 1) << ": ";
@@ -376,30 +404,30 @@ bool reduce_graph(DeletableHandleGraph& g) {
                     }
                     cout << "\b\b \n";
                 }
-#endif /* DEBUG */
-                for (auto& orbit : orbits) perform_reduction3(g, orbit, bundle_map, updates);
+#endif /* DEBUG_REDUCE */
+                perform_reduction3(g, orbits, bundle_map, updates);
                 actionavail = true;
             /// Check RA1
             } else if (is_reduction1(g, u)) {
-#ifdef DEBUG
+#ifdef DEBUG_REDUCE
                 print_node(g, u);
-                cout << "Reduction action 1 available" << endl;
-#endif /* DEBUG */
+                cout << "\033[32mReduction action 1 available\033[0m" << endl;
+#endif /* DEBUG_REDUCE */
                 perform_reduction1(g, u, bundle_map, updates);
                 actionavail = true;
             /// Check RA2
             } else if (is_reduction2(g, u, bundle_map)) {
-#ifdef DEBUG
+#ifdef DEBUG_REDUCE
                 print_node(g, u);
-                cout << "Reduction action 2 available" << endl;
-#endif /* DEBUG */
+                cout << "\033[31mReduction action 2 available\033[0m" << endl;
+#endif /* DEBUG_REDUCE */
                 updates.updated2.insert(u);
             }
-#ifdef DEBUG
+#ifdef DEBUG_REDUCE
             print_node(g, u);
             cout << "[END] updates.updated13.size(): " << updates.updated13.size() << endl;
             if (!g.has_node(g.get_id(u))) continue; /// Check if node still exists
-#endif /*DEBUG */
+#endif /*DEBUG_REDUCE */
 
        }
 
@@ -409,10 +437,10 @@ bool reduce_graph(DeletableHandleGraph& g) {
         while (updates.updated2.size()) {
             handle_t u = updates.get_updated2();
             if (!g.has_node(g.get_id(u))) continue; /// Check if node still exists
-#ifdef DEBUG
+#ifdef DEBUG_REDUCE
                 print_node(g, u);
                 cout << "Performing reduction action 2" << endl;
-#endif /* DEBUG */
+#endif /* DEBUG_REDUCE */
             /// Perform available RA2 actions
             perform_reduction2(g, *bundle_map[u], bundle_map, updates);
             // TODO: Rationalize that if RA2 was determined to be possible, it'll always be possible if the node still exists
@@ -425,7 +453,7 @@ bool reduce_graph(DeletableHandleGraph& g) {
 void test(DeletableHandleGraph& g) {
     bundle_map_t bundle_map;
     node_update_t updates;
-    auto bundles = find_balanced_bundles(g);
+    auto bundles = find_bundles(g);
     for (auto& bundle : bundles) mark_bundle(g, bundle, bundle_map);
 
     handle_t node4 = g.get_handle(4);
@@ -442,8 +470,8 @@ void test(DeletableHandleGraph& g) {
             cout << g.get_id(handle) << (g.get_is_reverse(handle) ? "r" : "") << ", ";
         }
         cout << "\b\b \n";
-        perform_reduction3(g, orbits[i], bundle_map, updates);
     }
+    perform_reduction3(g, orbits, bundle_map, updates);
 
     handle_t node9 = g.get_handle(9, true);
     cout << "Bundle exists: " << (bundle_map.count(node9) ? "true" : "false") << endl; 
