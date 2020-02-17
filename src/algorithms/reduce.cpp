@@ -68,7 +68,7 @@ struct Global {
 BundlePool* Global::bpool = BundlePool::get_instance();
 
 /// Returns the first neighbor of the node.
-inline handle_t get_first_neighbor(HandleGraph& g, handle_t& node, bool is_left) {
+inline handle_t get_first_neighbor(const HandleGraph& g, const handle_t& node, bool is_left) {
     handle_t neighbor;
     g.follow_edges(node, is_left, [&](const handle_t& handle) { neighbor = handle; return false; });
     return neighbor;
@@ -90,6 +90,18 @@ handle_t reduce_trivial_bundle(DeletableHandleGraph& g, Bundle& bundle) {
 
     /// Create new node
     handle_t new_handle = g.create_handle("");
+
+    if (g.get_id(l_handle) == g.get_id(r_handle)) {
+#ifdef DEBUG_REDUCE
+        cout << "\033[31mDeleting self cycle\033[0m" << endl;
+#endif /* DEBUG_REDUCE */
+        /// Only add neighbors if it's an improper cycle
+        if (l_handle != r_handle) {
+            g.follow_edges(l_handle, true, [&](const handle_t& l_nei) { g.create_edge(l_nei, new_handle); });
+        }
+        g.destroy_handle(l_handle);
+        return new_handle;
+    }
 
     /// Remap left side edges of lhandle to new node
     g.follow_edges(l_handle, true, [&](const handle_t& l_nei) { g.create_edge(l_nei, new_handle); });
@@ -180,6 +192,9 @@ inline void update_bundle_nodes(const HandleGraph& g, Bundle& bundle, node_updat
 
 /// Performs reduction action 2 where bundle is the trivial bundle.
 void perform_reduction2(DeletableHandleGraph& g, Bundle& bundle, bundle_map_t& bundle_map, node_update_t& updates) {
+    /// Perform reduction action 2
+    handle_t node = reduce_trivial_bundle(g, bundle);
+
     /// Delete node entries in bundle
     handle_t left = *bundle.get_left().begin();
     handle_t right = *bundle.get_right().begin();
@@ -188,9 +203,6 @@ void perform_reduction2(DeletableHandleGraph& g, Bundle& bundle, bundle_map_t& b
     if (bundle_map.count(right)) unmark_bundle(g, bundle_map[right], bundle_map);
     // TODO: Should implement a method to rename a node in a bundle (saves having to
     /// recompute a bundle that's simply has one node that's been renamed).
-
-    /// Perform reduction action 2
-    handle_t node = reduce_trivial_bundle(g, bundle);
 
     /// Try to reinitialize bundles (if any)
     auto [in_bundle1, bundle1] = find_bundle(g.flip(node), g);
@@ -260,7 +272,9 @@ void perform_reduction3(DeletableHandleGraph& g, vector<handle_set_t> orbits, bu
 
 /// Returns middle node's handle as return_handle
 inline bool is_reduction1(const HandleGraph& g, const handle_t& node) {
-    return g.get_degree(node, false) == 1 && g.get_degree(node, true) == 1;
+    return g.get_degree(node, false) == 1 && g.get_degree(node, true) == 1 &&
+        g.get_id(get_first_neighbor(g, node, true)) != g.get_id(node) &&
+        g.get_id(get_first_neighbor(g, node, false)) != g.get_id(node);
 }
 
 /// Returns direction of node_id (for the trivial bundle) as return_handle
@@ -419,7 +433,7 @@ bool reduce_graph(DeletableHandleGraph& g) {
             } else if (is_reduction2(g, u, bundle_map)) {
 #ifdef DEBUG_REDUCE
                 print_node(g, u);
-                cout << "\033[31mReduction action 2 available\033[0m" << endl;
+                cout << "\033[35mReduction action 2 available\033[0m" << endl;
 #endif /* DEBUG_REDUCE */
                 updates.updated2.insert(u);
             }
