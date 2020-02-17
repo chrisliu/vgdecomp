@@ -11,7 +11,7 @@ MAIN_PRG   =  reduce_test.cpp
 # Bidirected graph sources
 BG_SRCS    = ${RELPATH}/src/BidirectedGraph.cpp
 # Algorithm sources
-ALGO_SRCS  = ${RELPATH}/src/algorithms/find_balanced_bundles.cpp \
+ALGO_SRCS  = ${RELPATH}/src/algorithms/find_bundles.cpp \
 	${RELPATH}/src/algorithms/bundle.cpp ${RELPATH}/src/algorithms/reduce.cpp 
 # Handlegraph sources
 HG_SRCS    = ${RELPATH}/deps/handlegraph/handle_graph.cpp
