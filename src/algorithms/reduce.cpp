@@ -309,31 +309,16 @@ vector<handle_set_t> find_orbits(const HandleGraph& g, Bundle& bundle) {
 bool reduce_graph(DeletableHandleGraph& g) {
     /// Algorithm pseudocode:
     /// Let G be the bidirected graph
-    /// Let updated23 be a set of unchecked RA 2/3 nodes
-    /// Let updated1 be a set of nodes with RA 1 actions
+    /// Let updated be a set of unchecked nodes
     /// Let <- denote removing some element from the RHS and assigning it to the LHS
     /// Algorithm:
-    /// actionavail := true
-    /// While actionavail == true
-    ///   actionavail := false
-    ///
-    ///   While updated23 is not empty
-    ///     u <- updated23
-    ///     If u is not an element of G
-    ///       continue
-    ///     If u has a RA2 (RA3) action
-    ///       Perform RA2 (RA3) action on u
-    ///       actionavail := true
-    ///     If u has a RA1 action
-    ///       updated1 <- u
-    ///
-    ///   While updated1 is not empty
-    ///     u <- updated1
-    ///     If u is not an element of G
-    ///       continue
-    ///     Perform RA1 action on u
-    ///     updated23 <- u
-    ///     actionavail := true
+    /// While updated is not empty: 
+    ///   If RA2 is possible:
+    ///     Perform RA2
+    ///   Else if RA3 is possible:
+    ///     Perform RA3
+    ///   Else if RA1 is possible:
+    ///     Perform RA1
 
     /// Initialize not updated nodes and bundles
     node_update_t updates;
@@ -347,62 +332,51 @@ bool reduce_graph(DeletableHandleGraph& g) {
 
     /// Main Algorithm
     /// TODO: Add node_update_t as a parameter for all reduction actions
-#ifdef DEBUG_REDUCE
-    int iteration = 1;
-#endif /* DEBUG_REDUCE */
-
     while (updates.is_action_avail()) {
-#ifdef DEBUG_REDUCE
-        cout << "-------- Algo Loop " << iteration++ << " ---------" << endl;
-        cout << "## Attempting RA1/3" << endl;
-#endif /* DEBUG_REDUCE */
-        
         vector<handle_set_t> orbits;
-        while (updates.updated.size()) {
-            handle_t u = updates.get_updated();
+        handle_t u = updates.get_updated();
+#ifdef DEBUG_REDUCE
+        print_node(g, u);
+        cout << "[BEGIN] updated.size(): " << (updates.updated.size() + 1) << endl;
+#endif /*DEBUG_REDUCE */
+        if (!g.has_node(g.get_id(u))) continue; /// Check if node still exists
+
+        /// Check RA2
+        if (is_reduction2(g, u, bundle_map)) {
 #ifdef DEBUG_REDUCE
             print_node(g, u);
-            cout << "[BEGIN] updates.updated13.size(): " << (updates.updated.size() + 1) << endl;
-#endif /*DEBUG_REDUCE */
-            if (!g.has_node(g.get_id(u))) continue; /// Check if node still exists
-
-            /// Check RA2
-            if (is_reduction2(g, u, bundle_map)) {
-#ifdef DEBUG_REDUCE
-                print_node(g, u);
-                cout << "\033[35mReduction action 2 available\033[0m" << endl;
+            cout << "\033[35mReduction action 2 available\033[0m" << endl;
 #endif /* DEBUG_REDUCE */
-                perform_reduction2(g, *bundle_map[u], bundle_map, updates);
-            /// Check RA3
-            } else if (bundle_map.count(u) && (orbits = find_orbits(g, *bundle_map[u])).size()) {
+            perform_reduction2(g, *bundle_map[u], bundle_map, updates);
+        /// Check RA3
+        } else if (bundle_map.count(u) && (orbits = find_orbits(g, *bundle_map[u])).size()) {
 #ifdef DEBUG_REDUCE
+            print_node(g, u);
+            cout << "\033[36mReduction action 3 available\033[0m" << endl;
+            for (size_t i = 0; i < orbits.size(); i++) {
                 print_node(g, u);
-                cout << "\033[36mReduction action 3 available\033[0m" << endl;
-                for (size_t i = 0; i < orbits.size(); i++) {
-                    print_node(g, u);
-                    cout << "Orbit " << (i + 1) << ": ";
-                    for (auto& handle : orbits[i]) {
-                        cout << g.get_id(handle) << (g.get_is_reverse(handle) ? "r" : "") << ", ";
-                    }
-                    cout << "\b\b \n";
+                cout << "Orbit " << (i + 1) << ": ";
+                for (auto& handle : orbits[i]) {
+                    cout << g.get_id(handle) << (g.get_is_reverse(handle) ? "r" : "") << ", ";
                 }
-#endif /* DEBUG_REDUCE */
-                perform_reduction3(g, orbits, bundle_map, updates);
-            /// Check RA1
-            } else if (is_reduction1(g, u)) {
-#ifdef DEBUG_REDUCE
-                print_node(g, u);
-                cout << "\033[32mReduction action 1 available\033[0m" << endl;
-#endif /* DEBUG_REDUCE */
-                perform_reduction1(g, u, bundle_map, updates);
+                cout << "\b\b \n";
             }
-
+#endif /* DEBUG_REDUCE */
+            perform_reduction3(g, orbits, bundle_map, updates);
+        /// Check RA1
+        } else if (is_reduction1(g, u)) {
 #ifdef DEBUG_REDUCE
             print_node(g, u);
-            cout << "[END] updates.updated13.size(): " << updates.updated.size() << endl;
-            if (!g.has_node(g.get_id(u))) continue; /// Check if node still exists
-#endif /*DEBUG_REDUCE */
+            cout << "\033[32mReduction action 1 available\033[0m" << endl;
+#endif /* DEBUG_REDUCE */
+            perform_reduction1(g, u, bundle_map, updates);
         }
+
+#ifdef DEBUG_REDUCE
+        print_node(g, u);
+        cout << "[END] updated.size(): " << updates.updated.size() << endl;
+        if (!g.has_node(g.get_id(u))) continue; /// Check if node still exists
+#endif /*DEBUG_REDUCE */
     }
 
     return false;
