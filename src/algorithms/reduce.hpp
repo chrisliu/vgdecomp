@@ -7,7 +7,6 @@
 
 #define DEBUG_REDUCE
 
-void test(DeletableHandleGraph& g);
 bool reduce_graph(DeletableHandleGraph& g);
 
 #endif /* VG_ALGORITHMS_REDUCE_HPP_INCLUDED */

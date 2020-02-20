@@ -54,8 +54,11 @@ struct node_update_t {
         updated2.erase(updated2.begin());
         return first;
     }
-};
 
+    bool is_action_avail() {
+        return updated13.size() || updated2.size();
+    }
+};
 
 //******************************************************************************
 // Helper functions
@@ -122,13 +125,14 @@ handle_t reduce_orbit(DeletableHandleGraph& g, handle_set_t& orbit) {
     /// Create new handle for retracted node
     handle_t new_handle = g.create_handle("");
 
-    /// Connect node to the neighbors of some arbitrary node in the orbit
-    handle_t o_handle = *orbit.begin();
-    g.follow_edges(o_handle, true, [&](const handle_t& l_nei) { g.create_edge(l_nei, new_handle); });
-    g.follow_edges(o_handle, false, [&](const handle_t& r_nei) { g.create_edge(new_handle, r_nei); });    
+    /// Attach all left negihbors (orbits means they are the same)
+    g.follow_edges(*orbit.begin(), true, [&](const handle_t& l_nei) { g.create_edge(l_nei, new_handle); });
 
-    /// Destroy orbit's handles
-    for (auto& handle : orbit) g.destroy_handle(handle);
+    /// Connect node to the right neighbors of all nodes in the orbit; destroy orbit node afterwards
+    for (auto& o_handle : orbit) {
+        g.follow_edges(o_handle, false, [&](const handle_t& r_nei) { g.create_edge(new_handle, r_nei); });  
+        g.destroy_handle(o_handle); /// Destroy orbit handle
+    }  
 
     return new_handle;
 }
@@ -246,19 +250,10 @@ handle_t _perform_reduction3(DeletableHandleGraph& g, handle_set_t& orbit, bundl
     return new_handle;
 }
 
-inline void balance_bundle(MutableHandleGraph& g, Bundle& bundle) {
-    for (const auto& lhs_handle : bundle.get_left()) {
-        for (const auto& rhs_handle : bundle.get_right()) {
-            g.create_edge(lhs_handle, rhs_handle);
-        }
-    }
-}
-
 void perform_reduction3(DeletableHandleGraph& g, vector<handle_set_t> orbits, bundle_map_t& bundle_map, node_update_t& updates) {
     /// Unmark bundle and balanced if needed
     handle_t o_handle = *(*orbits.begin()).begin();
     Bundle* obundle = bundle_map[o_handle];
-    if (!obundle->is_balanced()) balance_bundle(g, *obundle);
     unmark_bundle(g, obundle, bundle_map);
 
     handle_t new_handle;
@@ -365,12 +360,11 @@ bool reduce_graph(DeletableHandleGraph& g) {
     int iteration = 1;
 #endif /* DEBUG_REDUCE */
 
-    bool actionavail;
     do {
 #ifdef DEBUG_REDUCE
         cout << "-------- Algo Loop " << iteration++ << " ---------" << endl;
+        cout << "## Attempting RA1/3" << endl;
 #endif /* DEBUG_REDUCE */
-        actionavail = false;
         
         while (updates.updated13.size()) {
             handle_t u = updates.get_updated13();
@@ -420,7 +414,6 @@ bool reduce_graph(DeletableHandleGraph& g) {
                 }
 #endif /* DEBUG_REDUCE */
                 perform_reduction3(g, orbits, bundle_map, updates);
-                actionavail = true;
             /// Check RA1
             } else if (is_reduction1(g, u)) {
 #ifdef DEBUG_REDUCE
@@ -428,8 +421,7 @@ bool reduce_graph(DeletableHandleGraph& g) {
                 cout << "\033[32mReduction action 1 available\033[0m" << endl;
 #endif /* DEBUG_REDUCE */
                 perform_reduction1(g, u, bundle_map, updates);
-                actionavail = true;
-            /// Check RA2
+            /// Insert unbalanced bundle if needed
             } else if (is_reduction2(g, u, bundle_map)) {
 #ifdef DEBUG_REDUCE
                 print_node(g, u);
@@ -437,6 +429,7 @@ bool reduce_graph(DeletableHandleGraph& g) {
 #endif /* DEBUG_REDUCE */
                 updates.updated2.insert(u);
             }
+
 #ifdef DEBUG_REDUCE
             print_node(g, u);
             cout << "[END] updates.updated13.size(): " << updates.updated13.size() << endl;
@@ -445,8 +438,9 @@ bool reduce_graph(DeletableHandleGraph& g) {
 
        }
 
-        /// Update actionavail once
-        if (updates.updated2.size()) actionavail = true;
+#ifdef DEBUG_REDUCE
+        cout << "## Attempting RA2" << endl;
+#endif /* DEBUG_REDUCE */
 
         while (updates.updated2.size()) {
             handle_t u = updates.get_updated2();
@@ -459,7 +453,7 @@ bool reduce_graph(DeletableHandleGraph& g) {
             perform_reduction2(g, *bundle_map[u], bundle_map, updates);
             // TODO: Rationalize that if RA2 was determined to be possible, it'll always be possible if the node still exists
         }
-    } while (actionavail);
+    } while (updates.is_action_avail());
 
     return false;
 }
