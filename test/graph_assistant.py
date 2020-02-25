@@ -2,7 +2,7 @@
 import argparse
 import json
 import re
-from typing import Callable, Optional
+from typing import List, Tuple, Callable, Optional
 
 def main():
     parser = setup_parser()
@@ -68,6 +68,12 @@ def setup_convert_parser(subparser: argparse._SubParsersAction):
         help = 'input legacy JSON format',
         dest = 'input_format',
         const = 'legacy',
+    )
+    input_group.add_argument('-D', '--dot-in',
+        action = 'store_const',
+        help = 'input DOT format',
+        dest = 'input_format',
+        const = 'dot',
     )
     output_group = parser_convert.add_argument_group('output formats', 'Supported output formats.')
     output_group.add_argument('-v', '--vg',
@@ -136,11 +142,12 @@ def process_convert(args: argparse.Namespace):
     """Converts input file format into output file format.
 
     Supported Conversions:
-         To  Custom  VG  Legacy
+         To  Custom  VG  Legacy DOT
     From
-    Custom     N     Y     N
-    VG         N     N     N
-    Legacy     Y     Y     N
+    Custom     N     Y     N     N
+    VG         N     N     N     N
+    Legacy     Y     Y     N     N
+    DOT        Y     Y     N     N
     """
 
     ## Verify input/output filenames
@@ -154,7 +161,10 @@ def process_convert(args: argparse.Namespace):
     ## Deserialize graph json
     try:
         with open(args.infile) as infile:
-            graph = json.load(infile)
+            if args.input_format == 'dot':
+                graph = load_dot(infile)
+            else:
+                graph = json.load(infile)
     except FileNotFoundError:
         print("Error: Missing input file (input file not found).")
         return
@@ -167,26 +177,40 @@ def process_convert(args: argparse.Namespace):
     
     ## Convert to final output
     conv_graph = dict()
-    try:
-        if args.input_format == 'legacy':
+    # try:
+    if args.input_format == 'legacy':
+        if args.output_format in ['custom', 'vg']:
             ## Always convert to custom
             conv_graph = legacy_to_custom(graph)
             if args.output_format == 'vg':
                 ## Convert custom to VG
                 conv_graph = custom_to_vg(conv_graph)
-                pass
-        elif args.input_format == 'custom':
+        else:
+            ## Raise exception
+            print("Error: Unsupported operation (can't convert from {} to {}).".format(args.input_format, args.output_format))
+            return
+    elif args.input_format == 'custom':
+        if args.output_format == 'vg':
+            ## Convert to VG format
+            conv_graph = custom_to_vg(graph)
+        else:
+            ## Raise exception
+            print("Error: Unsupported operation (can't convert from {} to {}).".format(args.input_format, args.output_format))
+            return
+    elif args.input_format == 'dot':
+        if args.output_format in ['custom', 'vg']:
+            ## Always convert to custom
+            conv_graph = dot_to_custom(graph)
             if args.output_format == 'vg':
-                ## Convert to VG format
-                conv_graph = custom_to_vg(graph)
-                pass
-            else:
-                ## Raise exception
-                print("Error: Unsupported operation (can't convert from {} to {}).".format(args.input_format, args.output_format))
-                return
-    except:
-        print("Error: Improper format (input file is not in the {} JSON format).".format(args.input_format))
-        return
+                conv_graph = custom_to_vg(conv_graph)                
+        else:
+            ## Raise exception
+            print("Error: Unsupported operation (can't convert from {} to {}).".format(args.input_format, args.output_format))
+            return
+    # except Exception as e:
+    #     print(e)
+    #     print("Error: Improper format (input file is not in the {} JSON format).".format(args.input_format))
+    #     return
     
     ## Serialize
     ## Set output filename if needed
@@ -454,6 +478,13 @@ def def_exit(response: str) -> bool:
     """Default exit: Exits when 'q' (upper/lower) is given."""
     return response in ['q', 'Q']
 
+## Conversion function
+def load_dot(infile):
+    """Converts DOT "json" into proper json outputs dictionary."""
+    raw: str = infile.read()
+    raw = raw.replace('"', '\\\"').replace('\'', '"').replace('True', 'true').replace('False', 'false')
+    return json.loads(raw)
+
 def custom_to_vg(graph: dict) -> dict:
     """Converts the custom JSON format to the vg JSON format."""
     vg_graph = dict()
@@ -479,6 +510,40 @@ def legacy_to_custom(graph: dict) -> dict:
     ]
     custom_graph['edge'] = [conv_edge(edge) for edge in graph['graph']['edges']]
     custom_graph['bundle'] = graph['bundles']
+    return custom_graph
+
+def dot_to_custom(graph: dict) -> dict:
+    """Converts DOT format into the custom JSON format."""
+    def parse_tooltips(tooltip: str) -> Tuple[Tuple[int, bool], Tuple[int, bool]]:
+        nodes = tooltip.replace('"', '').split(' ')
+        edges = list()
+        for node in nodes:
+            nid, is_reversed = node.split('-')
+            edges.append((int(nid), False if is_reversed == '0' else '1'))
+        return tuple(edges)
+
+    def create_edge(handle1: Tuple[int, bool], handle2: Tuple[int, bool]):
+        edge = {'from': handle1[0], 'to': handle2[0]}
+        if handle1[1]:
+            edge['from_start'] = True
+        if handle2[1]:
+            edge['to_end'] = True
+        return edge
+    
+    ## For each edge
+    nodes = set()
+    edges = list()
+    for edge in graph['links']:
+        handle1, handle2 = parse_tooltips(edge['tooltip'])
+        nodes.add(handle1[0])
+        nodes.add(handle2[0])
+        edges.append(create_edge(handle1, handle2))
+
+    custom_graph = dict()
+    custom_graph['description'] = ''
+    custom_graph['node'] = [{'id': nid, 'sequence': ''} for nid in sorted(nodes)]
+    custom_graph['edge'] = edges
+
     return custom_graph
 
 if __name__ == '__main__':
