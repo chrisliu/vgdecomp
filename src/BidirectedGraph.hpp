@@ -25,6 +25,7 @@ class BidirectedGraph : public DeletableHandleGraph {
 
     public:
         bool deserialize(ifstream& infile);        
+        bool serialize(ofstream& outfile);
 
         /// Method to check if a node exists by ID
         bool has_node(nid_t node_id) const;

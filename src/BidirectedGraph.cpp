@@ -49,6 +49,47 @@ bool BidirectedGraph::deserialize(ifstream& infile) {
     return true;
 }
 
+bool BidirectedGraph::serialize(ofstream& outfile) {
+    function<void(Json::Value&, const nid_t&, const string&)> create_node = 
+        [&](Json::Value& node, const nid_t& nid, const string& sequence) {
+            node["id"] = nid;
+            node["sequence"] = sequence;
+        };
+    function<void(Json::Value&, const handle_t&, const handle_t&)> create_edge = 
+        [&](Json::Value& node, const handle_t& from, const handle_t& to) {
+            node["from"] = get_id(from);
+            node["to"] = get_id(to);
+            if (get_is_reverse(from)) node["from_start"] = true;
+            if (get_is_reverse(to)) node["to_end"] = true;
+        };
+
+    Json::Value graph_json;
+    Json::Value graph_nodes(Json::arrayValue);
+    for (const auto& [nid, sequence] : nodes) {
+        Json::Value node;
+        create_node(node, nid, sequence);
+        graph_nodes.append(node);
+    }
+
+    Json::Value graph_edges(Json::arrayValue);
+    for (const auto& [from, to_set] : edges) {
+        for (const auto& to : to_set) {
+            if (get_id(from) <= get_id(to)) {
+                Json::Value edge;
+                create_edge(edge, from, to);
+                graph_edges.append(edge);
+            }
+        }
+    }
+
+    graph_json["edge"] = graph_edges;
+    graph_json["node"] = graph_nodes;
+
+    outfile << graph_json << endl;
+
+    return true;
+}
+
 //******************************************************************************
 // Handle graph public functions 
 //******************************************************************************
