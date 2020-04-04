@@ -349,22 +349,22 @@ astree* reduce_graph(DeletableHandleGraph& g) {
 #endif /* DEBUG_REDUCE */
             perform_reduction2(g, *bundle_map[u], bundle_map, updates);
         /// Check RA3
-        } else if (bundle_map.count(u) && (orbits = find_orbits(g, *bundle_map[u])).size()) {
-#ifdef DEBUG_REDUCE
-            print_node(g, u);
-            cout << "\033[36mReduction action 3 available\033[0m" << endl;
-            for (size_t i = 0; i < orbits.size(); i++) {
-                print_node(g, u);
-                cout << "Orbit " << (i + 1) << ": ";
-                for (auto& handle : orbits[i]) {
-                    cout << g.get_id(handle) << (g.get_is_reverse(handle) ? "r" : "") << ", ";
-                }
-                cout << "\b\b \n";
-            }
-#endif /* DEBUG_REDUCE */
-            perform_reduction3(g, orbits, bundle_map, updates);
-        /// Check RA1
-        } else if (!updates.updated.count(g.flip(u)) && is_reduction1(g, u)) {
+//         } else if (bundle_map.count(u) && (orbits = find_orbits(g, *bundle_map[u])).size()) {
+// #ifdef DEBUG_REDUCE
+//             print_node(g, u);
+//             cout << "\033[36mReduction action 3 available\033[0m" << endl;
+//             for (size_t i = 0; i < orbits.size(); i++) {
+//                 print_node(g, u);
+//                 cout << "Orbit " << (i + 1) << ": ";
+//                 for (auto& handle : orbits[i]) {
+//                     cout << g.get_id(handle) << (g.get_is_reverse(handle) ? "r" : "") << ", ";
+//                 }
+//                 cout << "\b\b \n";
+//             }
+// #endif /* DEBUG_REDUCE */
+//             perform_reduction3(g, orbits, bundle_map, updates);
+//         /// Check RA1
+        } else if (is_reduction1(g, u)) {
 #ifdef DEBUG_REDUCE
             print_node(g, u);
             cout << "\033[32mReduction action 1 available\033[0m" << endl;
