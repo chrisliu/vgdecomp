@@ -1,6 +1,6 @@
 #include "BidirectedGraph.hpp"
-#include "../deps/json/json/json.h"
 
+#include "../deps/json/json/json.h"
 #include "../deps/handlegraph/util.hpp"
 
 #ifdef DEBUG_BIDIRECTED_GRAPH
@@ -32,7 +32,7 @@ bool BidirectedGraph::deserialize(ifstream& infile) {
     /// Construct nodes
     Json::Value nodes = graph_json["node"];
     for (auto& node : nodes) {
-        nid_t id1 = node["id"].asInt64();
+        nid_t id1 = stoll(node["id"].asString());
         string sequence = node["sequence"].asString();
         create_handle(sequence, id1);
     }
@@ -40,8 +40,8 @@ bool BidirectedGraph::deserialize(ifstream& infile) {
     /// Construct edges
     Json::Value edges = graph_json["edge"];
     for (auto& edge : edges) {
-        nid_t id1 = edge["from"].asInt64();
-        nid_t id2 = edge["to"].asInt64();
+        nid_t id1 = stoll(edge["from"].asString());
+        nid_t id2 = stoll(edge["to"].asString());
         bool from_left = edge.get("from_start", false).asBool();
         bool to_right = edge.get("to_end", false).asBool();
         create_edge(get_handle(id1, from_left), get_handle(id2, to_right));
