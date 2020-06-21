@@ -21,7 +21,7 @@ JSON_SRCS  = ${RELPATH}/deps/json/jsoncpp.cpp
 SOURCES    = ${MAIN_PRG} ${BG_SRCS} ${ALGO_SRCS} ${HG_SRCS} ${JSON_SRCS}
 OBJECTS    = ${SOURCES:.cpp=.o}
 # Executable binary
-EXECBIN    = DecomposeTest 
+EXECBIN    = DecomposeTest.exe 
 
 all : ${EXECBIN}
 
