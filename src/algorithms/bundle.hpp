@@ -85,7 +85,7 @@ class Bundle {
         }
 
         bool is_balanced() const { return is_bundle_balanced; }
-        bool set_balanced(bool is_balanced_) { is_bundle_balanced = is_balanced_; }
+        void set_balanced(bool is_balanced_) { is_bundle_balanced = is_balanced_; }
 
         bool has_reversed_node() const { return has_reversed; }
         void set_has_reversed_node(bool has_reversed_) { has_reversed = has_reversed_; }
