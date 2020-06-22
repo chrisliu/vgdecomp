@@ -34,7 +34,7 @@ struct DecompositionNode {
     // The parent(s) of a this node. Only Rule 1 node will have multiple parents.
     std::vector<DecompositionNode*> parents; 
     // A blue edge. A pointer to the sibling to the "right".
-    DecompositionNode* sibling; 
+    DecompositionNode* sibling = nullptr; 
     // Red edges. An unordered list of children nodes in the tree.
     std::vector<DecompositionNode*> children; 
     
