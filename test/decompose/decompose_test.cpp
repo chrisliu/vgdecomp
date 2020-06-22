@@ -14,6 +14,7 @@ int main(int argc, char* argv[]) {
     ifstream json_file(filename, ifstream::binary);
     BidirectedGraph g;
     g.deserialize(json_file);    
+    json_file.close();
 
     DecompositionTreeBuilder builder(&g);
     auto root = builder.construct_tree();
