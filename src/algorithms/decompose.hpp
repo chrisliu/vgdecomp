@@ -60,6 +60,7 @@ private:
     // Bookkeeping data structures
     node_update_t updates;
     bundle_map_t bundle_map;
+    std::unordered_map<nid_t, DecompositionNode*> decomp_map;
 
     // Bookkepping functions
     // Creates a node->bundle mappings for each node in the bundle.
@@ -69,7 +70,8 @@ private:
     void unmark_bundle(Bundle* bundle);
     // Adds node-sides from bundle to updates.
     inline void update_bundle_nodes(Bundle& bundle);
-
+    // Initializes a new source node and adds it to the map.
+    inline DecompositionNode* initialize_source(const handle_t& left);
 
     /// Reduction functions
     // Returns the first neighbor of the given node when traversed with 
@@ -88,15 +90,21 @@ private:
     inline bool is_reduction2(const handle_t& node);
     // Combines the two nodes in the trivial bundle into one node.
     handle_t reduce_trivial_bundle(Bundle& bundle);
+    // Builds decomposition tree node based on the left and right handles.
+    void build_reduction2(const nid_t new_nid, const handle_t& left, 
+        const handle_t& right);
     // Performs rule 2 reduction on the given trivial bundle (assumes it's valid).
     void perform_reduction2(Bundle& bundle);
 
     // Rule 3 
     // Returns all orbits with more than one node.
     std::vector<handle_set_t> is_reduction3(Bundle& bundle);
-    // Handles in the handle_set_t will be oriented such that follow_edges
-    // with go_left = false will go to nodes of the other bundleside.
+    // Handles in the handle_set_t will be oriented inward such that follow_edges
+    // with go_left = false will go to nodes of the other bundleside pointing 
+    // in the outward direction (away from the bundle).
     handle_t reduce_orbit(handle_set_t& orbit); 
+    // Builds decomposition tree node based on the oribt handles.
+    void build_reduction3(const nid_t new_nid, handle_set_t& orbit);
     // Performs rule 3 reduction on the given orbits from a bundle (assumes it's valid).
     void perform_reduction3(std::vector<handle_set_t> orbits);
 

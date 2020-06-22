@@ -33,6 +33,12 @@ DecompositionTreeBuilder::DecompositionTreeBuilder(DeletableHandleGraph* g_)
 
 DecompositionNode* DecompositionTreeBuilder::construct_tree() {
     reduce();
+    // Only for fully reducible graphs.
+    if (g->get_node_count() == 1) {
+        handle_t node;
+        g->for_each_handle([&](const handle_t& handle) { node = handle; });
+        return decomp_map.at(g->get_id(node));
+    }
     return nullptr;
 }
 
@@ -54,6 +60,15 @@ void DecompositionTreeBuilder::unmark_bundle(Bundle* bundle) {
 inline void DecompositionTreeBuilder::update_bundle_nodes(Bundle& bundle) {
     for (auto& l_node : bundle.get_left()) updates.updated.insert(l_node);
     for (auto& r_node : bundle.get_right()) updates.updated.insert(g->flip(r_node));
+}
+
+inline DecompositionNode* DecompositionTreeBuilder::initialize_source(
+    const handle_t& handle
+) {
+    DecompositionNode* node = new DecompositionNode(g->get_id(handle), Source,
+        g->get_is_reverse(handle));
+    decomp_map[g->get_id(handle)] = node;
+    return node;
 }
 
 inline handle_t DecompositionTreeBuilder::get_first_neighbor(
@@ -159,6 +174,9 @@ handle_t DecompositionTreeBuilder::reduce_trivial_bundle(Bundle& bundle) {
         g->create_edge(new_node, r_nei);
     });
 
+    // Build decomposition tree node from this reduction.
+    build_reduction2(g->get_id(new_node), l_handle, r_handle);
+
     // Destroy the two nodes of this trivial bundle.
     g->destroy_handle(l_handle);
     g->destroy_handle(r_handle);
@@ -166,6 +184,30 @@ handle_t DecompositionTreeBuilder::reduce_trivial_bundle(Bundle& bundle) {
     return new_node;
 }
 
+void DecompositionTreeBuilder::build_reduction2(const nid_t new_nid,
+    const handle_t& left, const handle_t& right
+) {
+    // Retrieve left and right decomposition nodes.
+    // If there isn't a mapping in decomp_map, then it must mean this node is 
+    // a source node and must be created.
+    DecompositionNode* left_node;
+    DecompositionNode* right_node;
+
+    if (decomp_map.count(g->get_id(left))) left_node = decomp_map.at(g->get_id(left));
+    else left_node = initialize_source(left);
+    
+    if (decomp_map.count(g->get_id(right))) right_node = decomp_map.at(g->get_id(right));
+    else right_node = initialize_source(right);
+
+    // Reverse any decomposition nodes if necessary.
+    if (g->get_is_reverse(left) != left_node->is_reverse) left_node->reverse();
+    if (g->get_is_reverse(right) != right_node->is_reverse) right_node->reverse();
+
+    // Construct new chain node and save to decomp_map
+    DecompositionNode* chain_node = create_chain_node(new_nid, left_node, right_node);
+    decomp_map[new_nid] = chain_node;
+}
+        
 void DecompositionTreeBuilder::perform_reduction2(Bundle& bundle) {
     // Perform rule 2 reduction.
     handle_t node = reduce_trivial_bundle(bundle);
@@ -235,6 +277,9 @@ handle_t DecompositionTreeBuilder::reduce_orbit(handle_set_t& orbit) {
     // Create new handle for retracted node.
     handle_t new_node = g->create_handle("");
 
+    // Build decomposition tree node from this reduction.
+    build_reduction3(g->get_id(new_node), orbit);
+
     // Attach all left neighbors (since it's an orbit, this means all outward
     // nodes will be the same).
     g->follow_edges(*orbit.begin(), true, [&](const handle_t& l_nei) {
@@ -252,6 +297,30 @@ handle_t DecompositionTreeBuilder::reduce_orbit(handle_set_t& orbit) {
     }
 
     return new_node;
+}
+
+void DecompositionTreeBuilder::build_reduction3(const nid_t new_nid,
+    handle_set_t& orbit
+) {
+     DecompositionNode* node = new DecompositionNode(new_nid, Split);
+     DecompositionNode* orbit_node;
+     for (auto& handle : orbit) {
+         // Get the decomp node corresponding to the orbit node's id.
+         if (decomp_map.count(g->get_id(handle)))
+             orbit_node = decomp_map.at(g->get_id(handle));
+         else
+             orbit_node = initialize_source(handle);
+        
+         // Reverse if needed.
+         if (g->get_is_reverse(handle) != orbit_node->is_reverse)
+             orbit_node->reverse();
+
+         // Add to split node
+         node->add_child(orbit_node);
+     }
+    
+     // Assign split node to decomp_map.
+     decomp_map[new_nid] = node;
 }
 
 void DecompositionTreeBuilder::perform_reduction3(std::vector<handle_set_t> orbits) {
