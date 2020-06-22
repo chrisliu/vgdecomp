@@ -12,7 +12,8 @@ MAIN_PRG   = decompose_test.cpp
 BG_SRCS    = ${RELPATH}/src/BidirectedGraph.cpp
 # Algorithm sources
 ALGO_SRCS  = ${RELPATH}/src/algorithms/find_bundles.cpp \
-	${RELPATH}/src/algorithms/bundle.cpp ${RELPATH}/src/algorithms/decompose.cpp 
+	${RELPATH}/src/algorithms/bundle.cpp ${RELPATH}/src/algorithms/decompose.cpp \
+	${RELPATH}/src/algorithms/decomposition_tree.cpp
 # Handlegraph sources
 HG_SRCS    = ${RELPATH}/deps/handlegraph/handle_graph.cpp
 # JSON library sources

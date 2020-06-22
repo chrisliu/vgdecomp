@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
     g.deserialize(json_file);    
 
     DecompositionTreeBuilder builder(&g);
-    builder.construct_tree();
+    auto root = builder.construct_tree();
 
     cout << "-------- Final Output ---------" << endl;
     cout << "Graph size: " << g.get_node_count() << endl;
@@ -36,6 +36,9 @@ int main(int argc, char* argv[]) {
         if (g.get_degree(handle, false)) cout << "\b\b  ";
         cout << endl;
     });
+
+    print_tree(root);
+    free_tree(root);
 
     ofstream out_file("out.json");
     g.serialize(out_file);
