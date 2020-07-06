@@ -1,7 +1,7 @@
 #include "BidirectedGraph.hpp"
 
-#include "../deps/json/json/json.h"
-#include "../deps/handlegraph/util.hpp"
+#include "../deps/jsoncpp/dist/json/json.h"
+#include "handlegraph/util.hpp"
 
 #ifdef DEBUG_BIDIRECTED_GRAPH
 #include <iostream>

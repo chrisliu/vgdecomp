@@ -11,8 +11,7 @@
 #include <string>
 
 /* Handlegraph includes */
-#include "../deps/handlegraph/deletable_handle_graph.hpp"
-#include "../deps/handlegraph/types.hpp"
+#include "algorithms/handle.hpp"
 
 using namespace std;
 using namespace handlegraph;

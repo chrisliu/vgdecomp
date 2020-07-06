@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "bundle.hpp"
-#include "../../deps/handlegraph/handle_graph.hpp"
+#include "handle.hpp"
 
 /// Locates all bundles in a given graph.
 /// Walks in both directions of a node to check. Nodes that have been

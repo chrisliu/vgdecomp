@@ -1,6 +1,6 @@
 #include "bundle.hpp"
 #include <algorithm>
-#include "../../deps/handlegraph/util.hpp"
+#include "handlegraph/util.hpp"
 
 using namespace std;
 using namespace handlegraph;

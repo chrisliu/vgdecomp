@@ -4,9 +4,6 @@
 #include <unordered_set>
 #include <list>
 
-#include "../../deps/handlegraph/types.hpp"
-#include "../../deps/handlegraph/handle_graph.hpp"
-#include "../../deps/handlegraph/iteratee.hpp"
 #include "handle.hpp"
 
 enum adjacency_t {
