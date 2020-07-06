@@ -28,7 +28,6 @@ void print_bundle(BidirectedGraph& g, Bundle& bundle) {
         cout << node_to_str(r_handle, g) << endl;
     }; 
     cout << "Is a trivial bundle:  " << (bundle.is_trivial() ? "true" : "false") << endl;
-    cout << "Has reversed node(s): " << (bundle.has_reversed_node() ? "true" : "false") << endl;
     cout << "Is cyclic bundle:     " << (bundle.is_cyclic() ? "true" : "false") << endl;
     cout << "Is a balanced bundle: " << (bundle.is_balanced() ? "true" : "false") << endl;
 }
@@ -74,7 +73,8 @@ int main(int argc, char* argv[]) {
         ifstream json_file(argv[i], ifstream::binary);
         BidirectedGraph g;
         cout << "Deserialization: " << (g.deserialize(json_file) ? "success" : "failure") << "!" << endl;
-        auto bundles = find_bundles(g);
+        // Find balanced bundles
+        auto bundles = find_bundles(g, true);
         for (auto bundle : bundles) {
             print_bundle(g, *bundle);
         }

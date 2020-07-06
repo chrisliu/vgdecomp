@@ -66,7 +66,6 @@ class Bundle {
         BundleSide right;
         bool is_bundle_balanced; /// Is a balanced bundle
         bool is_bundle_trivial; /// Is a trivial bundle
-        bool has_reversed; /// Has node where the orientation flips
         bool is_bundle_cyclic; /// Has self-cycle or self-inversion
 
         void update_bundlesides(const HandleGraph& g);
@@ -87,8 +86,6 @@ class Bundle {
         bool is_balanced() const { return is_bundle_balanced; }
         void set_balanced(bool is_balanced_) { is_bundle_balanced = is_balanced_; }
 
-        bool has_reversed_node() const { return has_reversed; }
-        void set_has_reversed_node(bool has_reversed_) { has_reversed = has_reversed_; }
 
         bool is_trivial() const { return is_bundle_trivial; }
         bool is_cyclic() const { return is_bundle_cyclic; }
@@ -97,7 +94,6 @@ class Bundle {
             is_bundle_balanced = false;
             is_bundle_trivial = false;
             is_bundle_cyclic = false;
-            has_reversed = false;
             left.reset();
             right.reset();
         }
@@ -143,6 +139,14 @@ class BundlePool {
         void return_bundle(Bundle* bundle) {
             bundle->reset();
             bundles.push_back(bundle);
+        }
+
+        void free() {
+            for (auto& bundle : bundles) {
+                delete bundle;
+            }
+            delete instance;
+            instance = nullptr;
         }
 };
 
