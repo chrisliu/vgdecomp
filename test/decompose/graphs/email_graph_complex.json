@@ -1,0 +1,103 @@
+{
+    "description": "This is a more complicated version of the email graph.",
+    "node": [
+        {
+            "id": 1,
+            "sequence": ""
+        },
+        {
+            "id": 2,
+            "sequence": ""
+        },
+        {
+            "id": 3,
+            "sequence": ""
+        },
+        {
+            "id": 4,
+            "sequence": ""
+        },
+        {
+            "id": 5,
+            "sequence": ""
+        },
+        {
+            "id": 6,
+            "sequence": ""
+        },
+        {
+            "id": 8,
+            "sequence": ""
+        },
+        {
+            "id": 9,
+            "sequence": ""
+        },
+        {
+            "id": 10,
+            "sequence": ""
+        }
+    ],
+    "edge": [
+        {
+            "from": 1,
+            "to": 2
+        },
+        {
+            "from": 1,
+            "to": 3
+        },
+        {
+            "from": 1,
+            "to": 6
+        },
+        {
+            "from": 2,
+            "to": 4
+        },
+        {
+            "from": 2,
+            "to": 5
+        },
+        {
+            "from": 3,
+            "to": 4
+        },
+        {
+            "from": 3,
+            "to": 5
+        },
+        {
+            "from": 4,
+            "to": 8
+        },
+        {
+            "from": 4,
+            "to": 9
+        },
+        {
+            "from": 5,
+            "to": 8
+        },
+        {
+            "from": 5,
+            "to": 9
+        },
+        {
+            "from": 6,
+            "to": 8
+        },
+        {
+            "from": 6,
+            "to": 9
+        },
+        {
+            "from": 8,
+            "to": 10
+        },
+        {
+            "from": 9,
+            "to": 10
+        }
+    ]
+}

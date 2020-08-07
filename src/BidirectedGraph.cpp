@@ -3,11 +3,8 @@
 #include "../deps/jsoncpp/dist/json/json.h"
 #include "handlegraph/util.hpp"
 
-#ifdef DEBUG_BIDIRECTED_GRAPH
 #include <iostream>
 using namespace std;
-#endif /* DEBUG_BIDIRECTED_GRAPH */
-
 
 //******************************************************************************
 // Non handle graph functions 

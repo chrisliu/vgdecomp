@@ -1,5 +1,14 @@
 #include "decompose.hpp"
 #include "find_bundles.hpp"
+#include <cstdlib>
+#include <functional>
+#include <unordered_map>
+
+#include "handlegraph/iteratee.hpp"
+
+#ifdef DEBUG_DECOMPOSE
+#include "decomposition_tree.hpp"
+#endif /* DEBUG_DECOMPOSE */
 
 /** Node-side representation convention
  * A node-side is represented by a handle such that its neighbors are found
@@ -8,7 +17,7 @@
 
 /** Orbits Terminology 
  * Orbits are borrowed from graph isomorphisms (where an orbit is a set of 
- * vertices that could be interchanged with each other in a valid isomorphism).
+ * vertice could be interchanged with each other in a valid isomorphism).
  * In this case, it's used in bundles where bundle nodes are loosely considered
  * to be in the same orbit if their outward neighbors (neighbors on the side 
  * that's not part of the bundle) are the same. Due to the use of unbalanced
@@ -19,6 +28,7 @@
 #ifdef DEBUG_DECOMPOSE 
 #include <assert.h>
 #include <iostream> 
+
 void DecompositionTreeBuilder::print_node(const handle_t& handle) {
     std::cout << "(Node " <<  g->get_id(handle) << (g->get_is_reverse(handle) ? "r" : "") << ") ";
 }
@@ -29,17 +39,47 @@ void DecompositionTreeBuilder::print_node(const handle_t& handle) {
 DecompositionTreeBuilder::DecompositionTreeBuilder(DeletableHandleGraph* g_)
     : g(g_)
     , bpool(BundlePool::get_instance())
-{}
+{
+    // Get the next nid.
+    nid_counter = g->max_node_id() + 1;
+
+    // Initialize bookkeeping data structures.
+    initialize_bookkeeping();
+}
+
+DecompositionTreeBuilder::~DecompositionTreeBuilder() {
+    bpool->free();
+}
 
 DecompositionNode* DecompositionTreeBuilder::construct_tree() {
     reduce();
     // Only for fully reducible graphs.
+#ifndef DISABLE_BUILD
     if (g->get_node_count() == 1) {
         handle_t node;
         g->for_each_handle([&](const handle_t& handle) { node = handle; });
         return decomp_map.at(g->get_id(node));
     }
+#endif /* DISABLE_BUILD */
     return nullptr;
+}
+
+void DecompositionTreeBuilder::initialize_bookkeeping() {
+    g->for_each_handle([&](const handle_t& handle) {
+        nid_t nid = g->get_id(handle);
+
+        // Create decomposition source node.
+        decomp_map[nid] = new DecompositionNode(nid, Source, 
+                g->get_is_reverse(handle));
+        
+        // Save left and right neighbors.
+        g->follow_edges(handle, true, [&](const handle_t& nei) {
+            o_neighbors[nid].first.insert(nei);
+        });
+        g->follow_edges(handle, false, [&](const handle_t& nei) {
+            o_neighbors[nid].second.insert(nei);
+        });
+    });
 }
 
 // Private functions
@@ -62,13 +102,23 @@ inline void DecompositionTreeBuilder::update_bundle_nodes(Bundle& bundle) {
     for (auto& r_node : bundle.get_right()) updates.updated.insert(g->flip(r_node));
 }
 
-inline DecompositionNode* DecompositionTreeBuilder::initialize_source(
-    const handle_t& handle
-) {
-    DecompositionNode* node = new DecompositionNode(g->get_id(handle), Source,
-        g->get_is_reverse(handle));
-    decomp_map[g->get_id(handle)] = node;
-    return node;
+inline void DecompositionTreeBuilder::rename_edge(edge_t old_edge, edge_t new_edge) {
+    // TODO: Devise more memory efficient method of moving certain values
+    // instead of copying.
+    
+    // If the current edge has R1 children.
+    if (freeR1_map.count(old_edge)) {
+        freeR1_map[new_edge].insert(freeR1_map[new_edge].end(),
+                freeR1_map[old_edge].begin(), freeR1_map[old_edge].end());
+        preexist_edge[new_edge] |= preexist_edge[old_edge];
+    } 
+
+    // If the current edge has inherited other edges.
+    if (edge_inheritance.count(old_edge)) {
+        edge_inheritance[new_edge].insert(edge_inheritance[new_edge].end(),
+                edge_inheritance[old_edge].begin(),
+                edge_inheritance[old_edge].end());
+    }
 }
 
 inline handle_t DecompositionTreeBuilder::get_first_neighbor(
@@ -99,6 +149,11 @@ void DecompositionTreeBuilder::perform_reduction1(handle_t& node) {
     handle_t left_neighbor = get_first_neighbor(node, true);
     handle_t right_neighbor = get_first_neighbor(node, false);
 
+#ifndef DISABLE_BUILD
+    // Assign middle node to the corresponding edge.
+    build_reduction1(left_neighbor, right_neighbor, node);
+#endif /* DISABLE_BUILD */
+
     // Remove bundle between left-middle and middle-right
     // If only balanced bundles are used, there MUST be a check for if the
     // bundle exists for each repsective node-side since there's a possiblity
@@ -119,13 +174,43 @@ void DecompositionTreeBuilder::perform_reduction1(handle_t& node) {
     // since the left and right are now connected. Due to the use of unbalanced
     // bundles, all node-sides must belong to a bundle, hence there's no need 
     // to check the first return argument of find_bundle.
-    auto [_, bundle] = find_bundle(left_neighbor, *g);
+    auto [_, bundle] = find_bundle(left_neighbor, *g, false);
     mark_bundle(bundle);
 
     // Since both the left and right neighbors have been updated, add the 
     // node-side that was adjacent to the middle node.
     updates.updated.insert(left_neighbor);
     updates.updated.insert(g->flip(right_neighbor));
+}
+
+void DecompositionTreeBuilder::build_reduction1(const handle_t left,
+        const handle_t right, const handle_t center) {
+    edge_t edge = g->edge_handle(left, right);
+    
+    // If this left/right neighbor combination has not been used, initialize
+    // empty list of free R1 nodes for this edge and check if this edge 
+    // exists (exists -> all free R1 nodes have 2 parents, 
+    // !exists -> is actually a R3 action but performed in a different order).
+    if (!preexist_edge.count(edge)) preexist_edge[edge] = g->has_edge(edge);
+
+    // Get/Create free R1 node for the center node.
+    DecompositionNode* free_node = decomp_map[g->get_id(center)]; 
+    
+    // Make sure to orient such that the direction is from edge.first to
+    // edge.second. Will need to reverse if the canonical direction of the edge
+    // is not left->right XOR the direction of the center handle is not the 
+    // same as the decomp node's handle (if both are true, then 2 flips 
+    // is equivalent to no flip).
+    if ((g->get_is_reverse(center) != free_node->is_reverse) 
+            != (left != edge.first))
+        free_node->reverse();
+
+    // Push node to list of free nodes that belong to this edge.
+    freeR1_map[edge].push_back(free_node);
+
+#ifdef DEBUG_DECOMPOSE
+    print_tree(free_node);
+#endif /* DEBUG_DECOMPOSE */
 }
 
 inline bool DecompositionTreeBuilder::is_reduction2(const handle_t& node) {
@@ -138,7 +223,7 @@ handle_t DecompositionTreeBuilder::reduce_trivial_bundle(Bundle& bundle) {
     handle_t r_handle = *bundle.get_right().begin();
 
     // Create new node.
-    handle_t new_node = g->create_handle("");
+    handle_t new_node = g->create_handle("", nid_counter++);
 
     // Check if it's a self-cycle (regular or inversion).
     if (g->get_id(l_handle) == g->get_id(r_handle)) {
@@ -174,8 +259,10 @@ handle_t DecompositionTreeBuilder::reduce_trivial_bundle(Bundle& bundle) {
         g->create_edge(new_node, r_nei);
     });
 
+#ifndef DISABLE_BUILD
     // Build decomposition tree node from this reduction.
     build_reduction2(g->get_id(new_node), l_handle, r_handle);
+#endif /* DISABLE_BUILD */
 
     // Destroy the two nodes of this trivial bundle.
     g->destroy_handle(l_handle);
@@ -187,17 +274,41 @@ handle_t DecompositionTreeBuilder::reduce_trivial_bundle(Bundle& bundle) {
 void DecompositionTreeBuilder::build_reduction2(const nid_t new_nid,
     const handle_t& left, const handle_t& right
 ) {
+    // Create new neighbors from left neighbors of left and right neighbors of
+    // right.
+    if (g->get_is_reverse(left)) {
+        for (auto& h : o_neighbors[g->get_id(left)].second)
+            o_neighbors[new_nid].first.insert(g->flip(h));
+    } else {
+        o_neighbors[new_nid].first = o_neighbors[g->get_id(left)].first;
+    }
+
+    if (g->get_is_reverse(right)) {
+        for (auto& h : o_neighbors[g->get_id(right)].first)
+            o_neighbors[new_nid].second.insert(g->flip(h));
+    } else {
+        o_neighbors[new_nid].second = o_neighbors[g->get_id(right)].second;
+    }
+
+    // Rename edges.
+    handle_t new_handle = g->get_handle(new_nid);
+    g->follow_edges(left, true, [&](const handle_t& l_nei) {
+        edge_t old_edge = g->edge_handle(l_nei, left);
+        edge_t new_edge = g->edge_handle(l_nei, new_handle);
+        rename_edge(old_edge, new_edge);        
+    });
+
+    g->follow_edges(right, false, [&](const handle_t& r_nei) {
+        edge_t old_edge = g->edge_handle(right, r_nei);
+        edge_t new_edge = g->edge_handle(new_handle, r_nei);
+        rename_edge(old_edge, new_edge);
+    });
+
     // Retrieve left and right decomposition nodes.
     // If there isn't a mapping in decomp_map, then it must mean this node is 
     // a source node and must be created.
-    DecompositionNode* left_node;
-    DecompositionNode* right_node;
-
-    if (decomp_map.count(g->get_id(left))) left_node = decomp_map.at(g->get_id(left));
-    else left_node = initialize_source(left);
-    
-    if (decomp_map.count(g->get_id(right))) right_node = decomp_map.at(g->get_id(right));
-    else right_node = initialize_source(right);
+    DecompositionNode* left_node = decomp_map[g->get_id(left)]; 
+    DecompositionNode* right_node = decomp_map[g->get_id(right)]; 
 
     // Reverse any decomposition nodes if necessary.
     if (g->get_is_reverse(left) != left_node->is_reverse) left_node->reverse();
@@ -206,6 +317,42 @@ void DecompositionTreeBuilder::build_reduction2(const nid_t new_nid,
     // Construct new chain node and save to decomp_map
     DecompositionNode* chain_node = create_chain_node(new_nid, left_node, right_node);
     decomp_map[new_nid] = chain_node;
+
+    // Assign any free R1 child nodes or R3 action (if preexist_edge = false)
+    edge_t edge = g->edge_handle(left, right);
+#ifdef DEBUG_DECOMPOSE
+    std::cout << preexist_edge.count(edge) << std::endl;
+#endif /* DEBUG_DECOMPOSE */
+    if (!preexist_edge.count(edge)) return;
+
+#ifdef DEBUG_DECOMPOSE
+    std::cout << preexist_edge[edge] << std::endl;
+#endif /* DEBUG_DECOMPOSE */
+
+    // In the case of a R3 action masked by multiple R1 actions.
+    if (!preexist_edge[edge]) {
+        // Assign id to be 0 since no intermediate node is technically created.
+        DecompositionNode* split_node = new DecompositionNode(nid_counter++, Split);
+        for (auto& node : freeR1_map.at(edge)) {
+            if (left != edge.first) node->reverse();
+            split_node->add_child(node);
+        }
+        // TODO: Find a more elegnt way to create a new chain node.
+        chain_node = new DecompositionNode(new_nid, Chain);
+        chain_node->push_back(left_node);
+        chain_node->push_back(split_node);
+        chain_node->push_back(right_node);
+        //delete decomp_map[new_nid];
+        decomp_map[new_nid] = chain_node;
+    // In the case of an R1 action.
+    } else {
+        for (auto& node : freeR1_map.at(edge)) {
+            node->parents.push_back(left_node);
+            node->parents.push_back(right_node);
+            left_node->R1children.push_back(node);
+            right_node->R1children.push_back(node);
+        }
+    }
 }
         
 void DecompositionTreeBuilder::perform_reduction2(Bundle& bundle) {
@@ -224,14 +371,14 @@ void DecompositionTreeBuilder::perform_reduction2(Bundle& bundle) {
 
     // Recompute bundles for the left and right side of the node.
     // Find the bundle on the left node-side.
-    auto [_, bundle1] = find_bundle(g->flip(node), *g);
+    auto [_, bundle1] = find_bundle(g->flip(node), *g, false);
     mark_bundle(bundle1);
     update_bundle_nodes(*bundle1);
 
     // Check if the left node-side's bundle has the right node-side. If it does,
     // then there's no need to recompute the same bundle.
     if (!bundle_map.count(node)){
-        auto [_, bundle2] = find_bundle(node, *g);
+        auto [_, bundle2] = find_bundle(node, *g, false);
         mark_bundle(bundle2);
         update_bundle_nodes(*bundle2);
     }
@@ -275,10 +422,12 @@ std::vector<handle_set_t> DecompositionTreeBuilder::is_reduction3(Bundle& bundle
 
 handle_t DecompositionTreeBuilder::reduce_orbit(handle_set_t& orbit) {
     // Create new handle for retracted node.
-    handle_t new_node = g->create_handle("");
+    handle_t new_node = g->create_handle("", nid_counter++);
 
+#ifndef DISABLE_BUILD
     // Build decomposition tree node from this reduction.
     build_reduction3(g->get_id(new_node), orbit);
+#endif /* DISABLE_BUILD */
 
     // Attach all left neighbors (since it's an orbit, this means all outward
     // nodes will be the same).
@@ -292,7 +441,7 @@ handle_t DecompositionTreeBuilder::reduce_orbit(handle_set_t& orbit) {
     for (auto& o_handle : orbit) {
         g->follow_edges(o_handle, false, [&](const handle_t& r_nei) {
             g->create_edge(new_node, r_nei);
-        });
+       });
         g->destroy_handle(o_handle);
     }
 
@@ -303,13 +452,11 @@ void DecompositionTreeBuilder::build_reduction3(const nid_t new_nid,
     handle_set_t& orbit
 ) {
      DecompositionNode* node = new DecompositionNode(new_nid, Split);
-     DecompositionNode* orbit_node;
+     handle_t new_handle = g->get_handle(new_nid);
      for (auto& handle : orbit) {
          // Get the decomp node corresponding to the orbit node's id.
-         if (decomp_map.count(g->get_id(handle)))
-             orbit_node = decomp_map.at(g->get_id(handle));
-         else
-             orbit_node = initialize_source(handle);
+         nid_t node_id = g->get_id(handle);
+         DecompositionNode* orbit_node = decomp_map[node_id];
         
          // Reverse if needed.
          if (g->get_is_reverse(handle) != orbit_node->is_reverse)
@@ -317,6 +464,34 @@ void DecompositionTreeBuilder::build_reduction3(const nid_t new_nid,
 
          // Add to split node
          node->add_child(orbit_node);
+
+         // Reassign neighbors.
+         // TODO: This method of inserting the flipped versions is ugly.
+         if (g->get_is_reverse(handle)) {
+             for (auto& h : o_neighbors[node_id].second)
+                 o_neighbors[new_nid].first.insert(g->flip(h));
+             for (auto& h : o_neighbors[node_id].first)
+                 o_neighbors[new_nid].second.insert(g->flip(h));
+         } else {
+             for (auto& h : o_neighbors[node_id].first)
+                 o_neighbors[new_nid].first.insert(h);
+             for (auto& h : o_neighbors[node_id].second)
+                 o_neighbors[new_nid].second.insert(h);
+         }
+
+         // Rename edges.
+         g->follow_edges(handle, true, [&](const handle_t& l_nei) {
+            edge_t old_edge = g->edge_handle(l_nei, handle);
+            edge_t new_edge = g->edge_handle(l_nei, new_handle);
+            rename_edge(old_edge, new_edge);
+         });
+
+
+         g->follow_edges(handle, true, [&](const handle_t& r_nei) {
+            edge_t old_edge = g->edge_handle(handle, r_nei);
+            edge_t new_edge = g->edge_handle(new_handle, r_nei);
+            rename_edge(old_edge, new_edge);
+         });
      }
     
      // Assign split node to decomp_map.
@@ -338,7 +513,7 @@ void DecompositionTreeBuilder::perform_reduction3(std::vector<handle_set_t> orbi
     }
 
     // Reinitialize retracted bundle.
-    auto [_, new_bundle] = find_bundle(new_node, *g);
+    auto [_, new_bundle] = find_bundle(new_node, *g, false);
     mark_bundle(new_bundle);
 }
 
@@ -352,7 +527,7 @@ void DecompositionTreeBuilder::reduce() {
 
     // Initialize bundles that exist in the graph
     bundle_map.clear();
-    auto bundles = find_bundles(*g);
+    auto bundles = find_bundles(*g, false);
     for (auto& bundle : bundles) mark_bundle(bundle);
 
     // Main algorithm

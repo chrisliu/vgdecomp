@@ -1,0 +1,51 @@
+{
+    "description": "",
+    "node": [
+        {
+            "id": 1,
+            "sequence": ""
+        },
+        {
+            "id": 2,
+            "sequence": ""
+        },
+        {
+            "id": 3,
+            "sequence": ""
+        },
+        {
+            "id": 4,
+            "sequence": ""
+        },
+        {
+            "id": 5,
+            "sequence": ""
+        }
+    ],
+    "edge": [
+        {
+            "from": 1,
+            "to": 2
+        },
+        {
+            "from": 1,
+            "to": 3
+        },
+        {
+            "from": 1,
+            "to": 4
+        },
+        {
+            "from": 2,
+            "to": 3
+        },
+        {
+            "from": 3,
+            "to": 5
+        },
+        {
+            "from": 4,
+            "to": 5
+        }
+    ]
+}

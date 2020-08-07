@@ -1,4 +1,6 @@
 #include "decomposition_tree.hpp"
+#include <unordered_set>
+#include <deque>
 
 #ifdef DEBUG_DECOMP_TREE
 #include <iostream>
@@ -80,6 +82,10 @@ void DecompositionNode::push_back(DecompositionNode* child) {
     child_tail = child;
 }
 
+inline bool DecompositionNode::is_R1() const {
+    return parent != nullptr;
+}
+
 DecompositionNode* create_chain_node(nid_t nid, DecompositionNode* first_node,
     DecompositionNode* second_node
 ) {
@@ -123,6 +129,47 @@ DecompositionNode* create_chain_node(nid_t nid, DecompositionNode* first_node,
     return new_node;
 }
 
+DecompositionNode* find_lca(DecompositionNode* n1, DecompositionNode* n2) {
+    // The set of ancestors of n1.
+    std::unordered_set<DecompositionNode*> n1ancestors;
+    
+    // The queue for BFS.
+    std::deque<DecompositionNode*> queue = {n1};
+
+    // Perform BFS on node 1 to find all ancestors.
+    while (!queue.empty()) {
+        DecompositionNode* next = queue.front();
+        queue.pop_front();
+        
+        // For each parent of this node, only push to queue if it hasn't been
+        // added.
+        for (auto& parent : next->parents) {
+            if (n1ancestors.insert(parent).second) queue.push_back(parent);
+        }
+    }
+
+    // Perform BFS on node 2 to find all ancestors.
+    queue.push_back(n2);
+    while (!queue.empty()) {
+        DecompositionNode* next = queue.front();
+        queue.pop_front();
+
+        // For each parent of this node, check if it's a shared ancestor.
+        // If yes, return since it's the first*. Otherwise, continue BFS.
+        // * May not be the "first" if searching a tree with R1 nodes. Then the
+        // "least" ancestor has yet to be determined. 
+        // TODO: Isn't implemented least in terms of LCA for a acyclic digraph. 
+        // Could be an option though. See
+        // https://en.wikipedia.org/wiki/Lowest_common_ancestor
+        for (auto& parent : next->parents) {
+            if (n1ancestors.count(parent)) return parent;
+            queue.push_back(parent);
+        }
+    }
+
+    return nullptr;
+}
+
 void free_tree(DecompositionNode *node) {
     switch (node->type) {
         case Source: {
@@ -144,6 +191,7 @@ void free_tree(DecompositionNode *node) {
             for (auto& child : node->children) {
                 delete child;
             }
+            delete node;
             break;
         }
     }
@@ -156,15 +204,29 @@ inline void print_depth(int depth) {
     }
 }
 
+void print_node(DecompositionNode* node) {
+    switch (node->type) {
+        case Source:
+            std::cout << "Source Node: " << node->nid << (node->is_reverse ? "r" : "") << std::endl;
+            break;
+        case Chain:
+            std::cout << "Chain Node: " << node->nid << (node->is_reverse ? "r" : "") << std::endl;
+            break;
+        case Split:
+            std::cout << "Split Node: " << node->nid << (node->is_reverse ? "r" : "") << std::endl;
+            break;
+    }
+}
+
 void print_tree(DecompositionNode* node, int depth) {
     print_depth(depth);
     switch (node->type) {
         case Source: {
-            std::cout << "Source Node: " << node->nid << (node->is_reverse ? "r" : "") << std::endl;
+            print_node(node);
             break;
         }
         case Chain: {
-            std::cout << "Chain Node: " << node->nid << (node->is_reverse ? "r" : "") << std::endl;
+            print_node(node);
             DecompositionNode* conductor = node->child_head;
             while (conductor != nullptr) {
                 print_tree(conductor, depth + 1);
@@ -173,7 +235,7 @@ void print_tree(DecompositionNode* node, int depth) {
             break;
         }
         case Split: {
-            std::cout << "Split Node: " << node->nid << (node->is_reverse ? "r" : "") << std::endl;
+            print_node(node);
             for (auto& child : node->children) {
                 print_tree(child, depth + 1);
             }

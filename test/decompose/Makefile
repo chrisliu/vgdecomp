@@ -15,9 +15,9 @@ ALGO_SRCS  = ${RELPATH}/src/algorithms/find_bundles.cpp \
 	${RELPATH}/src/algorithms/bundle.cpp ${RELPATH}/src/algorithms/decompose.cpp \
 	${RELPATH}/src/algorithms/decomposition_tree.cpp
 # Handlegraph sources
-HG_SRCS    = ${RELPATH}/deps/handlegraph/handle_graph.cpp
+HG_SRCS    = ${RELPATH}/deps/libhandlegraph/src/handle.cpp
 # JSON library sources
-JSON_SRCS  = ${RELPATH}/deps/json/jsoncpp.cpp 
+JSON_SRCS  = ${RELPATH}/deps/jsoncpp/dist/jsoncpp.cpp 
 # Compiled sources and objects
 SOURCES    = ${MAIN_PRG} ${BG_SRCS} ${ALGO_SRCS} ${HG_SRCS} ${JSON_SRCS}
 OBJECTS    = ${SOURCES:.cpp=.o}

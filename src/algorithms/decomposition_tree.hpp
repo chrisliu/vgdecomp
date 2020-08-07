@@ -2,6 +2,7 @@
 #define VG_ALGORITHMS_BUNDLE_TREE_HPP_INCLUDED
 
 #include "handle.hpp"
+#include <utility>
 #include <vector>
 
 #define DEBUG_DECOMP_TREE
@@ -24,19 +25,20 @@ struct DecompositionNode {
     // The type of decompostion node. 
     decomp_node_t type; 
 
-    /* Id's of the source and sink nodes (edge nodes). May be relevant for
-     * rule 1 reduction.
-    std::vector<handle_t> left_bounds;  // Ids of source nodes on the left.
-    std::vector<handle_t> right_bounds; // Ids of source nodes on the right.
-    */
-
     // Decomposition node's relationship with other nodes.
+    // The parent of this node if it isn't a R1 type node.
+    DecompositionNode* parent = nullptr;
+    std::vector<std::pair<DecompositionNode*, bool>> left_parents;
+    std::vector<std::pair<DecompositionNode*, bool>> right_parents;
     // The parent(s) of a this node. Only Rule 1 node will have multiple parents.
     std::vector<DecompositionNode*> parents; 
+
     // A blue edge. A pointer to the sibling to the "right".
     DecompositionNode* sibling = nullptr; 
     // Red edges. An unordered list of children nodes in the tree.
     std::vector<DecompositionNode*> children; 
+    // R1 Children
+    std::vector<DecompositionNode*> R1children;
     
     // Head and tail of children chain.
     DecompositionNode* child_head = nullptr;
@@ -56,19 +58,32 @@ struct DecompositionNode {
 
     // Pushes a child node to the end of the chain.
     void push_back(DecompositionNode* child); 
+
+    // Checks if is R1 type node.
+    inline bool is_R1() const;
 };
 
 // Assigns the two ordered child nodes to a parent chain node.
 // These child nodes are assumed to be the root node of their respective "trees".
 // If a child node is also a chain node, its children will be moved over to the
 // new node and the original parent will be freed.
+// TODO: More elegant version that takes variadic arguments.
 DecompositionNode* create_chain_node(nid_t nid, DecompositionNode* first_node,
     DecompositionNode* second_node);
+
+// Finds the common ancestor between two decomposition nodes. If nothing is found,
+// a nullptr is returned.
+// TODO: Change naive algorithm to a RMQ solver. 
+// With a sparse table, time complexity of a query will be O(1) and
+// mem complexity will be O(nlogn).
+DecompositionNode* find_lca(DecompositionNode* n1, DecompositionNode* n2);
 
 // Frees decomposition tree given root.
 void free_tree(DecompositionNode* node);
 
 #ifdef DEBUG_DECOMP_TREE
+// Prints information about a node.
+void print_node(DecompositionNode* node);
 // Prints decomposition tree with "| " indicating depth.
 void print_tree(DecompositionNode* node, int depth = 0);
 #endif /* DEBUG_DECOMP_TREE */

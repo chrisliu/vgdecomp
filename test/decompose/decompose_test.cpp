@@ -16,6 +16,9 @@ int main(int argc, char* argv[]) {
     g.deserialize(json_file);    
     json_file.close();
 
+    std::cout << g.min_node_id() << std::endl;
+    std::cout << g.max_node_id() << std::endl;
+
     DecompositionTreeBuilder builder(&g);
     auto root = builder.construct_tree();
 
@@ -38,8 +41,10 @@ int main(int argc, char* argv[]) {
         cout << endl;
     });
 
-    print_tree(root);
-    free_tree(root);
+    if (root != nullptr) {
+        print_tree(root);
+        free_tree(root);
+    }
 
     ofstream out_file("out.json");
     g.serialize(out_file);
