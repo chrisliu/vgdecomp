@@ -245,13 +245,13 @@ void DecompositionTreeBuilder::link_r1_node(DecompositionNode* node) {
         // The orientation flag is true when the direction of the parent 
         // decomposition node is not the same as the direction of its handle.
         bool par_rev = parent->is_reverse != (node->is_reverse ^ g->get_is_reverse(handle)); 
-        node->left_parents.push_back(std::make_pair(parent, par_rev));
+        node->left_parents[parent] = par_rev;
         parent->R1children.push_back(node);
     }
     for (auto handle : right) {
         DecompositionNode* parent = decomp_map[g->get_id(handle)];
         bool par_rev = parent->is_reverse != (node->is_reverse ^ g->get_is_reverse(handle));
-        node->right_parents.push_back(std::make_pair(parent, par_rev));
+        node->right_parents[parent] = par_rev;
         parent->R1children.push_back(node);
     }
 }

@@ -38,6 +38,14 @@ void DecompositionNode::reverse() {
         }
     }
 
+    // Flip the direction of this node in the R1 child's parent.
+    for (auto& child : R1children) {
+        if (child->left_parents.count(this)) 
+            child->left_parents[this] ^= true;
+        else
+            child->right_parents[this] ^= true;
+    }
+
     // Flip the orientation status of this decomposition node.
     is_reverse = !is_reverse;
 }

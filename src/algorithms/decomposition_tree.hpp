@@ -6,6 +6,7 @@
 #include "handle.hpp"
 #include <utility>
 #include <vector>
+#include <unordered_map>
 
 #ifdef DEBUG_DECOMP_TREE
 #include <unordered_set>
@@ -32,8 +33,8 @@ struct DecompositionNode {
     // Decomposition node's relationship with other nodes.
     // The parent of this node if it isn't a R1 type node.
     DecompositionNode* parent = nullptr;
-    std::vector<std::pair<DecompositionNode*, bool>> left_parents;
-    std::vector<std::pair<DecompositionNode*, bool>> right_parents;
+    std::unordered_map<DecompositionNode*, bool> left_parents;
+    std::unordered_map<DecompositionNode*, bool> right_parents;
     // The parent(s) of a this node. Only Rule 1 node will have multiple parents.
     std::vector<DecompositionNode*> parents; 
 
