@@ -83,7 +83,7 @@ void DecompositionNode::push_back(DecompositionNode* child) {
 }
 
 inline bool DecompositionNode::is_R1() const {
-    return parent != nullptr;
+    return left_parents.size() || right_parents.size();
 }
 
 DecompositionNode* create_chain_node(nid_t nid, DecompositionNode* first_node,
@@ -204,7 +204,7 @@ inline void print_depth(int depth) {
     }
 }
 
-void print_node(DecompositionNode* node) {
+void DecompositionTreePrinter::print_node(DecompositionNode* node) {
     switch (node->type) {
         case Source:
             std::cout << "Source Node: " << node->nid << (node->is_reverse ? "r" : "") << std::endl;
@@ -218,15 +218,36 @@ void print_node(DecompositionNode* node) {
     }
 }
 
-void print_tree(DecompositionNode* node, int depth) {
+void DecompositionTreePrinter::print_tree(DecompositionNode* node) {
+    // Remove previous history of R1 nodes printed.
+    explored_R1.clear();
+    print_tree(node, 0);
+}
+
+void DecompositionTreePrinter::print_tree(DecompositionNode* node, int depth) {
     print_depth(depth);
+    print_node(node);
+
+    // If this node is a R1 node, print additional identifying information.
+    if (node->is_R1()) {
+        print_depth(depth);
+        std::cout << "Left parents: ";
+        for (auto& [par, flip] : node->left_parents) 
+            std::cout << par->nid << ((par->is_reverse ^ flip) ? "f " : " ");
+        std::cout << std::endl;
+        print_depth(depth);
+        std::cout << "Right parents: ";
+        for (auto& [par, flip] : node->right_parents)
+            std::cout << par->nid << ((par->is_reverse ^ flip) ? "f ": " ");
+        std::cout << std::endl;
+    }
+
+    // Print the node's information.
     switch (node->type) {
         case Source: {
-            print_node(node);
             break;
         }
         case Chain: {
-            print_node(node);
             DecompositionNode* conductor = node->child_head;
             while (conductor != nullptr) {
                 print_tree(conductor, depth + 1);
@@ -235,12 +256,20 @@ void print_tree(DecompositionNode* node, int depth) {
             break;
         }
         case Split: {
-            print_node(node);
             for (auto& child : node->children) {
                 print_tree(child, depth + 1);
             }
             break;
         }
     }
+
+    // Print R1 children if any and haven't been printed. 
+    for (DecompositionNode* child : node->R1children) {
+        if (!explored_R1.count(child)) {
+            explored_R1.insert(child);
+            print_tree(child, depth + 1);
+        }
+    }
 }
 #endif /* DEBUG_DECOMP_TREE */
+

@@ -42,8 +42,9 @@ int main(int argc, char* argv[]) {
     });
 
     if (root != nullptr) {
-        print_tree(root);
-        free_tree(root);
+        DecompositionTreePrinter printer;
+        printer.print_tree(root);
+        //free_tree(root);
     }
 
     ofstream out_file("out.json");

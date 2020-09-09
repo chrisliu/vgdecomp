@@ -1,11 +1,15 @@
 #ifndef VG_ALGORITHMS_BUNDLE_TREE_HPP_INCLUDED
 #define VG_ALGORITHMS_BUNDLE_TREE_HPP_INCLUDED
 
+#define DEBUG_DECOMP_TREE
+
 #include "handle.hpp"
 #include <utility>
 #include <vector>
 
-#define DEBUG_DECOMP_TREE
+#ifdef DEBUG_DECOMP_TREE
+#include <unordered_set>
+#endif /* DEBUG_DECOMP_TREE */
 
 enum decomp_node_t {
     Source, // This node represents a node in the original graph.
@@ -82,9 +86,17 @@ DecompositionNode* find_lca(DecompositionNode* n1, DecompositionNode* n2);
 void free_tree(DecompositionNode* node);
 
 #ifdef DEBUG_DECOMP_TREE
-// Prints information about a node.
-void print_node(DecompositionNode* node);
-// Prints decomposition tree with "| " indicating depth.
-void print_tree(DecompositionNode* node, int depth = 0);
+class DecompositionTreePrinter {
+private:
+    std::unordered_set<DecompositionNode*> explored_R1;
+    // Prints decomposition tree with "| " indicating depth.
+    void print_tree(DecompositionNode* node, int depth);
+public:
+    // Prints information about a node.
+    void print_node(DecompositionNode* node);
+    // Prints decomposition tree with "| " indicating depth.
+    void print_tree(DecompositionNode* node);
+};
+
 #endif /* DEBUG_DECOMP_TREE */
 #endif /* VG_ALGORITHMS_BUNDLE_TREE_HPP_INCLUDED */
