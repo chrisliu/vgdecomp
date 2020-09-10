@@ -233,6 +233,11 @@ void DecompositionTreePrinter::print_tree(DecompositionNode* node) {
 }
 
 void DecompositionTreePrinter::print_tree(DecompositionNode* node, int depth) {
+    // Print color corresponding to each node type.
+    if (node->is_R1()) std::cout << "\033[33m";
+    else if (node->type == Chain) std::cout << "\033[34m";
+    else if (node->type == Split) std::cout << "\033[35m";
+
     print_depth(depth);
     print_node(node);
 
@@ -249,6 +254,8 @@ void DecompositionTreePrinter::print_tree(DecompositionNode* node, int depth) {
             std::cout << par->nid << ((par->is_reverse ^ flip) ? "f ": " ");
         std::cout << std::endl;
     }
+
+    std::cout << "\033[0m";
 
     // Print the node's information.
     switch (node->type) {
