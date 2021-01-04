@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <unordered_set>
 
 #include "../../src/BidirectedGraph.hpp"
 #include "../../src/algorithms/decompose.hpp"
@@ -16,10 +17,8 @@ int main(int argc, char* argv[]) {
     g.deserialize(json_file);    
     json_file.close();
 
-    std::cout << g.min_node_id() << std::endl;
-    std::cout << g.max_node_id() << std::endl;
-
     DecompositionTreeBuilder builder(&g);
+    //builder.group_irreducible(std::unordered_set<nid_t>({1, 4, 5, 7 ,11}));
     auto root = builder.construct_tree();
 
     cout << "-------- Final Output ---------" << endl;
@@ -41,15 +40,16 @@ int main(int argc, char* argv[]) {
         cout << endl;
     });
 
+    std::cout << "Root: " << root << std::endl;
     if (root != nullptr) {
         DecompositionTreePrinter printer;
         printer.print_tree(root);
         //free_tree(root);
     }
 
-    ofstream out_file("out.json");
-    g.serialize(out_file);
-    out_file.close();
+    //ofstream out_file("out.json");
+    //g.serialize(out_file);
+    //out_file.close();
 
     return EXIT_SUCCESS;
 }
