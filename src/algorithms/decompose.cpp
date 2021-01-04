@@ -60,6 +60,7 @@ DecompositionNode* DecompositionTreeBuilder::construct_tree() {
     if (g->get_node_count() == 1) {
         handle_t node;
         g->for_each_handle([&](const handle_t& handle) { node = handle; });
+        std::cout << g->get_id(node) << std::endl;
         return decomp_map.at(g->get_id(node));
     }
 #endif /* DISABLE_BUILD */
@@ -148,7 +149,19 @@ void DecompositionTreeBuilder::remove_self_cycle_inversion(const handle_t& node)
     // Self cycle (only one).
     edge_t s_cycle = g->edge_handle(node, node);
     if (g->has_edge(s_cycle)) {
+#ifdef DEBUG_DECOMPOSE
+        std::cout << "\033[31mDeleting self cycle\033[0m" << std::endl;
+#endif /* DEBUG_DECOMPOSE */
+        // Remove original bundle. With unbalanced bundles removing left and 
+        // right would result in a segfault (due to left and right being in 
+        // the same bundle).
+        unmark_bundle(bundle_map[node]);
         g->destroy_edge(s_cycle);
+        // Recompute bundles.
+        auto [_l, bl] = find_bundle(node, *g, false);
+        mark_bundle(bl);
+        auto [_r, br] = find_bundle(g->flip(node), *g, false);
+        mark_bundle(br);
         /* TODO: Deprecated
         for (auto node : freeR1_map[s_cycle]) link_r1_node(node);
         */
@@ -157,7 +170,13 @@ void DecompositionTreeBuilder::remove_self_cycle_inversion(const handle_t& node)
     // Inversion on the "left".
     edge_t s_inv_l = g->edge_handle(node, g->flip(node));
     if (g->has_edge(s_inv_l)) {
+#ifdef DEBUG_DECOMPOSE
+        std::cout << "\033[31mDeleting self inversion (L)\033[0m" << std::endl;
+#endif /* DEBUG_DECOMPOSE */
+        unmark_bundle(bundle_map[g->flip(node)]);
         g->destroy_edge(s_inv_l);
+        auto [_r, br] = find_bundle(g->flip(node), *g, false);
+        mark_bundle(br);
         /* TODO: Deprecated
         for (auto node : freeR1_map[s_inv_l]) link_r1_node(node);
         */
@@ -166,7 +185,13 @@ void DecompositionTreeBuilder::remove_self_cycle_inversion(const handle_t& node)
     // Inversion on the "right".
     edge_t s_inv_r = g->edge_handle(g->flip(node), node);
     if (g->has_edge(s_inv_r)) {
+#ifdef DEBUG_DECOMPOSE
+        std::cout << "\033[31mDeleting self inversion (R)\033[0m" << std::endl;
+#endif /* DEBUG_DECOMPOSE */
+        unmark_bundle(bundle_map[node]);
         g->destroy_edge(s_inv_r);
+        auto [_l, bl] = find_bundle(node, *g, false);
+        mark_bundle(bl);
         /* TODO: Deprecated
         for (auto node : freeR1_map[s_inv_r]) link_r1_node(node);
         */
@@ -316,6 +341,11 @@ void DecompositionTreeBuilder::perform_reduction1_strict(handle_t& node) {
     g->create_edge(epsilon_node, right_neighbor);
     
     // Update the bundles.
+    // Only unmarking left neighbors since with unbalanced bundles the right
+    // neighbor must be in it.
+    auto obundle = bundle_map[left_neighbor];
+    unmark_bundle(obundle);
+
     auto [_l, bl] = find_bundle(epsilon_node, *g, false);
     mark_bundle(bl);
     update_bundle_nodes(*bl);
@@ -340,29 +370,6 @@ handle_t DecompositionTreeBuilder::reduce_trivial_bundle(Bundle& bundle) {
 
     // Create new node.
     handle_t new_node = g->create_handle("", nid_counter++);
-
-    // Check if it's a self-cycle (regular or inversion).
-    if (g->get_id(l_handle) == g->get_id(r_handle)) {
-#ifdef DEBUG_DECOMPOSE
-        std::cout << "\033[31mDeleting self cycle\033[0m" << std::endl;
-#endif /* DEBUG_DECOMPOSE */
-        
-        // If it's an inversion, reconnect the edges of the opposite node-side 
-        // to the new node. This removes the inversion edge on the node-side and
-        // preserves the other neighbors of the opposite node-side.
-        if (l_handle != r_handle) {
-            g->follow_edges(l_handle, true, [&](const handle_t& l_nei) {
-                g->create_edge(l_nei, new_node);
-            });
-        }
-        
-        // Destroy the handle to the node with the self-cycle since it's either
-        // been duplicated to the new node. For regular self-cycle it would have
-        // no other neighbor nodes.
-        g->destroy_handle(l_handle);
-
-        return new_node;
-    }
 
     // For trivial bundles that aren't self cycles.
     // Remap left side edges of l_handle to the new node.
@@ -413,8 +420,6 @@ void DecompositionTreeBuilder::build_reduction2(const nid_t new_nid,
         o_neighbors[new_nid].second = o_neighbors[g->get_id(right)].second;
         o_boundaries[new_nid].second = o_boundaries[g->get_id(right)].second;
     }
-    */
-
 
     // Rename edges.
     handle_t new_handle = g->get_handle(new_nid);
@@ -429,6 +434,7 @@ void DecompositionTreeBuilder::build_reduction2(const nid_t new_nid,
         edge_t new_edge = g->edge_handle(new_handle, r_nei);
         rename_edge(old_edge, new_edge);
     });
+    */
 
     // Retrieve left and right decomposition nodes.
     // If there isn't a mapping in decomp_map, then it must mean this node is 
@@ -771,7 +777,8 @@ void DecompositionTreeBuilder::reduce() {
 #endif /* DEBUG_DECOMPOSE */
 
         // Check if node still exists
-        if (!g->has_node(g->get_id(u))) continue; 
+        if (not g->has_node(g->get_id(u))) continue;
+
         remove_self_cycle_inversion(u);
 
         // Check Rule 2
