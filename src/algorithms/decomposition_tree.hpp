@@ -13,10 +13,12 @@
 #endif /* DEBUG_DECOMP_TREE */
 
 enum decomp_node_t {
-    Source, // This node represents a node in the original graph.
-    Chain,  // This type of derived node represents a chain of children 
-    Split   // This type of derived node is split into multiple children that 
-            // are independent of each other.
+    Source,  // This node represents a node in the original graph.
+    Epsilon, // This is a special subset of the Source node that represents an
+             // edge (created via rule 1).
+    Chain,   // This type of derived node represents a chain of children 
+    Split    // This type of derived node is split into multiple children that 
+             // are independent of each other.
 };
 
 // A POD that represents a node in the decompositon tree.
@@ -33,17 +35,20 @@ struct DecompositionNode {
     // Decomposition node's relationship with other nodes.
     // The parent of this node if it isn't a R1 type node.
     DecompositionNode* parent = nullptr;
-    std::unordered_map<DecompositionNode*, bool> left_parents;
-    std::unordered_map<DecompositionNode*, bool> right_parents;
-    // The parent(s) of a this node. Only Rule 1 node will have multiple parents.
-    std::vector<DecompositionNode*> parents; 
 
     // A blue edge. A pointer to the sibling to the "right".
     DecompositionNode* sibling = nullptr; 
     // Red edges. An unordered list of children nodes in the tree.
     std::vector<DecompositionNode*> children; 
+
+    /* TODO: Deprecated
+    std::unordered_map<DecompositionNode*, bool> left_parents;
+    std::unordered_map<DecompositionNode*, bool> right_parents;
+    // The parent(s) of a this node. Only Rule 1 node will have multiple parents.
+    std::vector<DecompositionNode*> parents; 
     // R1 Children
     std::vector<DecompositionNode*> R1children;
+    */
     
     // Head and tail of children chain.
     DecompositionNode* child_head = nullptr;
@@ -64,8 +69,10 @@ struct DecompositionNode {
     // Pushes a child node to the end of the chain.
     void push_back(DecompositionNode* child); 
 
+    /* TODO: Deprecated
     // Checks if is R1 type node.
     inline bool is_R1() const;
+    */
 };
 
 // Assigns the two ordered child nodes to a parent chain node.
@@ -89,7 +96,9 @@ void free_tree(DecompositionNode* node);
 #ifdef DEBUG_DECOMP_TREE
 class DecompositionTreePrinter {
 private:
+    /* TODO: Deprecated
     std::unordered_set<DecompositionNode*> explored_R1;
+    */
     // Prints decomposition tree with "| " indicating depth.
     void print_tree(DecompositionNode* node, int depth);
 public:

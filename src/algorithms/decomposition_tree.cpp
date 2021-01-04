@@ -38,6 +38,7 @@ void DecompositionNode::reverse() {
         }
     }
 
+    /* TODO: Deprecated
     // Flip the direction of this node in the R1 child's parent.
     for (auto& child : R1children) {
         if (child->left_parents.count(this)) 
@@ -45,6 +46,7 @@ void DecompositionNode::reverse() {
         else
             child->right_parents[this] ^= true;
     }
+    */
 
     // Flip the orientation status of this decomposition node.
     is_reverse = !is_reverse;
@@ -54,8 +56,11 @@ void DecompositionNode::add_child(DecompositionNode* child) {
     // Add child to unordered list of children.
     children.push_back(child);
 
+    child->parent = this;
+    /* TODO: Deprecated
     // Set this as a parent of the child.
     child->parents.push_back(this);
+    */
 }
 
 void DecompositionNode::push_front(DecompositionNode* child) {
@@ -90,9 +95,11 @@ void DecompositionNode::push_back(DecompositionNode* child) {
     child_tail = child;
 }
 
+/* TODO: Deprecated
 inline bool DecompositionNode::is_R1() const {
     return left_parents.size() || right_parents.size();
 }
+*/
 
 DecompositionNode* create_chain_node(nid_t nid, DecompositionNode* first_node,
     DecompositionNode* second_node
@@ -138,6 +145,7 @@ DecompositionNode* create_chain_node(nid_t nid, DecompositionNode* first_node,
 }
 
 DecompositionNode* find_lca(DecompositionNode* n1, DecompositionNode* n2) {
+    /* TODO: Implement efficient LCA for trees.
     // The set of ancestors of n1.
     std::unordered_set<DecompositionNode*> n1ancestors;
     
@@ -174,13 +182,15 @@ DecompositionNode* find_lca(DecompositionNode* n1, DecompositionNode* n2) {
             queue.push_back(parent);
         }
     }
+    */
 
     return nullptr;
 }
 
 void free_tree(DecompositionNode *node) {
     switch (node->type) {
-        case Source: {
+        case Source: 
+        case Epsilon: {
             delete node;
             break;
         }
@@ -215,32 +225,57 @@ inline void print_depth(int depth) {
 void DecompositionTreePrinter::print_node(DecompositionNode* node) {
     switch (node->type) {
         case Source:
-            std::cout << "Source Node: " << node->nid << (node->is_reverse ? "r" : "") << std::endl;
+            std::cout << "Source Node: " << node->nid 
+                << (node->is_reverse ? "r" : "") << std::endl;
+            break;
+        case Epsilon:
+            std::cout << "Epsilon Node: " << node->nid 
+                << (node->is_reverse ? "r" : "") << std::endl;
             break;
         case Chain:
-            std::cout << "Chain Node: " << node->nid << (node->is_reverse ? "r" : "") << std::endl;
+            std::cout << "Chain Node: " << node->nid 
+                << (node->is_reverse ? "r" : "") << std::endl;
             break;
         case Split:
-            std::cout << "Split Node: " << node->nid << (node->is_reverse ? "r" : "") << std::endl;
+            std::cout << "Split Node: " << node->nid 
+                << (node->is_reverse ? "r" : "") << std::endl;
             break;
     }
 }
 
 void DecompositionTreePrinter::print_tree(DecompositionNode* node) {
+    /* TODO: Deprecated
     // Remove previous history of R1 nodes printed.
     explored_R1.clear();
+    */
     print_tree(node, 0);
 }
 
 void DecompositionTreePrinter::print_tree(DecompositionNode* node, int depth) {
     // Print color corresponding to each node type.
+    /* TODO: Deprecated
     if (node->is_R1()) std::cout << "\033[33m";
     else if (node->type == Chain) std::cout << "\033[34m";
     else if (node->type == Split) std::cout << "\033[35m";
+    */
+    switch (node->type) {
+        case Source: // No special color for source node.
+            break;
+        case Epsilon:
+            std::cout << "\033[33m";
+            break;
+        case Chain:
+            std::cout << "\033[34m";
+            break;
+        case Split:
+            std::cout << "\033[35m";
+            break;
+    }
 
     print_depth(depth);
     print_node(node);
 
+    /* TODO: Deprecated
     // If this node is a R1 node, print additional identifying information.
     if (node->is_R1()) {
         print_depth(depth);
@@ -254,12 +289,14 @@ void DecompositionTreePrinter::print_tree(DecompositionNode* node, int depth) {
             std::cout << par->nid << ((par->is_reverse ^ flip) ? "f ": " ");
         std::cout << std::endl;
     }
+    */
 
     std::cout << "\033[0m";
 
     // Print the node's information.
     switch (node->type) {
-        case Source: {
+        case Source:
+        case Epsilon: {
             break;
         }
         case Chain: {
@@ -278,6 +315,7 @@ void DecompositionTreePrinter::print_tree(DecompositionNode* node, int depth) {
         }
     }
 
+    /* TODO: Deprecated
     // Print R1 children if any and haven't been printed. 
     for (DecompositionNode* child : node->R1children) {
         if (!explored_R1.count(child)) {
@@ -285,6 +323,7 @@ void DecompositionTreePrinter::print_tree(DecompositionNode* node, int depth) {
             print_tree(child, depth + 1);
         }
     }
+    */
 }
 #endif /* DEBUG_DECOMP_TREE */
 
