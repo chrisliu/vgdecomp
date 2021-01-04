@@ -85,23 +85,6 @@ private:
     // be a value (not a default dict).
     std::unordered_map<nid_t, DecompositionNode*> decomp_map;
 
-    /* Deprecated
-    // Keeps track of all the Rule 1 nodes that have been reduced into this edge.
-    edge_map_t<std::vector<DecompositionNode*>> freeR1_map;
-    // Keeps track of the neighbors of any node (source or derived) that belongs
-    // to the original graph. Used to match R1 nodes to their parents. This 
-    // structure is only updated during R2 and R3 actions.
-    // Handles are oriented such that if traversed in a graph,
-    // left_bounds -> id (is_reverse = false) -> right_bounds
-    std::unordered_map<nid_t, std::pair<handle_set_t, handle_set_t>> o_neighbors;
-    // Keeps track of the left/rightmost boundary nodes of any node (source or 
-    // derived) that belonged to the original graph. Used to eliminate nodes
-    // when from o_neighbors once a R1 action is performed (since R1 nodes are
-    // not considered to be a neighbor of another R1 node).
-    std::unordered_map<nid_t, 
-        std::pair<std::vector<handle_t>, std::vector<handle_t>>> o_boundaries; 
-    */
-
     /// Bookkeeping functions
     // Initializes base state of bookkeeping data structures.
     void initialize_bookkeeping();
@@ -128,23 +111,12 @@ private:
     void remove_self_cycle_inversion(const handle_t& node);
 
     // Rule 1 
-    /** Deprecated: Using stricter versions of rule 1 to retain the tree-like
-     * structure.
-    // Returns if node-side has a valid rule 1 reduction.
-    inline bool is_reduction1(const handle_t& node);
-    // Performs rule 1 reduction on the given node (assumes it's valid).
-    void perform_reduction1(handle_t& node);
-    // Builds decomposition tree node based on the center node and its left and
-    // right neighbors.
-    void build_reduction1(const handle_t left, const handle_t right, 
-            const handle_t center);
-    // Attaches a node to its corresponding parents in the decomposition tree.
-    void link_r1_node(DecompositionNode* node);
-    */
-
     // Stricter versions of rule 1 that allows retains the tree-like 
     // decomposition structure for a well-behaved graph.
+    
+    // Returns if node-side has a valid rule 2 reduction.
     inline bool is_reduction1_strict(const handle_t& node);
+    // Performs rule 1 "reduction".
     void perform_reduction1_strict(handle_t& node);
     
     // Rule 2 
