@@ -11,8 +11,7 @@
 #include <string>
 
 /* Handlegraph includes */
-#include "../deps/handlegraph/deletable_handle_graph.hpp"
-#include "../deps/handlegraph/types.hpp"
+#include "algorithms/handle.hpp"
 
 using namespace std;
 using namespace handlegraph;
@@ -25,6 +24,7 @@ class BidirectedGraph : public DeletableHandleGraph {
 
     public:
         bool deserialize(ifstream& infile);        
+        bool serialize(ofstream& outfile);
 
         /// Method to check if a node exists by ID
         bool has_node(nid_t node_id) const;

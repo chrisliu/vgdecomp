@@ -25,7 +25,7 @@ typedef unordered_set<handle_t> bundleside;
 typedef pair<bundleside, bundleside> bundle;
 typedef pair<bundle, bundle> bundle_pair;
 vector<bundle_pair> get_true_bundles(const string& path, const BidirectedGraph& g);
-int check_bundle_match(vector<Bundle>& found_bundles, const vector<bundle_pair>& true_bundles,
+int check_bundle_match(vector<Bundle*>& found_bundles, const vector<bundle_pair>& true_bundles,
     const BidirectedGraph& g);
 
 TEST_CASE("JSON Bundle Tests") {
@@ -92,16 +92,16 @@ vector<bundle_pair> get_true_bundles(const string& path, const BidirectedGraph& 
 
 bundle_pair bundle_to_bundle_pair(Bundle& bundle, const BidirectedGraph& g) {
     bundleside left, left_flipped;
-    bundle.get_bundleside(true).traverse_bundle([&](const handle_t& handle) {
+    for (const auto& handle : bundle.get_left()) {
         left.insert(handle);
         left_flipped.insert(g.flip(handle));
-    });
+    }
 
     bundleside right, right_flipped;
-    bundle.get_bundleside(false).traverse_bundle([&](const handle_t& handle) {
+    for (const auto& handle : bundle.get_right()) {
         right.insert(handle);
         right_flipped.insert(g.flip(handle));
-    });
+    }
 
     return pair(pair(left, right), pair(left_flipped, right_flipped));
 }
@@ -121,13 +121,13 @@ bool is_match(bundle_pair& b1, bundle_pair& b2) {
         (b1_flip.first == b2_flip.second && b1_flip.second == b2_flip.first);
 }
 
-int check_bundle_match(vector<Bundle>& found_bundles, const vector<bundle_pair>& true_bundles,
+int check_bundle_match(vector<Bundle*>& found_bundles, const vector<bundle_pair>& true_bundles,
     const BidirectedGraph& g
 ) {
     auto true_bp = true_bundles;
     /// If a matching true bundle is found, remove it
     for (auto& bundle : found_bundles) {
-        bundle_pair found = bundle_to_bundle_pair(bundle, g); 
+        bundle_pair found = bundle_to_bundle_pair(*bundle, g); 
         for (auto it = true_bp.begin(); it < true_bp.end(); it++) {
             if (is_match(found, *it)) {
                 true_bp.erase(it);

@@ -4,10 +4,10 @@
 #include <string>
 
 #include "../../src/BidirectedGraph.hpp"
-#include "../../src/algorithms/find_balanced_bundles.hpp"
+#include "../../src/algorithms/find_bundles.hpp"
 #include "../../src/algorithms/bundle.hpp"
 
-#define DEBUG_BIDIRECTED_GRAPH
+// #define DEBUG_BIDIRECTED_GRAPH
 
 using namespace std;
 
@@ -20,17 +20,16 @@ std::string node_to_str(const handle_t& handle, const HandleGraph& g) {
 
 void print_bundle(BidirectedGraph& g, Bundle& bundle) {
     cout << "Left" << endl;
-    bundle.get_bundleside(true).traverse_bundle([&](const handle_t& l_handle) {
+    for (const auto& l_handle : bundle.get_left()) {
         cout << node_to_str(l_handle, g) << endl;
-        return true;
-    });
+    }
     cout << "Right" << endl;
-    bundle.get_bundleside(false).traverse_bundle([&](const handle_t& r_handle) {
+    for (const auto& r_handle: bundle.get_right()) {
         cout << node_to_str(r_handle, g) << endl;
-        return true;
-    }); 
-    cout << "Is a trivial bundle:  " << ((bundle.is_trivial()) ? "true" : "false") << endl;
-    cout << "Has reversed node(s): " << ((bundle.has_reversed_node()) ? "true" : "false") << endl;
+    }; 
+    cout << "Is a trivial bundle:  " << (bundle.is_trivial() ? "true" : "false") << endl;
+    cout << "Is cyclic bundle:     " << (bundle.is_cyclic() ? "true" : "false") << endl;
+    cout << "Is a balanced bundle: " << (bundle.is_balanced() ? "true" : "false") << endl;
 }
 
 void print_edges(BidirectedGraph& g) {
@@ -74,9 +73,10 @@ int main(int argc, char* argv[]) {
         ifstream json_file(argv[i], ifstream::binary);
         BidirectedGraph g;
         cout << "Deserialization: " << (g.deserialize(json_file) ? "success" : "failure") << "!" << endl;
-        auto bundles = find_balanced_bundles(g);
+        // Find balanced bundles
+        auto bundles = find_bundles(g, true);
         for (auto bundle : bundles) {
-            print_bundle(g, bundle);
+            print_bundle(g, *bundle);
         }
         cout << "Nodes: ";
         g.for_each_handle([&](const handle_t& handle) {

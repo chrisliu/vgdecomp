@@ -1,13 +1,10 @@
 #include "BidirectedGraph.hpp"
-#include "../deps/json/json/json.h"
 
-#include "../deps/handlegraph/util.hpp"
+#include "../deps/jsoncpp/dist/json/json.h"
+#include "handlegraph/util.hpp"
 
-#ifdef DEBUG_BIDIRECTED_GRAPH
 #include <iostream>
 using namespace std;
-#endif /* DEBUG_BIDIRECTED_GRAPH */
-
 
 //******************************************************************************
 // Non handle graph functions 
@@ -32,7 +29,7 @@ bool BidirectedGraph::deserialize(ifstream& infile) {
     /// Construct nodes
     Json::Value nodes = graph_json["node"];
     for (auto& node : nodes) {
-        nid_t id1 = node["id"].asInt64();
+        nid_t id1 = stoll(node["id"].asString());
         string sequence = node["sequence"].asString();
         create_handle(sequence, id1);
     }
@@ -40,12 +37,53 @@ bool BidirectedGraph::deserialize(ifstream& infile) {
     /// Construct edges
     Json::Value edges = graph_json["edge"];
     for (auto& edge : edges) {
-        nid_t id1 = edge["from"].asInt64();
-        nid_t id2 = edge["to"].asInt64();
+        nid_t id1 = stoll(edge["from"].asString());
+        nid_t id2 = stoll(edge["to"].asString());
         bool from_left = edge.get("from_start", false).asBool();
         bool to_right = edge.get("to_end", false).asBool();
         create_edge(get_handle(id1, from_left), get_handle(id2, to_right));
     }
+    return true;
+}
+
+bool BidirectedGraph::serialize(ofstream& outfile) {
+    function<void(Json::Value&, const nid_t&, const string&)> create_node = 
+        [&](Json::Value& node, const nid_t& nid, const string& sequence) {
+            node["id"] = nid;
+            node["sequence"] = sequence;
+        };
+    function<void(Json::Value&, const handle_t&, const handle_t&)> create_edge = 
+        [&](Json::Value& node, const handle_t& from, const handle_t& to) {
+            node["from"] = get_id(from);
+            node["to"] = get_id(to);
+            if (get_is_reverse(from)) node["from_start"] = true;
+            if (get_is_reverse(to)) node["to_end"] = true;
+        };
+
+    Json::Value graph_json;
+    Json::Value graph_nodes(Json::arrayValue);
+    for (const auto& [nid, sequence] : nodes) {
+        Json::Value node;
+        create_node(node, nid, sequence);
+        graph_nodes.append(node);
+    }
+
+    Json::Value graph_edges(Json::arrayValue);
+    for (const auto& [from, to_set] : edges) {
+        for (const auto& to : to_set) {
+            if (get_id(from) <= get_id(to)) {
+                Json::Value edge;
+                create_edge(edge, from, to);
+                graph_edges.append(edge);
+            }
+        }
+    }
+
+    graph_json["edge"] = graph_edges;
+    graph_json["node"] = graph_nodes;
+
+    outfile << graph_json << endl;
+
     return true;
 }
 
@@ -134,7 +172,7 @@ handle_t BidirectedGraph::create_handle(const string& sequence) {
 
 handle_t BidirectedGraph::create_handle(const string& sequence, const nid_t& id) {
     nodes[id] = sequence;
-    cur_id = (id > cur_id) ? id + 1 : cur_id; // Simple cur_id update function
+    cur_id = (id >= cur_id) ? id + 1 : cur_id; // Simple cur_id update function
     return get_handle(id);
 }
 
@@ -185,7 +223,7 @@ void BidirectedGraph::destroy_handle(const handle_t& handle) {
     /// Erase from nodes
     nodes.erase(get_id(handle));
 
-    /// Remove edges
+    /// Remove edges in the "forward" direction
     handle_t flipped = flip(handle);
     /// Remove complement edges
     for (auto& rhandle : edges[handle]) {
@@ -193,9 +231,20 @@ void BidirectedGraph::destroy_handle(const handle_t& handle) {
     }
     /// Delete "forward edges" from handle
     edges.erase(handle);
+
+    /// Remove edges in the "backward" direction
+    /// Remove complement edges
+    for (auto& rhandle : edges[flipped]) {
+        edges[flip(rhandle)].erase(handle);
+    }
+    /// Delete "forward edges" from handle
+    edges.erase(flipped);
 }
 
 void BidirectedGraph::destroy_edge(const handle_t& left, const handle_t& right) {
+    /// Check if it's been destroyed already
+    if (!edges.count(left)) return;
+
     /// Erase forward edge
     edges[left].erase(right);
     /// Erase complement edge

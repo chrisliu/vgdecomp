@@ -35,5 +35,9 @@ int main(int argc, char* argv[]) {
         cout << endl;
     });
 
+    ofstream out_file("test.json");
+    g.serialize(out_file);
+    out_file.close();
+
     return 0;    
 }

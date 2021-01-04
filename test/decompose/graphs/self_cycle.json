@@ -1,0 +1,15 @@
+{
+    "description": "This is a self cycle.",
+    "node": [
+        {
+            "id": 1,
+            "sequence": ""
+        }
+    ],
+    "edge": [
+        {
+            "from": 1,
+            "to": 1
+        }
+    ]
+}

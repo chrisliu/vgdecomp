@@ -1,0 +1,15 @@
+[submodule "deps/libhandlegraph"]
+	path = deps/libhandlegraph
+	url = https://github.com/vgteam/libhandlegraph.git
+[submodule "deps/catch2"]
+	path = deps/catch2
+	url = https://github.com/catchorg/Catch2.git
+[submodule "deps/jsoncpp"]
+	path = deps/jsoncpp
+	url = https://github.com/open-source-parsers/jsoncpp.git
+[submodule "deps/sparespp"]
+	path = deps/sparespp
+	url = https://github.com/greg7mdp/sparsepp.git
+[submodule "deps/sparsepp"]
+	path = deps/sparsepp
+	url = https://github.com/greg7mdp/sparsepp.git

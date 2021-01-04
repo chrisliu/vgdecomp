@@ -9,8 +9,8 @@ Algorithms to find balanced bundles and use them to further decompose a variatio
  - [x] Path connectedness algorithm that finds all path connected nodes *(optimization needed)*.
  - [x] Port and test vg's acyclicity algorithm.
  - [x] Deserialize vg graph formats.
- - [ ] Add algorithm to perform the 3 reduction actions.
- - [ ] Improve underlying BidirectedGraph architecture (efficient mutability).
+ - [x] Add algorithm to perform the 3 reduction actions.
+ - [x] Improve underlying BidirectedGraph architecture (efficient mutability).
 ### Side Objectives
  - [ ] Deprecate BidirectedGraphBuilder and add `serialize(ofstream&)` and ~~`deserialize(ifstream&)`~~(COMPLETED) to BidirectedGraph. Also support vg JSON format instead of legacy JSON format.
  - [x] Improve graph_assistant.py (add command line options for various tasks and improve code legibility).

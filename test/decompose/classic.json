@@ -1,0 +1,31 @@
+{
+    "description": "This is a classic R1.",
+    "node": [
+        {
+            "id": 1,
+            "sequence": ""
+        },
+        {
+            "id": 2,
+            "sequence": ""
+        },
+        {
+            "id": 3,
+            "sequence": ""
+        }
+    ],
+    "edge": [
+        {
+            "from": 1,
+            "to": 2
+        },
+        {
+            "from": 2,
+            "to": 3
+        },
+        {
+            "from": 1,
+            "to": 3
+        }
+    ]
+}

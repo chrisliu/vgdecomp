@@ -1,15 +1,11 @@
 #include "bundle.hpp"
 #include <algorithm>
-#include <iterator>
-#include <stdexcept>
-#include <unordered_map>
-#include "../../deps/handlegraph/util.hpp"
+#include "handlegraph/util.hpp"
 
+using namespace std;
 using namespace handlegraph;
 
-/***********************************************
- * Custom structures implementation
- ***********************************************/
+BundlePool* BundlePool::instance = nullptr;
 
 /// Counter structure
 struct Count {
@@ -18,64 +14,52 @@ struct Count {
     size_t count = 0;
 };
 
-/***********************************************
- * BundleSide implementation
- ***********************************************/
-
-bool BundleSide::add_node(const handle_t& node) {
-    if (is_bundle_freed) {
-        return true;
-    }
-
-    return bundle_set.insert(node).second;
+bool BundleSide::add_node(const handle_t& handle) {
+    return nodes.insert(handle).second;
 }
 
-void BundleSide::cache(HandleGraph& g) {
-    for (const handle_t& node : bundle_set) {
-        bundle_vector.push_back(node);
-        bundle_vector_reversed.push_back(g.get_handle(g.get_id(node), !g.get_is_reverse(node)));
+void BundleSide::update(const HandleGraph& g) {
+    nodes_flipped.clear();
+    for (auto& node : nodes) {
+        nodes_flipped.insert(g.flip(node));
     }
-
-    // Should prompt C++ to clear the memory
-    bundle_set = std::unordered_set<handle_t>();
-    // Else this is the method I came up with
-    /*
-    bundle_set.clear();
-    bundle_set.rehash(1);
-    */
-
-    /// Sort for set intersection
-    std::sort(bundle_vector.begin(), bundle_vector.end(), 
-        [](handle_t& h1, handle_t& h2) {return as_integer(h1) < as_integer(h2);});
-    std::sort(bundle_vector_reversed.begin(), bundle_vector_reversed.end(),
-        [](handle_t& h1, handle_t& h2) {return as_integer(h1) < as_integer(h2);});
-
-    is_bundle_freed = true;
 }
 
-void BundleSide::traverse_bundle(const std::function<void(const handle_t&)>& iteratee) {    
-    if (is_bundle_freed) {
-        for (const handle_t& node : bundle_vector) {
-            iteratee(node);
+void BundleSide::reset() {
+    nodes.clear();
+    nodes_flipped.clear();
+}
+
+bool BundleSide::is_reversed(const handle_t& handle) const  {
+    return nodes_flipped.find(handle) != nodes_flipped.end();
+}
+
+bool BundleSide::is_member(const handle_t& handle) const {
+    return nodes.find(handle) != nodes.end() ||
+        nodes_flipped.find(handle) != nodes_flipped.end();
+}
+
+bool BundleSide::iterate_nodes(const function<bool(const handle_t&)>& iteratee, bool is_reversed) const {
+    if (is_reversed) {
+        for (auto& handle : nodes_flipped) {
+            if (!iteratee(handle)) {
+                return false;
+            }
         }
     } else {
-        for (const handle_t& node : bundle_set) {
-            iteratee(node);
+        for (auto& handle : nodes) {
+            if (!iteratee(handle)) {
+                return false;
+            }
         }
     }
+    return true;
 }
 
-int BundleSide::size() {
-    if (is_bundle_freed) {
-        return bundle_vector.size();
-    }
-    return bundle_set.size();
-}
-
-Adjacency get_adjacency_type(const bundle_vector_t side1, const bundle_vector_t side2) {
+adjacency_t _get_adjacency_type(const unordered_set<handle_t> side1, const unordered_set<handle_t> side2) {
     Count c;
-    set_intersection(side1.begin(), side1.end(), side2.begin(), side2.end(), std::back_insert_iterator(c), 
-        [](const handle_t h1, const handle_t h2) -> bool {
+    set_intersection(side1.begin(), side1.end(), side2.begin(), side2.end(),
+        back_insert_iterator(c), [](const handle_t& h1, const handle_t& h2) {
             return as_integer(h1) < as_integer(h2);
         }
     );
@@ -83,72 +67,58 @@ Adjacency get_adjacency_type(const bundle_vector_t side1, const bundle_vector_t 
     size_t count = c.count;
 
     if (side1.size() == count && side2.size() == count) {
-        return Adjacency::Strong;
+        return adjacency_t::Strong;
     } else if (count > 0) {
-        return Adjacency::Weak;
+        return adjacency_t::Weak;
     }
-    return Adjacency::None;
+    return adjacency_t::None;
 }
 
-Adjacency BundleSide::get_adjacency(const BundleSide& other) const {
-    if (!this->is_bundle_freed || !other.is_bundle_freed) {
-        throw std::invalid_argument("Invalid BundleSide in adjacency");
-    }
-
-    Adjacency res;
-    if ((res = get_adjacency_type(this->bundle_vector, other.bundle_vector)) != Adjacency::None ||
-        (res = get_adjacency_type(this->bundle_vector, other.bundle_vector_reversed)) != Adjacency::None ||
-        (res = get_adjacency_type(this->bundle_vector_reversed, other.bundle_vector)) != Adjacency::None ||
-        (res = get_adjacency_type(this->bundle_vector_reversed, other.bundle_vector_reversed)) != Adjacency::None
-    ) {
+adjacency_t BundleSide::get_adjacency_type(const BundleSide& other) const {
+    adjacency_t res;
+    if ((res = _get_adjacency_type(nodes, other.nodes)) != adjacency_t::None ||
+        (res = _get_adjacency_type(nodes, other.nodes_flipped)) != adjacency_t::None ||
+        (res = _get_adjacency_type(nodes_flipped, other.nodes)) != adjacency_t::None ||
+        (res = _get_adjacency_type(nodes_flipped, other.nodes_flipped)) != adjacency_t::None) {
         return res;
     }
-    return Adjacency::None;
+    return adjacency_t::None;
 }
 
-/***********************************************
- * Bundle implementation
- ***********************************************/
-bool Bundle::add_node(const handle_t& node, bool is_left) {
-    if (is_left) {
-        return internal_bundle.first.add_node(node);
-    } else {
-        return internal_bundle.second.add_node(node);
+void Bundle::update_bundlesides(const HandleGraph& g) {
+    left.update(g);
+    right.update(g);
+}
+
+void Bundle::define_properties(const HandleGraph& g) {
+    update_bundlesides(g);
+
+    is_bundle_trivial = left.size() == 1 && right.size() == 1;
+
+    is_bundle_cyclic = false;
+    for (const auto& left_handle : left) {
+        is_bundle_cyclic |= right.is_member(left_handle);
     }
 }
 
-void Bundle::add_init_node(const handle_t& node, bool is_left) {
-    add_node(node, is_left);
-}
-
-int Bundle::get_bundleside_size(bool is_left) {
-    return get_bundleside(is_left).size();
-}
-
-BundleSide Bundle::get_bundleside(bool is_left) {
-    if (is_left) {
-        return internal_bundle.first;
+bool Bundle::traverse_bundle(const handle_t& handle, const function<bool(const handle_t&)>& iteratee) const {
+    if (left.is_member(handle)) {
+        return right.iterate_nodes(iteratee, left.is_reversed(handle));
+    } else if (right.is_member(handle)) {
+        return left.iterate_nodes(iteratee, right.is_reversed(handle));
     }
-    return internal_bundle.second;
 }
 
-void Bundle::freeze(HandleGraph& g) {
-    internal_bundle.first.cache(g);
-    internal_bundle.second.cache(g);
+bool Bundle::is_reversed(const handle_t& handle) const {
+    return (left.is_member(handle) && left.is_reversed(handle)) ||
+        (right.is_member(handle) && !right.is_reversed(handle));
 }
 
-bool Bundle::is_trivial() {
-    return is_bundle_trivial; 
-}
-
-void Bundle::set_trivial(bool is_bundle_trivial_) {
-    this->is_bundle_trivial = is_bundle_trivial_;
-}
-
-bool Bundle::has_reversed_node() {
-    return has_reversed;
-}
-
-void Bundle::set_has_reversed_node(bool has_reversed_) {
-    this->has_reversed = has_reversed_;
+adjacency_t Bundle::get_adjacency_type(const Bundle& other) const {
+    adjacency_t type;
+    if ((type = left.get_adjacency_type(other.left)) != adjacency_t::None ||
+        (type = left.get_adjacency_type(other.right)) != adjacency_t::None ||
+        (type = right.get_adjacency_type(other.left)) != adjacency_t::None ||
+        (type = right.get_adjacency_type(other.right)) != adjacency_t::None);
+    return type;
 }

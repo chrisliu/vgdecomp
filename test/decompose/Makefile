@@ -7,13 +7,13 @@ WARNING    = -Wall -Wextra -Wpedantic -Wshadow -Wold-style-cast
 COMPILECPP = g++ -std=c++17 -g -O0 ${WARNING}
 
 # Main program
-# MAIN_PRG   = bundle_test.cpp
-MAIN_PRG   = BundleTest.cpp
+MAIN_PRG   = decompose_test.cpp
 # Bidirected graph sources
 BG_SRCS    = ${RELPATH}/src/BidirectedGraph.cpp
 # Algorithm sources
 ALGO_SRCS  = ${RELPATH}/src/algorithms/find_bundles.cpp \
-	${RELPATH}/src/algorithms/bundle.cpp 
+	${RELPATH}/src/algorithms/bundle.cpp ${RELPATH}/src/algorithms/decompose.cpp \
+	${RELPATH}/src/algorithms/decomposition_tree.cpp
 # Handlegraph sources
 HG_SRCS    = ${RELPATH}/deps/libhandlegraph/src/handle.cpp
 # JSON library sources
@@ -22,7 +22,7 @@ JSON_SRCS  = ${RELPATH}/deps/jsoncpp/dist/jsoncpp.cpp
 SOURCES    = ${MAIN_PRG} ${BG_SRCS} ${ALGO_SRCS} ${HG_SRCS} ${JSON_SRCS}
 OBJECTS    = ${SOURCES:.cpp=.o}
 # Executable binary
-EXECBIN    = BundleTest 
+EXECBIN    = DecomposeTest.exe 
 
 all : ${EXECBIN}
 
