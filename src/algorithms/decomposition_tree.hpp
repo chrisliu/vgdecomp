@@ -31,6 +31,11 @@ struct DecompositionNode {
     bool is_reverse; 
     // The type of decompostion node. 
     decomp_node_t type; 
+    // Keeps track of self-cycles/inversions.
+    // Self-inversion is a pair of relative left and relative right.
+    // Relative left = g->get_handle(nid, !is_reverse)
+    bool scycle = false; // Self-cycle.
+    bool sinv[2] = {false, false}; // Self inversions (left, right).
 
     // Decomposition node's relationship with other nodes.
     // The parent of this node if it isn't a R1 type node.

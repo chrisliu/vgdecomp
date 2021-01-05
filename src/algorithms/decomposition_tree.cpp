@@ -38,6 +38,9 @@ void DecompositionNode::reverse() {
         }
     }
 
+    // Flip direction of inversions.
+    std::swap(sinv[0], sinv[1]);
+
     // Flip the orientation status of this decomposition node.
     is_reverse = !is_reverse;
 }
@@ -203,24 +206,31 @@ inline void print_depth(int depth) {
 }
 
 void DecompositionTreePrinter::print_node(DecompositionNode* node) {
+    // Print node ID and direction.
     switch (node->type) {
         case Source:
             std::cout << "Source Node: " << node->nid 
-                << (node->is_reverse ? "r" : "") << std::endl;
+                << (node->is_reverse ? "r" : "");
             break;
         case Epsilon:
             std::cout << "Epsilon Node: " << node->nid 
-                << (node->is_reverse ? "r" : "") << std::endl;
+                << (node->is_reverse ? "r" : "");
             break;
         case Chain:
             std::cout << "Chain Node: " << node->nid 
-                << (node->is_reverse ? "r" : "") << std::endl;
+                << (node->is_reverse ? "r" : "");
             break;
         case Split:
             std::cout << "Split Node: " << node->nid 
-                << (node->is_reverse ? "r" : "") << std::endl;
+                << (node->is_reverse ? "r" : "");
             break;
     }
+
+    // Print node self-cycle, self-inv L, self-inv R information.
+    std::cout << " (" << node->scycle << node->sinv[0] << node->sinv[1] << ")";
+
+    // Endline.
+    std::cout << std::endl;
 }
 
 void DecompositionTreePrinter::print_tree(DecompositionNode* node) {

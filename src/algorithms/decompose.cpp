@@ -130,34 +130,45 @@ void DecompositionTreeBuilder::remove_self_cycle_inversion(const handle_t& node)
         unmark_bundle(bundle_map[node]);
         g->destroy_edge(s_cycle);
         // Recompute bundles.
-        auto [_l, bl] = find_bundle(node, *g, false);
+        auto [_r, bl] = find_bundle(g->flip(node), *g, false);
         mark_bundle(bl);
-        auto [_r, br] = find_bundle(g->flip(node), *g, false);
+        auto [_l, br] = find_bundle(node, *g, false);
         mark_bundle(br);
+
+        // Mark self-cycle in decomposition node. 
+        decomp_map[g->get_id(node)]->scycle = true;
     }
 
     // Inversion on the "left".
-    edge_t s_inv_l = g->edge_handle(node, g->flip(node));
+    edge_t s_inv_l = g->edge_handle(g->flip(node), node);
     if (g->has_edge(s_inv_l)) {
 #ifdef DEBUG_DECOMPOSE
         std::cout << "\033[31mDeleting self inversion (L)\033[0m" << std::endl;
 #endif /* DEBUG_DECOMPOSE */
         unmark_bundle(bundle_map[g->flip(node)]);
         g->destroy_edge(s_inv_l);
-        auto [_r, br] = find_bundle(g->flip(node), *g, false);
-        mark_bundle(br);
+        auto [_r, bl] = find_bundle(g->flip(node), *g, false);
+        mark_bundle(bl);
+
+        // Mark self-inversion left in decomposition node.
+        DecompositionNode* decomp = decomp_map[g->get_id(node)];
+        decomp->sinv[g->get_is_reverse(node) != decomp->is_reverse] = true;
     }
 
     // Inversion on the "right".
-    edge_t s_inv_r = g->edge_handle(g->flip(node), node);
+    edge_t s_inv_r = g->edge_handle(node, g->flip(node));
     if (g->has_edge(s_inv_r)) {
 #ifdef DEBUG_DECOMPOSE
         std::cout << "\033[31mDeleting self inversion (R)\033[0m" << std::endl;
 #endif /* DEBUG_DECOMPOSE */
-        unmark_bundle(bundle_map[node]);
+        std::cout << "SEG" << std::endl;
         g->destroy_edge(s_inv_r);
-        auto [_l, bl] = find_bundle(node, *g, false);
-        mark_bundle(bl);
+        auto [_l, br] = find_bundle(node, *g, false);
+        mark_bundle(br);
+
+        // Mark self-inversion left in decomposition node.
+        DecompositionNode* decomp = decomp_map[g->get_id(node)];
+        decomp->sinv[g->get_is_reverse(node) == decomp->is_reverse] = true;
     }
 
 }
@@ -260,8 +271,6 @@ void DecompositionTreeBuilder::build_reduction2(const nid_t new_nid,
     // Construct new chain node and save to decomp_map
     DecompositionNode* chain_node = create_chain_node(new_nid, left_node, right_node);
     decomp_map[new_nid] = chain_node;
-
-    edge_t edge = g->edge_handle(left, right);
 }
 
 void DecompositionTreeBuilder::perform_reduction2(Bundle& bundle) {
@@ -382,7 +391,6 @@ void DecompositionTreeBuilder::build_reduction3(const nid_t new_nid,
 
      //}
 
-     handle_t new_handle = g->get_handle(new_nid);
      for (auto& handle : orbit) {
          // Get the decomp node corresponding to the orbit node's id.
          nid_t node_id = g->get_id(handle);
