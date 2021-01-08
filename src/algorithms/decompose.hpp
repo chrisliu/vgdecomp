@@ -79,8 +79,6 @@ private:
     // Maps node-side to corresponding bundle (could not exist if only using
     // balanced bundle).
     bundle_map_t bundle_map;
-    // Keeps track of neighbors of a node.
-    std::unordered_map<handle_t, size_t> nei_count;
     // Maps node to a decomposition node. If it's a source node then there won't
     // be a value (not a default dict).
     std::unordered_map<nid_t, DecompositionNode*> decomp_map;

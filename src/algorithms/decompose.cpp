@@ -351,15 +351,23 @@ handle_t DecompositionTreeBuilder::reduce_orbit(handle_set_t& orbit) {
         g->create_edge(l_nei, new_node);
     });
 
+    // Unmark inward bundle.
+    handle_t ohandle = g->flip(*orbit.begin());
+    unmark_bundle(bundle_map[ohandle]);
+
     // Attach all right neighbors (since unbalanced bundles are allowed, 
     // inward nodes may not be the same for each node in the orbit).
     // Also destroy orbit nodes since they've been retracted.
     for (auto& o_handle : orbit) {
         g->follow_edges(o_handle, false, [&](const handle_t& r_nei) {
             g->create_edge(new_node, r_nei);
-       });
+        });
         g->destroy_handle(o_handle);
     }
+
+    // Recompute inward bundle.
+    auto [_, bundle] = find_bundle(g->flip(new_node), *g, false);
+    mark_bundle(bundle);
 
     return new_node;
 }
