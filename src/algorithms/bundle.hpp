@@ -6,12 +6,6 @@
 
 #include "handle.hpp"
 
-enum adjacency_t {
-    None,
-    Weak,
-    Strong
-};
-
 /// Glorified wrapper for std::unordered_set<handle_t>
 class BundleSide {
     private:
@@ -44,8 +38,6 @@ class BundleSide {
         }
 
         void update(const HandleGraph& g);
-
-        adjacency_t get_adjacency_type(const BundleSide& other) const;
 
         void reset();
         
@@ -103,8 +95,6 @@ class Bundle {
 
         /// Returns if go_left is false if calling follow_edges will traverse the bundle or not
         bool is_reversed(const handle_t& handle) const;
-
-        adjacency_t get_adjacency_type(const Bundle& other) const;
 };
 
 /// Bundle pool object

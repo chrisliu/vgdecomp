@@ -6,7 +6,7 @@
 #include <queue>
 
 #include "find_bundles.hpp"
-#include "handlegraph/iteratee.hpp"
+#include <handlegraph/iteratee.hpp>
 
 #ifdef DEBUG_DECOMPOSE
 #include "decomposition_tree.hpp"
